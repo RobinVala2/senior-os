@@ -1,27 +1,29 @@
 {
-    "hover_timer":{
-                "time_to_play_sound": 5000
-    },
     "language":{
                 "default_language" : "en"
     },
     "image":{
         "sweb_image_http" : "../sconf/images/SWEB_CL_HTTP.png",
-        "sweb_image_https" : "../sconf/images/SWEB_CL_HTTPS.png"
+        "sweb_image_https" : "../sconf/images/SWEB_CL_HTTPS.png",
+        "sweb_image_exit" : "../sconf/images/SWEB_CL_EXIT.png",
+        "sweb_image_translate" : "../sconf/images/SWEB_CL_TRANSLATE.png",
+        "sweb_image_www2" : "../sconf/images/SWEB_CL_WWW2.png",
+        "sweb_image_www3" : "../sconf/images/SWEB_CL_WWW3.png",
+        "sweb_image_www4" : "../sconf/images/SWEB_CL_WWW4.jpg",
+        "sweb_image_www5" : "../sconf/images/SWEB_CL_WWW5.png",
+        "sweb_image_www6" : "../sconf/images/SWEB_CL_WWW6.png",
+        "sweb_image_menu" : "../sconf/images/SWEB_CL_MENU_BUTTON.png"
+
+    },
+    "colors_info": {
+        "menu_frame": "#e5e5e5",
+        "app_frame": "#FFFFFF",
+        "buttons_unselected": "#e5e5e5",
+        "buttons_selected": "#00ff00"
     },
     "sweb_buttons_add_info": {
-		"sweb_button_width": 175,
-		"sweb_button_height": 150,
 		"sweb_button_icon_width": 75,
-		"sweb_button_icon_height": 75,
-		"sweb_button_space_width": 25,
-		"sweb_button_space_height":1
-	},
-	"sweb_border_info": {
-		"sweb_border_radius_info": 5
-	},
-	"sweb_tool_bar_info":{
-		"sweb_toolbar_height": 168
+		"sweb_button_icon_height": 75
 	},
     "text": {
                 "sweb_en_menu1": "Menu 1",
@@ -34,10 +36,6 @@
                 "sweb_en_menu2WWW5": "WWW 5",
                 "sweb_en_menu2WWW6": "WWW 6",
                 "sweb_en_menu2Address": "Address",
-                "sweb_en_homeButton": "Home",
-                "sweb_en_backButton": "Back",
-                "sweb_en_forwardButton": "Forward",
-                "sweb_en_reloadButton": "Reload",
                 "sweb_cz_menu1": "Menu 1",
                 "sweb_cz_menu1Exit": "Odejít",
                 "sweb_cz_menu1WWW1": "WWW 1",
@@ -48,10 +46,6 @@
                 "sweb_cz_menu2WWW5": "WWW 5",
                 "sweb_cz_menu2WWW6": "WWW 6",
                 "sweb_cz_menu2Address": "Adresa",
-                "sweb_cz_homeButton": "Domů",
-                "sweb_cz_backButton": "Zpět",
-                "sweb_cz_forwardButton": "Vpřed",
-                "sweb_cz_reloadButton": "Náčíst",
                 "sweb_de_menu1": "Menü 1",
                 "sweb_de_menu1Exit": "Verlassen",
                 "sweb_de_menu1WWW1": "WWW 1",
@@ -61,11 +55,7 @@
                 "sweb_de_menu2WWW4": "WWW 4",
                 "sweb_de_menu2WWW5": "WWW 5",
                 "sweb_de_menu2WWW6": "WWW 6",
-                "sweb_de_menu2Address": "Adresse",
-                "sweb_de_homeButton": "Heim",
-                "sweb_de_backButton": "Zurück",
-                "sweb_de_forwardButton": "Vorwärts",
-                "sweb_de_reloadButton": "Neu laden"
+                "sweb_de_menu2Address": "Adresse"
             },
     "audio": {
                 "sweb_en_menu1": "../sconf/audio/SWEB_EN_MENU_1.mp3",
@@ -79,25 +69,17 @@
                 "sweb_en_menu2WWW5": "../sconf/audio/SWEB_EN_MENU_2_WWW_5.mp3",
                 "sweb_en_menu2WWW6": "../sconf/audio/SWEB_EN_MENU_2_WWW_6.mp3",
                 "sweb_en_menu2Address": "../sconf/audio/SWEB_EN_MENU_2_ADDRESS.mp3",
-                "sweb_en_homeButton": "../sconf/audio/SWEB_EN_HOME.mp3",
-                "sweb_en_backButton": "../sconf/audio/SWEB_EN_BACK.mp3",
-                "sweb_en_forwardButton": "../sconf/audio/SWEB_EN_FORWARD.mp3",
-                "sweb_en_reloadButton": "../sconf/audio/SWEB_EN_RELOAD.mp3",
                 "sweb_cz_menu1": "../sconf/audio/SWEB_CZ_MENU_1.mp3",
                 "sweb_cz_translateButton": "../sconf/audio/SWEB_CZ_CHANGE_LANGUAGE.mp3",
                 "sweb_cz_menu1Exit": "../sconf/audio/SWEB_CZ_MENU_1_EXIT.mp3",
-                "sweb_cz_menu1WWW1": "../sconf/audio/SWEB_CZ_MENU_1.WWW_1.mp3",
+                "sweb_cz_menu1WWW1": "../sconf/audio/SWEB_CZ_MENU_1_WWW_1.mp3",
                 "sweb_cz_menu1WWW2": "../sconf/audio/SWEB_CZ_MENU_1_WWW_2.mp3",
                 "sweb_cz_menu1WWW3": "../sconf/audio/SWEB_CZ_MENU_1_WWW_3.mp3",
                 "sweb_cz_menu2": "../sconf/audio/SWEB_CZ_MENU_2.mp3",
-                "sweb_cz_menu2WWW4": "../sconf/audio/SWEB_CZ_MENU_2.WWW_4.mp3",
-                "sweb_cz_menu2WWW5": "../sconf/audio/SWEB_CZ_MENU_2.WWW_5.mp3",
-                "sweb_cz_menu2WWW6": "../sconf/audio/SWEB_CZ_MENU_2.WWW_6.mp3",
+                "sweb_cz_menu2WWW4": "../sconf/audio/SWEB_CZ_MENU_2_WWW_4.mp3",
+                "sweb_cz_menu2WWW5": "../sconf/audio/SWEB_CZ_MENU_2_WWW_5.mp3",
+                "sweb_cz_menu2WWW6": "../sconf/audio/SWEB_CZ_MENU_2_WWW_6.mp3",
                 "sweb_cz_menu2Address": "../sconf/audio/SWEB_CZ_MENU_2_ADDRESS.mp3",
-                "sweb_cz_homeButton": "../sconf/audio/SWEB_CZ_HOME.mp3",
-                "sweb_cz_backButton": "../sconf/audio/SWEB_CZ_BACK.mp3",
-                "sweb_cz_forwardButton": "../sconf/audio/SWEB_CZ_FORWARD.mp3",
-                "sweb_cz_reloadButton": "../sconf/audio/SWEB_CZ_RELOAD.mp3",
                 "sweb_de_menu1": "../sconf/audio/SWEB_DE_MENU_1.mp3",
                 "sweb_de_translateButton": "../sconf/audio/SWEB_DE_CHANGE_LANGUAGE.mp3",
                 "sweb_de_menu1Exit": "../sconf/audio/SWEB_DE_MENU_1_EXIT.mp3",
@@ -108,11 +90,7 @@
                 "sweb_de_menu2WWW4": "../sconf/audio/SWEB_DE_MENU_2_WWW_4.mp3",
                 "sweb_de_menu2WWW5": "../sconf/audio/SWEB_DE_MENU_2_WWW_5.mp3",
                 "sweb_de_menu2WWW6": "../sconf/audio/SWEB_DE_MENU_2_WWW_6.mp3",
-                "sweb_de_menu2Address": "../sconf/audio/SWEB_DE_MENU_2_ADDRESS.mp3",
-                "sweb_de_homeButton": "../sconf/audio/SWEB_DE_HOME.mp3",
-                "sweb_de_backButton": "../sconf/audio/SWEB_DE_BACK.mp3",
-                "sweb_de_forwardButton": "../sconf/audio/SWEB_DE_FORWARD.mp3",
-                "sweb_de_reloadButton": "../sconf/audio/SWEB_DE_RELOAD.mp3"
+                "sweb_de_menu2Address": "../sconf/audio/SWEB_DE_MENU_2_ADDRESS.mp3"
             }
     
 }
