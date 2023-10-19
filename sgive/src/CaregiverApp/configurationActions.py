@@ -28,10 +28,18 @@ def readJsonConfig(key, value):
 
 
 def readLog():
+    pickedValues = []
+    findPhrases = ["INFO", "WARNING", "CRITICAL"]  # TODO: toť nebude tu, ale bude si to brát název podle kliknutého tlačítka
     path = temporaryGetPath()
-    if os.path.exists(path) and os.path.isfile(os.path.join(temporaryGetPath(), 'EXAMPLE.log')):
-        file = open(os.path.join(path, 'caregiver.log'), "r")
-        return [file.read()]
+    if os.path.exists(path) and os.path.isfile(os.path.join(temporaryGetPath(), 'EXAMPLE.log')):  # check if log and folder exists
+        with open(os.path.join(path, 'caregiver.log')) as f:  # open log file
+            f = f.readlines()  # read
+        for line in f:  # check each lines
+            for phrase in findPhrases:  # check list
+                if phrase in line:  # if its same
+                    pickedValues.append(line)  # add to the pickedValues list
+                    break  # bžum bžum bžum brekeke
+        return pickedValues
     else:
         logging.critical('There is no CaregiverApp.log or sconf/ file present in system, exiting program now.')
         exit(1)
