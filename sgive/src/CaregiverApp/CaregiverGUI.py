@@ -1,4 +1,5 @@
 from tkinter import *  # gui framework
+from tkinter import ttk
 import configurationActions as ryuconf  # mine thing for json actions
 from screeninfo import get_monitors  # get all monitors
 from configurationActions import readJsonConfig  # mine thing for json actions
@@ -180,6 +181,8 @@ class showLogConfigFrame:
         self.width = width
         self.logFrame = logFrame
         self.filterOptionValue = None
+        self.logNameValue = "ConfigurationApp"
+        self.currentPickedLogFile = 0
         self.logButtons()
         self.viewLogs()
         logger.info("Opening Log frame.")
@@ -229,6 +232,30 @@ class showLogConfigFrame:
         centerPosX = (self.width/2) - (self.width/20)/2
         # B.place(x=centerPosX, y=0, width=self.width/20, height=frameHeight)
 
+        # testing ----------------------------------------------------------
+        combobox = ttk.Combobox(filterFrame, state="readonly")
+        combobox['values'] = ('ConfigurationApp', 'SMAILlog', 'SWEBlog')
+        combobox.current(self.currentPickedLogFile)
+
+        getNewX = getNewX + labelWidth + 2 * spacer
+        combobox.place(x=getNewX, y=0, width=labelWidth, height=frameHeight)
+
+        def optionSelected(event):
+            selectedValue = combobox.get()
+            # set new current index
+            if selectedValue == 'ConfigurationApp':
+                self.currentPickedLogFile = 0
+            if selectedValue == 'SMAILlog':
+                self.currentPickedLogFile = 1
+            if selectedValue == 'SWEBlog':
+                self.currentPickedLogFile = 2
+            # pick log file action
+            self.logNameValue = selectedValue
+            self.refreshLogFrame()
+        # call nested function
+        combobox.bind("<<ComboboxSelected>>", optionSelected)
+
+
     def viewLogs(self):
         print("epicko value is",self.filterOptionValue)
         textThing = Text(self.logFrame, height=self.height - (self.height / 7),
@@ -238,9 +265,12 @@ class showLogConfigFrame:
         scroll.config(command=textThing.yview, )
         textThing["yscrollcommand"] = scroll.set
         textThing.pack()
-        file = ryuconf.readLog(self.filterOptionValue)
-        for f in file:
-            textThing.insert(END, f)
+        file = ryuconf.readLog(self.filterOptionValue,self.logNameValue)
+        if file is None:
+            textThing.insert(END, "There is no log file present yet.")
+        else:
+            for f in file:
+                textThing.insert(END, f)
         textThing.config(state=DISABLED)  # disable editing
 
 

@@ -13,7 +13,16 @@ def temporaryGetPath():  # this is how i get to the sconf/ file, for now :)
     path = split[0]
     configPath = os.path.join(path, "sconf")
     return configPath
-
+def getLogFile():
+    whereTheFuckAmI = os.getcwd()
+    split = whereTheFuckAmI.split("sgive")
+    path = split[0]
+    configPath = os.path.join(path, "sconf")
+    if os.path.exists(os.path.join(configPath, "logs")):
+        return os.path.join(configPath, "logs")
+    else:
+        os.mkdir(os.path.join(configPath, "logs"))
+        return os.path.join(configPath, "logs")
 
 def readJsonConfig(key, value):
     path = temporaryGetPath()
@@ -27,7 +36,8 @@ def readJsonConfig(key, value):
         exit(1)
 
 
-def readLog(givenFilter):
+def readLog(givenFilter,givenName):
+    print(givenName)
     findPhrases = []
     if givenFilter is None:
         print("given value is NONE")
@@ -35,11 +45,10 @@ def readLog(givenFilter):
     else:
         findPhrases.append(givenFilter)
         print(f"filtering by:{givenFilter}")
-
     pickedValues = []
-    path = temporaryGetPath()
-    if os.path.exists(path) and os.path.isfile(os.path.join(temporaryGetPath(), 'EXAMPLE.log')):  # check if log and folder exists
-        with open(os.path.join(path, 'ConfigurationApp.log')) as f:  # open log file
+    path = getLogFile()
+    if os.path.exists(path) and os.path.isfile(os.path.join(getLogFile(), f'{givenName}.log')):  # check if log and folder exists
+        with open(os.path.join(path, f'{givenName}.log')) as f:  # open log file
             f = f.readlines()  # read
         for line in f:  # check each lines
             for phrase in findPhrases:  # check list
@@ -48,8 +57,8 @@ def readLog(givenFilter):
                     break  # bžum bžum bžum brekeke
         return pickedValues
     else:
-        logging.critical('There is no CaregiverApp.log or sconf/ file present in system, exiting program now.')
-        exit(1)
+        logging.error(f'There is no {givenName}.log in sconf/logs or the folder itself is missing.')
+        #exit(1)
 
 
 def editConfig(key, name, value):
