@@ -1,0 +1,1 @@
+wget -O ../sconf/phish/SMAIL_PHISH_1.txt https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/phishing-links-ACTIVE.txt

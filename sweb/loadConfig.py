@@ -1,18 +1,5 @@
 import json, sys
 
-# Load together configuration for all applications in OS
-def load_config_json():
-    # Exit when error occurs and print notification to log
-    try:
-        with open("../sconf/config.json", "r",encoding='utf-8') as f:
-            configData = json.load(f)
-        f.close()
-        return configData
-    except FileNotFoundError:
-        print(f"Configuration file not found /sconf/config.json")
-    except json.JSONDecodeError:
-        print(f"Error parsing JSON file: /sconf/config.json")
-
 # Load language text and audio for web browser
 def load_sweb_config_json():
     # Exit when error occurs and print notification to log
@@ -25,6 +12,19 @@ def load_sweb_config_json():
         print(f"Configuration file not found /sconf/SWEB_config.json")
     except json.JSONDecodeError:
         print(f"Error parsing JSON file: /sconf/SWEB_config.json")
+        
+# Load Template config
+def load_template_config_json():
+    # Exit when error occurs and print notification to log
+    try:
+        with open("../sconf/TEMPLATE.json", "r",encoding='utf-8') as f:
+            configData = json.load(f)
+        f.close()
+        return configData
+    except FileNotFoundError:
+        print(f"Configuration file not found /sconf/TEMPLATE.json")
+    except json.JSONDecodeError:
+        print(f"Error parsing JSON file: /sconf/TEMPLATE.json")
 
 def load_config_in_same_directory(file_name):
     # Exit when error occurs and print notification to log

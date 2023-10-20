@@ -47,15 +47,19 @@ def send_email(recipient, subject, content):
         logger.warning(f"An email has been sent to {recipient}")
         # returning 1 if email was send successfully
         return 1
+
     except smtplib.SMTPAuthenticationError:
         logger.error("Authentication error. Check your email and password.",
                      exc_info=True)
+        return 0
     except smtplib.SMTPConnectError:
         logger.error("SMTP connection error. Check your SMTP server and port.",
                      exc_info=True)
+        return 0
     except smtplib.SMTPException:
         logger.error("SMTP error. ",
                      exc_info=True)
+        return 0
     except Exception:
         logger.error("Error occurred when trying to send email. ",
                      exc_info=True)
@@ -96,9 +100,18 @@ def read_mail():
 
             email_message = email.message_from_bytes(bytes_data)
 
-            subject = email_message['subject']
             sender = email_message['from']
             date = email_message['date']
+
+            # decoding subject
+            subject = email_message.get('subject', '')
+            decoded_subject = email.header.decode_header(subject)[0][0]
+
+            try:
+                if isinstance(decoded_subject, bytes):
+                    decoded_subject = decoded_subject.decode('utf-8')
+            except:
+                decoded_subject = decoded_subject.decode("iso-8859-2")
 
             for part in email_message.walk():
                 if part.get_content_type() in ["text/plain", "text/html"]:
@@ -120,13 +133,13 @@ def read_mail():
                             message_decode = message.decode("latin-1")
 
                     # construct an email content string
-                    email_content = (f"{lang_subject}{subject}\n"
+                    email_content = (f"{lang_subject}{decoded_subject}\n"
                                      f"{lang_from}{sender}\n"
                                      f"{lang_date}{date}\n"
-                                     f"{lang_message}\n{message_decode}")
+                                     f"{lang_message}\n\n{message_decode}")
                     # appends the email into emails list
                     emails.append(email_content)
-                    subjects.append(subject)
+                    subjects.append(decoded_subject)
                     break
 
         logger.info(f"{len(emails)} emails successfully loaded")
@@ -143,46 +156,41 @@ def read_mail():
         mail.logout()
 
 
-def check_custom_db(email_address):
-    # checks if sender is in custom black list.
-    data = load_json_file("antiphishing/custom_email_block.json")
+def check_content_of_email(content, sender):
 
-    if email_address in data:
-        logger.warning(f"received email from blocked address: {email_address}")
-        return False
-    else:
-        return True
+    with open("../sconf/phish/SMAIL_PHISH_1.txt") as f:
+        phish_urls = f.readlines()
 
+    # Strip newline characters and convert to lowercase
+    phish_urls = [url.strip().lower() for url in phish_urls]
 
-def check_domain_db(email_address):
-    # checks if sender has email domain from phishing DB
-    data = load_json_file("antiphishing/domains.json")
-    email = email_address.split("@")[1]
-
-    if email in data:
-        logger.warning(f"Received a phishing email from domain: {email}")
-        return False
-    else:
-        return True
-
-
-def check_content_of_email(sender, content):
-    # checks if there is an url in an email.
     url_pattern = r"https?://(?:www\.)?\S+|www\.\S+"
     urls = re.findall(url_pattern, content)
 
-    if urls:
-        logger.warning(f"Found url in email from {sender}, urls: {urls}")
+    found_phishing_url = False
+
+    for url in urls:
+        # Remove newline and convert to lowercase
+        clean_url = url.strip().lower()
+        if clean_url in phish_urls:
+            print("Found a phishing URL in the email message:")
+            print(url)
+            logger.warning(f"Found a phishing URL from {sender}, url: {url}")
+            found_phishing_url = True
+            break
+        else:
+            logger.info(f"Found URL from {sender}, url: {url}")
+
+    if found_phishing_url:
         return False
     else:
+        print("No phishing URLs in the email message.")
         return True
-
 
 def check_email_for_spam(email_messages):
 
-    # checks blocked email addresses/phishing addressed and urls in email
-    emails = load_json_file("antiphishing/permitted_emails.json")
     safe_emails = []
+    phish_emails = []
 
     # getting email address
     for email_content in email_messages:
@@ -201,28 +209,14 @@ def check_email_for_spam(email_messages):
         else:
             modified_sender = sender
 
-        # anti-phishing process
-        if modified_sender in emails:
-            # if email was received from permitted email address,
-            # security steps are skipped
-            print("Received email from permitted email address.")
-            custom_block = True
-            domain_block = True
-            content_block = True
-        else:
-            custom_block = check_custom_db(modified_sender)
-            domain_block = check_domain_db(modified_sender)
-            content_block = check_content_of_email(modified_sender, message)
+        contentBlock = check_content_of_email(message, modified_sender)
 
-        if custom_block and domain_block and content_block:
+        if contentBlock:
             safe_emails.append(email_content)
-            print("email address and content of an email are safe"
-                  " or are sent by an permitted email address.\n")
+            print("email address does not contain phishing url.\n")
         else:
-            print("email address found in one of the databases\n")
-            if not content_block:
-                print("there is an url in message.")
+            phish_emails.append(email_content)
+            print("email address contains phishing url.\n")
 
-    logger.info(f"Displaying {len(safe_emails)} emails "
-                f"out of {len(email_messages)}.")
-    return safe_emails
+
+    return safe_emails, phish_emails
