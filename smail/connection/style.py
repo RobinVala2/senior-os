@@ -4,7 +4,7 @@ import pygame
 from tkinter import ttk
 import PIL
 from PIL import Image, ImageTk
-from demo.guiTemplate.guiTemplate import resolutionMath
+from smail.template.guiTemplate import resolutionMath
 
 logger = logging.getLogger(__file__)
 
@@ -16,8 +16,6 @@ def load_json_file(file_path):
         return data
     except FileNotFoundError:
         logging.error(f"File not found: {file_path}")
-    except json.JSONDecodeError as json_error:
-        logging.error(f"Error decoding JSON in file: {file_path}", exc_info=True)
     except Exception as error:
         logging.error(f"An unexpected error occurred while loading data from {file_path}", exc_info=True)
     # Return None to indicate failure
@@ -27,7 +25,7 @@ def load_json_file(file_path):
 def font_config():
 
     # reading font configuration
-    data = load_json_file("../sconf/config.json")
+    data = load_json_file("../sconf/config_old.json")
     font_info = data["font_info"]["font"]
     return font_info
 
@@ -43,7 +41,7 @@ def button_config():
 def app_color():
 
     # reading background color configuration
-    data = load_json_file("../sconf/config.json")
+    data = load_json_file("../sconf/config_old.json")
     bg = data["colors_info"]["app_frame"]
     return bg
 

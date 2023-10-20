@@ -5,11 +5,11 @@ from tkinter import scrolledtext
 from smail.connection.style import (font_config, search_mail,
                                     get_language, button_hover, button_leave,
                                     images, image_config, app_color,
-                                    height_config)
+                                    height_config, play_sound, load_json_file)
 from smail.connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
-from demo.guiTemplate import guiTemplate as temp
-from demo.guiTemplate import configActions as act
+from smail.template import guiTemplate as temp
+from smail.template import configActions as act
 
 logger = logging.getLogger(__file__)
 
@@ -17,9 +17,6 @@ logger = logging.getLogger(__file__)
 class one_frame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
-
-        # initiate logging
-        logger.info("Initiated logging.")
 
         # background color
         self.background_color = app_color()
@@ -80,6 +77,7 @@ class one_frame(tk.Frame):
             self.person3_image = image_config("Person3", self.six_height)
             self.person4_image = image_config("Person4", self.six_height)
             self.person5_image = image_config("Person5", self.six_height)
+            self.person6_image = image_config("Person6", self.six_height)
 
         except Exception:
             logger.error("Failed loading language and images")
@@ -97,12 +95,12 @@ class one_frame(tk.Frame):
 
             # saving buttons to local variables
             self.exit_button = self.options_buttons_crt1.button_dict[1]
-            self.send_email_button = self.options_buttons_crt1.button_dict[2]
-            self.send_mail_person1 = self.options_buttons_crt1.button_dict[3]
-            self.send_mail_person2 = self.options_buttons_crt1.button_dict[4]
-            self.send_mail_person3 = self.options_buttons_crt2.button_dict[1]
-            self.send_mail_person4 = self.options_buttons_crt2.button_dict[2]
-            self.send_mail_person5 = self.options_buttons_crt2.button_dict[3]
+            self.send_mail_person1 = self.options_buttons_crt1.button_dict[2]
+            self.send_mail_person2 = self.options_buttons_crt1.button_dict[3]
+            self.send_mail_person3 = self.options_buttons_crt1.button_dict[4]
+            self.send_mail_person4 = self.options_buttons_crt2.button_dict[1]
+            self.send_mail_person5 = self.options_buttons_crt2.button_dict[2]
+            self.send_mail_person6 = self.options_buttons_crt2.button_dict[3]
             self.send_mail_to = self.options_buttons_crt2.button_dict[4]
             self.menu_button_1 = (
                 self.menu.menuFrameCreateButtonsVal.button_dict)[1]
@@ -111,12 +109,12 @@ class one_frame(tk.Frame):
 
             # audio configuration buttons
             self.audioConfigure(self.exit_button, "exitButton")
-            self.audioConfigure(self.send_email_button, "sendEmailButton")
             self.audioConfigure(self.send_mail_person1, "person1")
             self.audioConfigure(self.send_mail_person2, "person2")
             self.audioConfigure(self.send_mail_person3, "person3")
             self.audioConfigure(self.send_mail_person4, "person4")
             self.audioConfigure(self.send_mail_person5, "person5")
+            self.audioConfigure(self.send_mail_person6, "person6")
             self.audioConfigure(self.send_mail_to, "sendToButton")
             self.audioConfigure(self.menu_button_1, "menu1")
             self.audioConfigure(self.menu_button_2, "menu2")
@@ -126,12 +124,6 @@ class one_frame(tk.Frame):
                 text="",
                 width=self.button_width
 
-            )
-            self.send_email_button.config(
-                text="",
-                width=self.button_width
-
-                # command=self.sendMail,
             )
             self.send_mail_person1.config(
                 command=lambda: self.fillRecipient(1),
@@ -160,6 +152,12 @@ class one_frame(tk.Frame):
             self.send_mail_person5.config(
                 command=lambda: self.fillRecipient(5),
                 image=self.person5_image,
+                text="",
+                width=self.button_width
+            )
+            self.send_mail_person6.config(
+                command=lambda: self.fillRecipient(6),
+                image=self.person6_image,
                 text="",
                 width=self.button_width
             )
@@ -214,6 +212,9 @@ class one_frame(tk.Frame):
         return self.frame
 
     def right_write_frame(self):
+
+        # stopping phishing alert
+        self.stop_alert()
 
         # changeable frame
         self.rw_frame = tk.Frame(self)
@@ -324,20 +325,28 @@ class one_frame(tk.Frame):
 
         # getting emails from inbox
         self.emails, self.subject = read_mail()
+        # reversing emails - new emails will be on top of the lisbox
+        self.reversed_list = self.emails[::-1]
 
         try:
             # filtering emails
-            self.safe_emails = check_email_for_spam(self.emails)
+            self.safe_emails, self.phish_emails = check_email_for_spam(self.reversed_list)
         except Exception:
-
             # in case filtering fails, all emails will be displayed
-            self.safe_emails = self.emails
+            self.safe_emails = self.reversed_list
             logger.critical("Failed to apply anti-phishing filters."
                             "Omitting security steps.", exc_info=True)
 
-        # inserting emails into the listbox
+        # inserting emails into the listbox,
+        # for now safe_emails and phish_emails are separated
+
         for n in self.safe_emails:
             self.inbox_list.insert(tk.END, n.split("\n")[0])
+            # binding listbox to text area to view email
+            self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+
+        for m in self.phish_emails:
+            self.inbox_list.insert(tk.END, m.split("\n")[0])
             # binding listbox to text area to view email
             self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
 
@@ -346,14 +355,26 @@ class one_frame(tk.Frame):
         # switch frames to reading frame
         self.switch_to_reading_mail()
 
+        # in case no item in listbox is selected,
+        # the last selected email will be displayed in text area
         if not self.inbox_list.curselection():
-            # If no selection, use the last selected email
             if (self.last_selected_index is not None
                     and self.last_selected_email is not None):
                 self.configure_message_area(self.last_selected_email)
 
         selected_index = self.inbox_list.curselection()[0]
-        selected_email = self.safe_emails[selected_index]
+
+        # Check if the selected index is within the range of safe_emails
+        if selected_index < len(self.safe_emails):
+            selected_email = self.safe_emails[selected_index]
+            # no alert will be displayed
+            self.stop_alert()
+        else:
+            # If it's not in safe_emails, it must be in phish_email
+            selected_email = self.phish_emails[selected_index - len(self.safe_emails)]
+            # Alert - phishing URL in email
+            self.alert_buttons()
+
         self.configure_message_area(selected_email)
 
         # Update the last selected index and email
@@ -361,11 +382,85 @@ class one_frame(tk.Frame):
         self.last_selected_email = selected_email
 
     def configure_message_area(self, email):
+
         # inserting email into text area
         self.message_area.configure(state="normal")
         self.message_area.delete("1.0", tk.END)
         self.message_area.insert(tk.END, email)
         self.message_area.configure(state="disabled")
+
+    def alert_buttons(self):
+
+        # changing the color of all buttons to red,
+        # playing warning sound
+        self.exit_button.config(
+            bg = "red"
+        )
+        self.send_mail_person1.config(
+            bg = "red"
+        )
+        self.send_mail_person2.config(
+            bg="red"
+        )
+        self.send_mail_person3.config(
+            bg="red"
+        )
+        self.send_mail_person4.config(
+            bg="red"
+        )
+        self.send_mail_person5.config(
+            bg="red"
+        )
+        self.send_mail_person6.config(
+            bg="red"
+        )
+        self.send_mail_to.config(
+            bg="red"
+        )
+        self.menu_button_1.config(
+            bg="red"
+        )
+        self.menu_button_2.config(
+            bg="red"
+        )
+        play_sound("alert")
+
+    def stop_alert(self):
+
+        # switching the background color of each button back to default value
+        data = load_json_file("../sconf/config_old.json")
+        background_color = data["colors_info"]["buttons_unselected"]
+
+        self.exit_button.config(
+            bg=background_color
+        )
+        self.send_mail_person1.config(
+            bg=background_color
+        )
+        self.send_mail_person2.config(
+            bg=background_color
+        )
+        self.send_mail_person3.config(
+            bg=background_color
+        )
+        self.send_mail_person4.config(
+            bg=background_color
+        )
+        self.send_mail_person5.config(
+            bg=background_color
+        )
+        self.send_mail_person6.config(
+            bg=background_color
+        )
+        self.send_mail_to.config(
+            bg=background_color
+        )
+        self.menu_button_1.config(
+            bg=background_color
+        )
+        self.menu_button_2.config(
+            bg=background_color
+        )
 
     def switch_to_reading_mail(self):
         # switching frame

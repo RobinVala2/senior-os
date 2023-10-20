@@ -1,7 +1,8 @@
 import logging
 import tkinter
-from demo.guiTemplate import configActions as act
+from smail.template import configActions as act
 from smail.layout import one_frame
+from smail.antiphishing.get_DB import get_DB
 
 logging.basicConfig(
      level=logging.INFO,
@@ -14,13 +15,12 @@ logging.basicConfig(
 if __name__ == '__main__':
     _currentVersionOfConfig = 0.3
     isExist = act.configExistCheck(_currentVersionOfConfig)
+    # get phishing database
+    get_DB()
     if isExist:
         root = tkinter.Tk()
         root.configure(bg="#FFFFFF")
         app = one_frame(root)
         root.mainloop()
-
-
     else:
-        logging.critical("Could not start smail app. "
-                         "Check the configuration file.")
+        logging.critical("Could not start smail app.")
