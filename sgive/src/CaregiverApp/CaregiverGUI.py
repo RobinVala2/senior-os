@@ -179,17 +179,58 @@ class showLogConfigFrame:
         self.height = height
         self.width = width
         self.logFrame = logFrame
+        self.filterOptionValue = None
+        self.logButtons()
         self.viewLogs()
         logger.info("Opening Log frame.")
 
     def refreshLogFrame(self):  # F5 ON FRAME THAT SHOWS LOGS
         for widgets in self.logFrame.winfo_children():
             widgets.destroy()
+        self.logButtons()
         self.viewLogs()
 
+    def logButtons(self):
+        frameHeight = self.height / 20
+        labelWidth = self.width / 6
+        buttonWidth = self.width / 15
+        spacer = self.width / 900
+        getNewX = labelWidth + spacer
+        buttonsList = ["INFO", "WARNING", "ERROR", "CRITICAL"]
+        buttonsDict = {}
+        filterFrame = Frame(self.logFrame, width=self.width, height=frameHeight, bg="white")
+        filterFrame.pack_propagate(False)
+        filterFrame.pack()
+
+        logLaleb = Label(filterFrame, text="filter options:")
+        logLaleb.place(x=0,y=0,width=labelWidth,height=frameHeight)
+
+        filterButtonsC = 0
+        for filterOption in buttonsList:
+            def getCurrentNumID(x=filterButtonsC,value=filterOption):
+                print(f"šmekši id:{x},value to filter is:{value}")
+                self.filterOptionValue = value
+                self.refreshLogFrame()
+            buttonsDict[filterOption] = Button(filterFrame, text=filterOption, command=getCurrentNumID)
+            if filterButtonsC == 0:
+                buttonsDict[filterOption].place(x=getNewX, y=0, width=buttonWidth, height=frameHeight)
+            else:
+                getNewX = getNewX + buttonWidth + spacer
+                buttonsDict[filterOption].place(x=getNewX, y=0, width=buttonWidth, height=frameHeight)
+            filterButtonsC += 1
+
+        getNewX = getNewX + buttonWidth + 2*spacer
+
+        pickLogFileLabel = Label(filterFrame, text="choose log file:")
+        pickLogFileLabel.place(x=getNewX, y=0, width=labelWidth, height=frameHeight)
+
+        B = Button(filterFrame, text="REFRESH", command=lambda: self.refreshLogFrame())
+        # half of the screen width↓     ↓ this is half of the button width
+        centerPosX = (self.width/2) - (self.width/20)/2
+        # B.place(x=centerPosX, y=0, width=self.width/20, height=frameHeight)
+
     def viewLogs(self):
-        B = Button(self.logFrame, text="REFRESH", command=lambda: self.refreshLogFrame())
-        B.pack(side=TOP)
+        print("epicko value is",self.filterOptionValue)
         textThing = Text(self.logFrame, height=self.height - (self.height / 7),
                          width=self.width,
                          bg="white")
@@ -197,7 +238,7 @@ class showLogConfigFrame:
         scroll.config(command=textThing.yview, )
         textThing["yscrollcommand"] = scroll.set
         textThing.pack()
-        file = ryuconf.readLog()
+        file = ryuconf.readLog(self.filterOptionValue)
         for f in file:
             textThing.insert(END, f)
         textThing.config(state=DISABLED)  # disable editing

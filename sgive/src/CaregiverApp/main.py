@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # create config, only if there is not any config.json already
     if os.path.exists(configPath) and not os.path.isfile(os.path.join(configPath, 'config.json')):
         ryuconf.caregiverAppConfig(configPath)
-        logging.warning("No config was found, generating new one.")
+        logging.error("No config was found, generating new one.")
 
     root = Tk()
     ryuGUI.AppBase(root)

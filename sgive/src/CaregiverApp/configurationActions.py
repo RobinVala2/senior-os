@@ -27,9 +27,16 @@ def readJsonConfig(key, value):
         exit(1)
 
 
-def readLog():
+def readLog(givenFilter):
+    findPhrases = []
+    if givenFilter is None:
+        print("given value is NONE")
+        findPhrases = ["INFO", "WARNING", "CRITICAL","ERROR"]
+    else:
+        findPhrases.append(givenFilter)
+        print(f"filtering by:{givenFilter}")
+
     pickedValues = []
-    findPhrases = ["INFO", "WARNING", "CRITICAL"]  # TODO: toť nebude tu, ale bude si to brát název podle kliknutého tlačítka
     path = temporaryGetPath()
     if os.path.exists(path) and os.path.isfile(os.path.join(temporaryGetPath(), 'EXAMPLE.log')):  # check if log and folder exists
         with open(os.path.join(path, 'ConfigurationApp.log')) as f:  # open log file
