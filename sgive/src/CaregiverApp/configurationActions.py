@@ -32,7 +32,7 @@ def readLog():
     findPhrases = ["INFO", "WARNING", "CRITICAL"]  # TODO: toť nebude tu, ale bude si to brát název podle kliknutého tlačítka
     path = temporaryGetPath()
     if os.path.exists(path) and os.path.isfile(os.path.join(temporaryGetPath(), 'EXAMPLE.log')):  # check if log and folder exists
-        with open(os.path.join(path, 'caregiver.log')) as f:  # open log file
+        with open(os.path.join(path, 'ConfigurationApp.log')) as f:  # open log file
             f = f.readlines()  # read
         for line in f:  # check each lines
             for phrase in findPhrases:  # check list
