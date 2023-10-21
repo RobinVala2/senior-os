@@ -3,12 +3,12 @@ from loadConfig import *
 class Translator:
     def __init__(self):
         self.langConfigDB = load_sweb_config_json()
-        self.language_keys = ["en","cz","de"]
+        self.language_keys = ["cz","en","de"]
         self.current_language = self.langConfigDB["language"]["default_language"]
-        # Set current language is english =0 , CZ = 1, DE = 2
-        if(self.current_language) == "en":
+        # Set current language is CZ =0 , EN = 1, DE = 2
+        if(self.current_language) == "cz":
             self.current_language_index = 0
-        elif self.current_language == "cz":
+        elif self.current_language == "en":
             self.current_language_index = 1
         else:
             self.current_language_index = 2
