@@ -8,11 +8,13 @@ from PyQt5.QtCore import QEvent, QUrl, Qt, QTimer, QSize, pyqtSignal
 import sys, os, tarfile, subprocess
 from antiPhishing.URLBlocker import URLBlocker
 from antiPhishing.URLLogger import URLLogger
+from antiPhishing.UpdatePhishingTXT import TXTFileModificationChecker
 from loadConfig import *
 from languge_Translator import Translator
 import pygame, math
 from PyQt5.QtWebChannel import QWebChannel
 from screeninfo import get_monitors
+
 
 class MyWebEnginePage(QWebEnginePage):
     # Define a signal that will carry a URL as its argument
@@ -51,7 +53,7 @@ class GetHeightAndWidthFromScreen:
         self.button_height = screen_height / height_divisor
         
         # Number of button on menu = numberOfOptions + 1
-        total_padding = (num_option_on_frame+1)*padding
+        total_padding = (num_option_on_frame)*padding
         # Calculate width for button
         self.button_width = math.floor((screen_width-total_padding)/width_divisor) - padding*(3/4)
     
@@ -82,6 +84,10 @@ class MyBrowser(QMainWindow):
         file_to_phishing = my_config_data["phishing_database"]["path"]
         self.url_blocker = URLBlocker(file_to_phishing)
         self.logger = URLLogger()
+        
+        # Check if SWEB_PHISH_1.txt is up to date
+        phishing_checker = TXTFileModificationChecker(my_config_data,self.logger)
+        phishing_checker.check_and_update_if_needed()
         
         # Initialization pygame mixer 
         pygame.mixer.init()
@@ -127,10 +133,12 @@ class MyBrowser(QMainWindow):
         # Create a toolbar for saving menu and buttons
         self.menu_1_toolbar = QToolBar("Menu 1")
         self.addToolBar(self.menu_1_toolbar)
+        self.menu_1_toolbar.setMovable(False)
         
         # Create a toolbar for saving menu and buttons
         self.menu_2_toolbar = QToolBar("Menu 2")
         self.addToolBar(self.menu_2_toolbar)
+        self.menu_2_toolbar.setMovable(False)
         
         self.addToolBarBreak()
         
@@ -153,11 +161,11 @@ class MyBrowser(QMainWindow):
             
         # Set disvisible for menu 2
         self.menu_2_toolbar.setVisible(False)
-        
-        
+
         # Create toolbar for saving URL
         self.url_toolbar = QToolBar("URL Navigation")
         self.addToolBar(self.url_toolbar)
+        self.url_toolbar.setMovable(False)
         
         # Create a URL bar
         self.url_bar = QLineEdit()
@@ -555,7 +563,8 @@ class MyBrowser(QMainWindow):
                 # Check that if URL is from URL
                 if self.url_blocker.is_url_blocked(url_in_browser):
                     self.show_blocked_message(url_in_browser)
-                    self.logger.log_blocked_url(url_in_browser,'WEBBROWSER', 'NOTICE', 'main <security>', f'Connection to Phishing server {url_in_browser}')
+                    # Log with level 5 when connected to phishing
+                    self.logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Connection to Phishing server {url_in_browser}')
                     
                     # Set red colour for connect to phishing
                     self.menu_1_toolbar.setStyleSheet(self.phishing_style_toolbar())
@@ -574,11 +583,13 @@ class MyBrowser(QMainWindow):
                 else:
                     self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
                     self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
-                    self.logger.log_blocked_url(url_in_browser,'WEBBROWSER', 'INFORMATIONAL', 'main <security>', f'Connection to {url_in_browser}')
+                    # Log with level 6 INFORMATIONAL
+                    self.logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser}')
             else:
                 self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
                 self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
-                self.logger.log_blocked_url(url_in_browser,'WEBBROWSER', 'INFORMATIONAL', 'main <security>', f'Connection to {url_in_browser}')
+                # Log with LEVEL 6 INFORMATIONAL
+                self.logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser}')
         else:
             return
         
@@ -618,10 +629,21 @@ class MyBrowser(QMainWindow):
     
 # Definuje funkci Main
 if __name__ == "__main__":
-    qApplication = QApplication(sys.argv)
-    # Load config data from JSON file
-    sweb_config = load_sweb_config_json()
-    config = load_template_config_json()
-    mainWindow = MyBrowser(config,sweb_config)
-    mainWindow.show_app_fullscreen()
-    sys.exit(qApplication.exec_())
+    try:
+        qApplication = QApplication(sys.argv)
+        # Load config data from JSON file
+        sweb_config = load_sweb_config_json()
+        config = load_template_config_json()
+        mainWindow = MyBrowser(config,sweb_config)
+        mainWindow.show_app_fullscreen()
+        sys.exit(qApplication.exec_())
+    except Exception as exp:
+        # Load URL blocker and logger
+        sweb_config = load_sweb_config_json()
+        file_to_phishing = sweb_config["phishing_database"]["path"]
+        url_blocker = URLBlocker(file_to_phishing)
+        logger = URLLogger()
+        # Log with level 2
+        logger.log_blocked_url('WEBBROWSER', 2, 'main <security>', f'Application did not work')
+        # Exit with an error code
+        sys.exit(1)
