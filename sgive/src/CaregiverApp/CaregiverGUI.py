@@ -255,9 +255,7 @@ class showLogConfigFrame:
         # call nested function
         combobox.bind("<<ComboboxSelected>>", optionSelected)
 
-
     def viewLogs(self):
-        print("epicko value is",self.filterOptionValue)
         textThing = Text(self.logFrame, height=self.height - (self.height / 7),
                          width=self.width,
                          bg="white")
