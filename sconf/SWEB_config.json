@@ -1,6 +1,7 @@
 {
     "phishing_database":{
-        "path": "../sconf/phish/SWEB_PHISH_1.txt"
+        "path": "../sconf/phish/SWEB_PHISH_1.txt",
+        "path_to_tar_github": "https://github.com/mitchellkrogza/Phishing.Database/raw/master/ALL-phishing-domains.tar.gz/"
     },
     "language":{
                 "default_language" : "cz"
