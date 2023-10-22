@@ -4,6 +4,7 @@ from datetime import datetime
 # Cisco log: seq no:timestamp: %facility-severity-MNEMONIC:description
 class URLLogger:
     def __init__(self, log_file="logPhishing.txt"):
+        self.severity_log = ["EMERGENCY","ALERT","CRITICAL","ERROR","WARNING","NOTICE","INFORMATIONAL","DEBUGGING"]
         self.log_file = log_file
         # Ensure the name for log file
         # If the name of file does not exist, create the new file
@@ -22,11 +23,11 @@ class URLLogger:
                 f.write("Logging phishing URL from Browser\n")
                 
     # Show the the block message to window
-    def log_blocked_url(self, url, facility, severity, mnemonic, description):
-        self.log_to_txt(url, facility, severity, mnemonic, description)
+    def log_blocked_url(self, facility, level_of_severity, mnemonic, description):
+        self.log_to_txt(facility, self.severity_log[level_of_severity], mnemonic, description)
 
     # When the URL is blocked from log_blocked_url, save to file .txt
-    def log_to_txt(self, url, facility, severity, mnemonic, description):
+    def log_to_txt(self, facility, severity, mnemonic, description):
         # Set current time 
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # seq no:timestamp: %facility-severity-MNEMONIC:description
