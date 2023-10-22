@@ -8,8 +8,6 @@ import re
 import chardet
 from smail.connection.style import load_json_file, get_language
 
-data = load_json_file("../sconf/SMAIL_config.json")
-
 logger = logging.getLogger(__file__)
 
 # config to the smtp/imap server and other information are taken from
@@ -54,10 +52,6 @@ def send_email(recipient, subject, content):
         return 0
     except smtplib.SMTPConnectError:
         logger.error("SMTP connection error. Check your SMTP server and port.",
-                     exc_info=True)
-        return 0
-    except smtplib.SMTPException:
-        logger.error("SMTP error. ",
                      exc_info=True)
         return 0
     except Exception:
@@ -153,6 +147,7 @@ def read_mail():
     except Exception as error:
         logger.error("An unexpected error occurred. ", exc_info=True)
     finally:
+        mail.close()
         mail.logout()
 
 
@@ -160,6 +155,7 @@ def check_content_of_email(content, sender):
 
     with open("../sconf/phish/SMAIL_PHISH_1.txt") as f:
         phish_urls = f.readlines()
+    f.close()
 
     # Strip newline characters and convert to lowercase
     phish_urls = [url.strip().lower() for url in phish_urls]
@@ -173,8 +169,6 @@ def check_content_of_email(content, sender):
         # Remove newline and convert to lowercase
         clean_url = url.strip().lower()
         if clean_url in phish_urls:
-            print("Found a phishing URL in the email message:")
-            print(url)
             logger.warning(f"Found a phishing URL from {sender}, url: {url}")
             found_phishing_url = True
             break
@@ -184,7 +178,6 @@ def check_content_of_email(content, sender):
     if found_phishing_url:
         return False
     else:
-        print("No phishing URLs in the email message.")
         return True
 
 def check_email_for_spam(email_messages):
@@ -213,10 +206,8 @@ def check_email_for_spam(email_messages):
 
         if contentBlock:
             safe_emails.append(email_content)
-            print("email address does not contain phishing url.\n")
         else:
             phish_emails.append(email_content)
-            print("email address contains phishing url.\n")
 
 
     return safe_emails, phish_emails

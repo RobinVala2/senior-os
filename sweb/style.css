@@ -9,7 +9,7 @@
 .back_ground_home{
 	width: 100%;
 	height: 100vh;
-	background-image: linear-gradient(rgba(8, 8, 8, 0.7),rgba(8, 8, 8, 0.7)),url(../sconf/images/SWEB_CL_BACKGROUNDHOME.jpg);
+	background-image: linear-gradient(rgba(8, 8, 8, 0.7),rgba(8, 8, 8, 0.7)),url(../sconf/images/SWEB_BACKGROUNDHOME.jpg);
 	background-position: center;
 	background-size: cover;
 	padding-left:8%;
@@ -59,7 +59,7 @@ h1{
 	color: transparent;
 	/* Make the text like stroke*/
 	-webkit-text-stroke: 1px #fff;
-	background: url(../sconf/images/SWEB_CL_BACK_TEXT.png);
+	background: url(../sconf/images/SWEB_BACK_TEXT.png);
 	-webkit-background-clip: text;
 	background-position: 0 0;
 	/* Add animation each 20s*/
@@ -93,7 +93,7 @@ p{
 	padding: 15px 25px;
 	cursor: pointer;
 	margin: 10px 15px;
-	background-image: url(../sconf/images/SWEB_CL_FEKT_VUT_LOGO.jpg);
+	background-image: url(../sconf/images/SWEB_FEKT_VUT_LOGO.jpg);
 	background-position: bottom;
 	/* no resize*/
 	background-size: contain;
@@ -119,7 +119,7 @@ p{
 	padding: 15px 25px;
 	cursor: pointer;
 	margin: 10px 15px;
-	background-image: url(../sconf/images/SWEB_CL_GITHUB_LOGO.png);
+	background-image: url(../sconf/images/SWEB_GITHUB_LOGO.png);
 	background-position: bottom;
 	background-size: contain;
 	background-repeat: no-repeat;

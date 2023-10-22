@@ -11,10 +11,8 @@ logger = logging.getLogger(__file__)
 def get_DB():
     # check if database exists
     if os.path.exists(file_path):
-        # get the last modification timestamp
-        last_modif = os.path.getmtime(file_path)
         # get the last modification date
-        last_modif_date = datetime.datetime.fromtimestamp(last_modif)
+        last_modif_date = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
         # get current date
         current_date = datetime.datetime.now()
         # getting the age of file
@@ -29,14 +27,15 @@ def get_DB():
         # new updated file will be downloaded
         if file_age >= update_time:
 
-            if os.path.exists(command_file):
+            try:
                 with open(command_file, "r") as f:
                     command = f.read()
                 f.close()
                 # execute command
                 subprocess.run(command, shell=True, check=True,
                                executable='/bin/bash', stdout=subprocess.PIPE)
-            else:
+
+            except:
                 logger.info(f"The command file {command_file} does not exist. "
                             f"Cannot update phishing database.")
 
@@ -47,7 +46,7 @@ def get_DB():
     else:
         # if file with phishing database is missing
         # Execute command
-        if os.path.exists(command_file):
+        try:
             with open(command_file, 'r') as f:
                 command = f.read()
             f.close()
@@ -55,6 +54,7 @@ def get_DB():
                            executable='/bin/bash', stdout=subprocess.PIPE)
             logger.info(f"The file {file_path} does not exist. "
                         f"Downloading current phishing database")
-        else:
+
+        except:
             logger.info(f"The command file {command_file} does not exist. "
                         f"Cannot update phishing database.")
