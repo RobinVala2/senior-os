@@ -89,7 +89,7 @@ def caregiverAppConfig(path):
         'GlobalConfiguration': {
             "numOfScreen": 0,
             "language": "English",
-            "colorMode": "Light",
+            "colorMode": "light",
             "soundDelay": 5,
             "alertColor": "#AAFF00",
             "alertSoundLanguage": "English",

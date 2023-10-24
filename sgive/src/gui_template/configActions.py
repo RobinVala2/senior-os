@@ -3,17 +3,19 @@ import os
 
 
 def temporaryGetPath():
-    currentDir = os.path.dirname(os.path.dirname(__file__))
-    parentCurentDir = os.path.abspath(os.path.join(currentDir, os.pardir))
-    supaParent = os.path.abspath(os.path.join(parentCurentDir, os.pardir))
-    confPath = os.path.join(supaParent, "sconf")
-    return confPath
+    whereTheFuckAmI = os.getcwd()
+    split = whereTheFuckAmI.split("sgive")
+    path = split[0]
+    configPath = os.path.join(path, "sconf")
+    return configPath
 
 
 def configExistCheck(givenVersion):
     pathToJsonConf = temporaryGetPath()
+    print(pathToJsonConf)
     if os.path.exists(pathToJsonConf):
-        if os.path.isfile(os.path.join(pathToJsonConf,'configOLD.json')):
+        if os.path.isfile(os.path.join(pathToJsonConf, 'OLDconfig.json')):
+            print(os.path.isfile(os.path.join(pathToJsonConf, 'configOLD.json')))
             currentVersion = jsonRed('Version', "configVersion")
             if not currentVersion == givenVersion:
                 _jsonWrite(givenVersion)
@@ -50,19 +52,20 @@ def _jsonWrite(currentVersion):
             "font": "Helvetica 36 bold",
         },
         'resolution_info': {
+            "numOfScreen": 0,
             "height_divisor": 4.5,
             "width_divisor": 5,
         }
     }
     json_object = json.dumps(dictionary, indent=4)
-    with open(f"{temporaryGetPath()}/configOLD.json", "w+") as outfile:
+    with open(f"{temporaryGetPath()}/OLDconfig.json", "w+") as outfile:
         outfile.write(json_object)
 
 
 def jsonRed(key, value):
     path = temporaryGetPath()
     if os.path.exists(path):  # checks for the conf file, if there is any
-        with open(os.path.join(path, 'configOLD.json'), "r") as file:
+        with open(os.path.join(path, 'OLDconfig.json'), "r") as file:
             jsonData = json.load(file)
         return jsonData[key][value]
     else:
