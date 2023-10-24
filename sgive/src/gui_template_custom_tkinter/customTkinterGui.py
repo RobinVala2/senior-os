@@ -6,7 +6,7 @@ from sgive.src.CaregiverApp import configurationActions as ryuConf
 
 colorScheme = ryuConf.readJsonConfig("GlobalConfiguration", "colorMode")
 customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light, dark
-customtkinter.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
+customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 
 class menuButtonsCreate:
@@ -16,13 +16,10 @@ class menuButtonsCreate:
         self.frameHeight = frameHeight
         self.masterFrame = masterFrame
         self.numOfCustomButtons = 15  # TODO: read from config
-        self.howManyCustomButtonsOnFrame = 3  # TODO: read from config
+        self.howManyCustomButtonsOnFrame = 4  # TODO: read from config
         # pokus sekce
         self.lowestID = 1
         self.highestID = 1
-
-
-
         # end of pokus sekce
         # subframes
         self.menuButtonFrame = customtkinter.CTkFrame(master=self.masterFrame)
@@ -62,7 +59,7 @@ class menuButtonsCreate:
             print(numOfMenuButtons + 1)
             return numOfMenuButtons + 1
 
-    def switchingCustomButtons(self):
+    def switchingCustomButtons(self):  # this thing handle switching buttons on its subframe
         if self.highestID < self.numOfCustomButtons:
             print("\nPRVOTNI ROLL  ---")
             counterDown = self.lowestID
@@ -74,7 +71,7 @@ class menuButtonsCreate:
             counter = 1
             while counter <= self.howManyCustomButtonsOnFrame:
                 print("ID tlacitka NA ZOBRAZENI:",self.highestID)
-                self.customBtnDict[self.highestID].pack(side=customtkinter.LEFT)
+                self.customBtnDict[self.highestID].pack(side=customtkinter.LEFT, padx=2, pady=2)
                 if self.highestID > self.numOfCustomButtons - 1:
                     break
                 self.highestID += 1
@@ -91,12 +88,11 @@ class menuButtonsCreate:
             counterUP = 1
             while counterUP <= self.howManyCustomButtonsOnFrame:
                 print("ID tlacitka NA ZOBRAZENI:", self.highestID)
-                self.customBtnDict[self.highestID].pack(side=customtkinter.LEFT)
+                self.customBtnDict[self.highestID].pack(side=customtkinter.LEFT, padx=2, pady=2)
                 if self.highestID > self.numOfCustomButtons - 1:
                     break
                 self.highestID += 1
                 counterUP += 1
-
 
     def createMenuButtons(self):
         menuList = []
@@ -159,7 +155,6 @@ class menuButtonsCreate:
                 self.customBtnDict[number].configure(fg_color="white", text_color="black")
 
 
-
 class gui:
     def __init__(self, root):
         self.root = root
@@ -167,7 +162,7 @@ class gui:
         self.screenWidth = get_monitors()[0].width  # screen width
         self.screenHeight = get_monitors()[0].height  # screen height
         # TODO: change divisor to conf.json read
-        self.heightDivisor = 7
+        self.heightDivisor = 6
         # calls for root window setup etc
         self.rootWindowSetup()
         self.appMenuFrameSetup()
