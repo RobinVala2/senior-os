@@ -1,30 +1,41 @@
-
 import customtkinter
 from screeninfo import get_monitors
 from sgive.src.CaregiverApp import configurationActions as ryuConf
+
+# if there are any issues, install "packaging"
 
 colorScheme = ryuConf.readJsonConfig("GlobalConfiguration", "colorMode")
 customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("green")  # Themes: blue (default), dark-blue, green
 
+
 class menuButtonsCreate:
-    def __init__(self, masterFrame, width, frameHeight):
+    def __init__(self, masterFrame, width, frameHeight, root):
+        self.root = root
         self.width = width
         self.frameHeight = frameHeight
         self.masterFrame = masterFrame
-        self.numOfMenuButtons = 2
-        self.numOfCustomButtons = 8
-        self.howManyCustomButtonsOnFrame = 4
-        self.menuButtonValue = None
+        self.numOfCustomButtons = 15  # TODO: read from config
+        self.howManyCustomButtonsOnFrame = 3  # TODO: read from config
+        # pokus sekce
+        self.lowestID = 1
+        self.highestID = 1
+
+
+
+        # end of pokus sekce
         # subframes
         self.menuButtonFrame = customtkinter.CTkFrame(master=self.masterFrame)
         self.customButtonsFrame = customtkinter.CTkFrame(master=self.masterFrame)
+        # custom buttons:
+        self.customBtnDict = {}
         # calls
         self.createSubFrames()
+        self.createCustomButtons()
         self.createMenuButtons()
 
     def createSubFrames(self):
-        menuBtnWidth = self.width / (1+self.howManyCustomButtonsOnFrame)
+        menuBtnWidth = self.width / (1 + self.howManyCustomButtonsOnFrame)
         customBtnWidth = self.width - menuBtnWidth
 
         # frame for menu buttons
@@ -39,42 +50,115 @@ class menuButtonsCreate:
         self.customButtonsFrame.configure(height=self.frameHeight)
         self.customButtonsFrame.pack(side=customtkinter.LEFT)
 
+    def getHowManyMenuButtons(self):
+        moduloThing = self.numOfCustomButtons % self.howManyCustomButtonsOnFrame
+        if moduloThing == 0:
+            numOfMenuButtons = self.numOfCustomButtons / self.howManyCustomButtonsOnFrame
+            print(numOfMenuButtons)
+            return numOfMenuButtons
+
+        else:
+            numOfMenuButtons = int(self.numOfCustomButtons / self.howManyCustomButtonsOnFrame)
+            print(numOfMenuButtons + 1)
+            return numOfMenuButtons + 1
+
+    def switchingCustomButtons(self):
+        if self.highestID < self.numOfCustomButtons:
+            print("\nPRVOTNI ROLL  ---")
+            counterDown = self.lowestID
+            while counterDown <= self.highestID-1:
+                print("ID tlacitka na smazani je:", counterDown)
+                self.customBtnDict[counterDown].pack_forget()
+                counterDown +=1
+            self.lowestID = self.highestID
+            counter = 1
+            while counter <= self.howManyCustomButtonsOnFrame:
+                print("ID tlacitka NA ZOBRAZENI:",self.highestID)
+                self.customBtnDict[self.highestID].pack(side=customtkinter.LEFT)
+                if self.highestID > self.numOfCustomButtons - 1:
+                    break
+                self.highestID += 1
+                counter +=1
+        elif self.highestID >= self.numOfCustomButtons:
+            print("\nEND ROLL  ---")
+            counterDown = self.lowestID
+            while counterDown <= self.highestID:
+                print("ID tlacitka na smazani je:", counterDown)
+                self.customBtnDict[counterDown].pack_forget()
+                counterDown += 1
+            self.lowestID = 1
+            self.highestID = 1
+            counterUP = 1
+            while counterUP <= self.howManyCustomButtonsOnFrame:
+                print("ID tlacitka NA ZOBRAZENI:", self.highestID)
+                self.customBtnDict[self.highestID].pack(side=customtkinter.LEFT)
+                if self.highestID > self.numOfCustomButtons - 1:
+                    break
+                self.highestID += 1
+                counterUP += 1
+
+
     def createMenuButtons(self):
         menuList = []
         menuDict = {}
         num = 1
-        while num <= self.numOfMenuButtons:
+        numberOfButtons = self.getHowManyMenuButtons()
+        while num <= numberOfButtons:
             menuList.append(num)
             num += 1
         for number in menuList:
             def storeEachButtonsNum(savedNum=number):
-                # TODO: call custom buttons
-                print(f"ID kliknutého  tlacitka jest :{savedNum}")
+                self.switchingCustomButtons()
                 if not savedNum == len(menuList):
                     menuDict[savedNum].pack_forget()
-                    menuDict[savedNum + 1].pack(padx=10)
+                    menuDict[savedNum + 1].pack(padx=5, pady=2)
                     self.menuButtonValue = savedNum
                 else:
                     menuDict[savedNum].pack_forget()
-                    menuDict[1].pack(padx=10)
+                    menuDict[1].pack(padx=5, pady=2)
                     self.menuButtonValue = savedNum
-
 
             menuDict[number] = customtkinter.CTkButton(self.menuButtonFrame)
             menuDict[number].configure(text=f"MENU {number}", font=("Helvetica", 36, "bold"))
-            menuDict[number].configure(border_width=3, corner_radius=0)
-            menuDict[number].configure(width=(self.width / (1+self.howManyCustomButtonsOnFrame)), height=self.frameHeight)
             menuDict[number].configure(command=storeEachButtonsNum)
+            menuDict[number].configure(border_width=3, corner_radius=0)
+            menuDict[number].configure(width=(self.width / (1 + self.howManyCustomButtonsOnFrame)),
+                                       height=self.frameHeight)
             if customtkinter.get_appearance_mode() == "Dark":
 
                 menuDict[number].configure(fg_color="#1e1f22")  # , hover_color="#1e1f22"
             else:
                 menuDict[number].configure(fg_color="white", text_color="black")
 
-        menuDict[1].pack(padx=10) #show only first
+        menuDict[1].pack(padx=5, pady=2)  # show only first
+        self.switchingCustomButtons()
+
+    def createCustomButtons(self):
+        customBtnList = []
+        self.customBtnDict = {}
+        num = 1
+        while num <= self.numOfCustomButtons:
+            customBtnList.append(num)
+            num += 1
+        for number in customBtnList:
+            def storeEachButtonsNum(storedNum=number):
+                print(storedNum)
+            self.customBtnDict[number] = customtkinter.CTkButton(self.customButtonsFrame)
+            if number == 1:
+                self.customBtnDict[number].configure(text="EXIT", font=("Helvetica", 36, "bold"))
+                self.customBtnDict[number].configure(command=self.root.destroy)
+            else:
+                self.customBtnDict[number].configure(text=f"OPT_{number}", font=("Helvetica", 36, "bold"))
+                self.customBtnDict[number].configure(command=storeEachButtonsNum)
+            self.customBtnDict[number].configure(width=(self.width / (1 + self.howManyCustomButtonsOnFrame)),
+                                                 height=self.frameHeight)
+            self.customBtnDict[number].configure(border_width=3, corner_radius=0)
+            if customtkinter.get_appearance_mode() == "Dark":
+                self.customBtnDict[number].configure(fg_color="#1e1f22")
+            else:
+                self.customBtnDict[number].configure(fg_color="white", text_color="black")
 
 
-        print("create menu shit thing thing")
 
 class gui:
     def __init__(self, root):
@@ -99,7 +183,7 @@ class gui:
         menuFrame.configure(width=self.screenWidth, height=self.screenHeight / self.heightDivisor)
         menuFrame.pack(side=customtkinter.TOP)
         # calling class for menuFrame actions
-        menuButtonsCreate(menuFrame, self.screenWidth, self.screenHeight / self.heightDivisor)
+        menuButtonsCreate(menuFrame, self.screenWidth, self.screenHeight / self.heightDivisor, self.root)
 
 
 if __name__ == '__main__':
