@@ -29,7 +29,7 @@
         "Person6": "../sconf/images/SMAIL_PERSON_6.png"
     },
 
-    "lang": "cz",
+    "lang": "de",
     "timer": 5000,
 
     "text": {
@@ -65,7 +65,6 @@
         "smail_en_person4": "../sconf/audio/SMAIL_EN_PERSON_4.mp3",
         "smail_en_person5": "../sconf/audio/SMAIL_EN_PERSON_5.mp3",
         "smail_en_person6": "../sconf/audio/SMAIL_EN_PERSON_6.mp3",
-        "smail_en_sendEmailButton": "../sconf/audio/SMAIL_EN_SEND_1.mp3",
         "smail_en_sendToButton": "../sconf/audio/SMAIL_EN_SENDTO_1.mp3",
         "smail_en_menu1": "../sconf/audio/SMAIL_EN_MENU_1.mp3",
         "smail_en_menu2": "../sconf/audio/SMAIL_EN_MENU_2.mp3",
@@ -77,7 +76,6 @@
         "smail_cz_person4": "../sconf/audio/SMAIL_CZ_PERSON_4.mp3",
         "smail_cz_person5": "../sconf/audio/SMAIL_CZ_PERSON_5.mp3",
         "smail_cz_person6": "../sconf/audio/SMAIL_CZ_PERSON_6.mp3",
-        "smail_cz_sendEmailButton": "../sconf/audio/SMAIL_CZ_SEND_1.mp3",
         "smail_cz_sendToButton": "../sconf/audio/SMAIL_CZ_SENDTO_1.mp3",
         "smail_cz_menu1": "../sconf/audio/SMAIL_CZ_MENU_1.mp3",
         "smail_cz_menu2": "../sconf/audio/SMAIL_CZ_MENU_2.mp3",
@@ -89,7 +87,6 @@
         "smail_de_person4": "../sconf/audio/SMAIL_DE_PERSON_4.mp3",
         "smail_de_person5": "../sconf/audio/SMAIL_DE_PERSON_5.mp3",
         "smail_de_person6": "../sconf/audio/SMAIL_DE_PERSON_6.mp3",
-        "smail_de_sendEmailButton": "../sconf/audio/SMAIL_DE_SEND_1.mp3",
         "smail_de_sendToButton": "../sconf/audio/SMAIL_DE_SENDTO_1.mp3",
         "smail_de_menu1": "../sconf/audio/SMAIL_DE_MENU_1.mp3",
         "smail_de_menu2": "../sconf/audio/SMAIL_DE_MENU_2.mp3",
@@ -97,18 +94,18 @@
         "smail_en_inbox": "../sconf/audio/SMAIL_EN_INBOX_1.mp3",
         "smail_en_recipient": "../sconf/audio/SMAIL_EN_RECIPIENT_1.mp3",
         "smail_en_subject": "../sconf/audio/SMAIL_EN_SUBJECT_1.mp3",
-        "smail_en_read_message": "../sconf/audio/SMAIL_EN_MESSAGE_1.mp3",
-        "smail_en_write_message": "../sconf/audio/SMAIL_EN_MESSAGE_2.mp3",
+        "smail_en_read_message": "../sconf/audio/SMAIL_EN_READ_1.mp3",
+        "smail_en_write_message": "../sconf/audio/SMAIL_EN_WRITE_1.mp3",
         "smail_cz_inbox": "../sconf/audio/SMAIL_CZ_INBOX_1.mp3",
         "smail_cz_recipient": "../sconf/audio/SMAIL_CZ_RECIPIENT_1.mp3",
         "smail_cz_subject": "../sconf/audio/SMAIL_CZ_SUBJECT_1.mp3",
-        "smail_cz_read_message": "../sconf/audio/SMAIL_CZ_MESSAGE_1.mp3",
-        "smail_cz_write_message": "../sconf/audio/SMAIL_CZ_MESSAGE_2.mp3",
+        "smail_cz_read_message": "../sconf/audio/SMAIL_CZ_READ_1.mp3",
+        "smail_cz_write_message": "../sconf/audio/SMAIL_CZ_WRITE_1.mp3",
         "smail_de_inbox": "../sconf/audio/SMAIL_DE_INBOX_1.mp3",
         "smail_de_recipient": "../sconf/audio/SMAIL_DE_RECIPIENT_1.mp3",
         "smail_de_subject": "../sconf/audio/SMAIL_DE_SUBJECT_1.mp3",
-        "smail_de_read_message": "../sconf/audio/SMAIL_DE_MESSAGE_1.mp3",
-        "smail_de_write_message": "../sconf/audio/SMAIL_DE_MESSAGE_2.mp3"
+        "smail_de_read_message": "../sconf/audio/SMAIL_DE_READ_1.mp3",
+        "smail_de_write_message": "../sconf/audio/SMAIL_DE_WRITE_1.mp3"
     }
 }
 
