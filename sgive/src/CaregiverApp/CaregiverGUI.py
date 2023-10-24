@@ -427,7 +427,7 @@ class showGlobalConfigFrame:
 
         self.radioVar2 = StringVar(value=ryuconf.readJsonConfig("GlobalConfiguration", "colorMode"))
         # light mode
-        whiteColorButton = Radiobutton(self.frame, text="Light", variable=self.radioVar2, value="Light")
+        whiteColorButton = Radiobutton(self.frame, text="Light", variable=self.radioVar2, value="light")
         whiteColorButton['command'] = lambda: [
             ryuconf.editConfig("GlobalConfiguration", "colorMode", self.radioVar2.get()),
             self.changeColorColorschemeSelection(whiteColorButton)]
@@ -435,7 +435,7 @@ class showGlobalConfigFrame:
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         whiteColorButton.place(x=self.Xposition, y=self.Yposition, width=self.widthButton, height=self.heightWidgets)
         # dark mode
-        BlackColorButton = Radiobutton(self.frame, text="Dark", variable=self.radioVar2, value="Dark")
+        BlackColorButton = Radiobutton(self.frame, text="Dark", variable=self.radioVar2, value="dark")
         BlackColorButton['command'] = lambda: [
             ryuconf.editConfig("GlobalConfiguration", "colorMode", self.radioVar2.get()),
             self.changeColorColorschemeSelection(BlackColorButton)]

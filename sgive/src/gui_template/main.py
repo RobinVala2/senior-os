@@ -1,16 +1,10 @@
 from tkinter import *
 import guiTemplate as temp
-try:
-    import sgive.src.gui_template.configActions as act
-except ImportError:
-    print("error")
-try:
-    import configActions as act
-except ImportError:
-    print("Error")
+import configActions as act
+
 
 if __name__ == '__main__':
-    _currentVersionOfConfig = 0.2
+    _currentVersionOfConfig = 0.3
     isExist = act.configExistCheck(_currentVersionOfConfig)
     if isExist:
         root = Tk()
