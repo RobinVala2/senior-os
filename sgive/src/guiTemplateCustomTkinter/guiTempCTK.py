@@ -1,6 +1,6 @@
 import customtkinter
 from screeninfo import get_monitors
-from sgive.src.CaregiverApp import configurationActions as ryuConf
+import sgive.src.CaregiverApp.configurationActions as ryuConf
 
 # if there are any issues, install "packaging"
 
@@ -9,7 +9,7 @@ customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 
-class menuButtonsCreate:
+class MenuBar:
     def __init__(self, masterFrame, width, frameHeight, root):
         self.root = root
         self.width = width
@@ -155,12 +155,12 @@ class menuButtonsCreate:
                 self.customBtnDict[number].configure(fg_color="white", text_color="black")
 
 
-class gui:
+class App:
     def __init__(self, root):
         self.root = root
-        # TODO: change screen number to conf.json read
-        self.screenWidth = get_monitors()[0].width  # screen width
-        self.screenHeight = get_monitors()[0].height  # screen height
+        screenNum = ryuConf.readJsonConfig("GlobalConfiguration", "numOfScreen")
+        self.screenWidth = get_monitors()[screenNum].width  # screen width
+        self.screenHeight = get_monitors()[screenNum].height  # screen height
         self.heightDivisor = ryuConf.readJsonConfig("GUI_template", "height_divisor")
         # calls for root window setup etc
         self.rootWindowSetup()
@@ -177,10 +177,10 @@ class gui:
         menuFrame.configure(width=self.screenWidth, height=self.screenHeight / self.heightDivisor)
         menuFrame.pack(side=customtkinter.TOP)
         # calling class for menuFrame actions
-        menuButtonsCreate(menuFrame, self.screenWidth, self.screenHeight / self.heightDivisor, self.root)
+        MenuBar(menuFrame, self.screenWidth, self.screenHeight / self.heightDivisor, self.root)
 
 
 if __name__ == '__main__':
     root = customtkinter.CTk()
-    gui(root)
+    App(root)
     root.mainloop()
