@@ -1,0 +1,121 @@
+apt-get install live-build
+
+mkdir v9-Konzultace && cd v9-Konzultace
+cp -r /usr/share/doc/live-build/examples/auto/ auto
+nano auto/config 
+
+###################################################################
+###	CONTENT OF auto/config					###
+
+#!/bin/sh
+
+set -e
+
+lb config noauto \
+	--bootappend-live "boot=live components nocomponents=xinit parameters hostname=LIVE" \
+	--iso-publisher "Lada Struziakova" \
+	"${@}"
+
+###################################################################
+
+lb config
+nano config/package-lists/live.list.chroot 
+
+###################################################################
+###	CONTENT OF config/package-lists/live.list.chroot	###
+
+live-boot
+live-config
+live-config-systemd
+#
+xz-utils
+#
+xserver-xorg-core
+xserver-xorg-input-libinput
+xserver-xorg-video-fbdev
+#
+xpdf
+xinit
+ca-certificates
+#
+libasound2
+libdbus-glib-1-2
+libgtk2.0-0
+
+###################################################################
+
+mkdir -p config/includes.chroot/home/user/PDF
+cp -r /root/PDF/* config/includes.chroot/home/user/PDF/
+cp -r /root/palemoon-32.4.0.linux-x86_64-gtk2.tar.xz config/includes.chroot/home/user/
+
+mkdir -p config/includes.chroot/lib/live/config
+nano config/includes.chroot/lib/live/config/0999-Palemoon.sh
+chmod a+x config/includes.chroot/lib/live/config/0999-Palemoon.sh 
+
+###################################################################
+###	CONTENT OF 0999-Palemoon.sh				###
+
+#!/bin/sh
+
+tar xvf /home/user/palemoon-32.4.0.linux-x86_64-gtk2.tar.xz -C /
+
+ln -s /palemoon/palemoon /usr/bin/palemoon
+
+rm -rf /home/user/palemoon-32.4.0.linux-x86_64-gtk2.tar.xz
+
+###################################################################
+
+cp -r /usr/share/live/build/bootloaders/syslinux* config/bootloaders/
+cp -r /usr/share/live/build/bootloaders/isolinux/ config/bootloaders/
+nano config/bootloaders/syslinux_common/menu.cfg 
+
+###################################################################
+###	CONTENT OF menu.cfg					###
+
+menu hshift 0
+menu width 82
+menu cmdlinerow 16
+menu tabmsgrow 18
+menu tabmsg Press ENTER to boot or TAB to edit a menu entry
+
+menu title Boot menu 
+include stdmenu.cfg
+include live.cfg
+@OPTIONAL_INSTALLER_INCLUDE@
+menu begin utilities
+	menu label ^Utilities
+	menu title Utilities
+	include stdmenu.cfg
+	label mainmenu
+		menu label ^Back..
+		menu exit
+	include utilities.cfg
+menu end
+
+menu clear
+
+###################################################################
+
+nano config/bootloaders/syslinux_common/stdmenu.cfg 
+
+###################################################################
+###	CONTENT OF stdmenu.cfg					###
+
+menu background splash.png
+menu color title	* #FFFFFFFF *
+menu color border	* #00000000 #00000000 none
+menu color sel		* #ffffffff #76a1d0ff *
+menu color hotsel	1;7;37;40 #ffffffff #76a1d0ff *
+menu color tabmsg	* #ffffffff #00000000 *
+menu color help		37;40 #ffdddd00 #00000000 none
+menu vshift 12
+menu hshift 25
+menu width 45
+menu rows 10
+menu helpmsgrow 15
+
+###################################################################
+
+cp /root/v7-Splash-IMG-zdroje/splash.svg config/bootloaders/syslinux_common/
+
+lb build
