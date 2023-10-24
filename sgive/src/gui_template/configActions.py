@@ -40,6 +40,7 @@ def _jsonWrite(currentVersion):
         'buttons_info': {
             "num_of_menu_buttons": 2,
             "num_of_opt_on_frame": 4,
+            "num_of_opt_buttons": 18,
             "padx_value": 5,
         },
         'colors_info': {

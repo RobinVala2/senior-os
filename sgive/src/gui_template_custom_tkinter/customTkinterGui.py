@@ -15,8 +15,8 @@ class menuButtonsCreate:
         self.width = width
         self.frameHeight = frameHeight
         self.masterFrame = masterFrame
-        self.numOfCustomButtons = 15  # TODO: read from config
-        self.howManyCustomButtonsOnFrame = 4  # TODO: read from config
+        self.numOfCustomButtons = ryuConf.readJsonConfig("GUI_template", "num_of_opt_buttons")
+        self.howManyCustomButtonsOnFrame = ryuConf.readJsonConfig("GUI_template", "num_of_opt_on_frame")
         # pokus sekce
         self.lowestID = 1
         self.highestID = 1
@@ -161,8 +161,7 @@ class gui:
         # TODO: change screen number to conf.json read
         self.screenWidth = get_monitors()[0].width  # screen width
         self.screenHeight = get_monitors()[0].height  # screen height
-        # TODO: change divisor to conf.json read
-        self.heightDivisor = 6
+        self.heightDivisor = ryuConf.readJsonConfig("GUI_template", "height_divisor")
         # calls for root window setup etc
         self.rootWindowSetup()
         self.appMenuFrameSetup()
