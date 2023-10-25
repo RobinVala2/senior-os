@@ -10,7 +10,7 @@ customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-bl
 
 
 class MenuBar:
-    def __init__(self, masterFrame, width, frameHeight, root):
+    def __init__(self, masterFrame: customtkinter.CTkFrame, width: int, frameHeight: int, root: customtkinter.CTk):
         self.root = root
         self.width = width
         self.frameHeight = frameHeight
@@ -18,8 +18,8 @@ class MenuBar:
         self.numOfCustomButtons = ryuConf.readJsonConfig("GUI_template", "num_of_opt_buttons")
         self.howManyCustomButtonsOnFrame = ryuConf.readJsonConfig("GUI_template", "num_of_opt_on_frame")
         # pokus sekce
-        self.lowestID = 1
-        self.highestID = 1
+        self.lowestID: int = 1
+        self.highestID: int = 1
         # end of pokus sekce
         # subframes
         self.menuButtonFrame = customtkinter.CTkFrame(master=self.masterFrame)
@@ -51,12 +51,9 @@ class MenuBar:
         moduloThing = self.numOfCustomButtons % self.howManyCustomButtonsOnFrame
         if moduloThing == 0:
             numOfMenuButtons = self.numOfCustomButtons / self.howManyCustomButtonsOnFrame
-            print(numOfMenuButtons)
             return numOfMenuButtons
-
         else:
             numOfMenuButtons = int(self.numOfCustomButtons / self.howManyCustomButtonsOnFrame)
-            print(numOfMenuButtons + 1)
             return numOfMenuButtons + 1
 
     def switchingCustomButtons(self):  # this thing handle switching buttons on its subframe
@@ -95,9 +92,9 @@ class MenuBar:
                 counterUP += 1
 
     def createMenuButtons(self):
-        menuList = []
-        menuDict = {}
-        num = 1
+        menuList: list = []
+        menuDict: dict = {}
+        num: int = 1
         numberOfButtons = self.getHowManyMenuButtons()
         while num <= numberOfButtons:
             menuList.append(num)
@@ -126,8 +123,8 @@ class MenuBar:
             else:
                 menuDict[number].configure(fg_color="white", text_color="black")
 
-        menuDict[1].pack(padx=5, pady=2)  # show only first
-        self.switchingCustomButtons()
+        menuDict[1].pack(padx=5, pady=2)  # show only first menu Button
+        self.switchingCustomButtons()  # 
 
     def createCustomButtons(self):
         customBtnList = []
@@ -138,7 +135,7 @@ class MenuBar:
             num += 1
         for number in customBtnList:
             def storeEachButtonsNum(storedNum=number):
-                print(storedNum)
+                print(f"ID of button is: {storedNum}")
             self.customBtnDict[number] = customtkinter.CTkButton(self.customButtonsFrame)
             if number == 1:
                 self.customBtnDict[number].configure(text="EXIT", font=("Helvetica", 36, "bold"))
@@ -156,7 +153,7 @@ class MenuBar:
 
 
 class App:
-    def __init__(self, root):
+    def __init__(self, root: customtkinter.CTk):
         self.root = root
         screenNum = ryuConf.readJsonConfig("GlobalConfiguration", "numOfScreen")
         self.screenWidth = get_monitors()[screenNum].width  # screen width
