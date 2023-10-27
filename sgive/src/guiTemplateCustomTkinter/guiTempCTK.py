@@ -1,6 +1,6 @@
 import customtkinter
 from screeninfo import get_monitors
-from sgive.src.CaregiverApp import configurationActions as ryuConf
+import sgive.src.CaregiverApp.configurationActions as ryuConf
 
 # if there are any issues, install "packaging"
 
@@ -9,8 +9,8 @@ customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 
-class menuButtonsCreate:
-    def __init__(self, masterFrame, width, frameHeight, root):
+class MenuBar:
+    def __init__(self, masterFrame: customtkinter.CTkFrame, width: int, frameHeight: int, root: customtkinter.CTk):
         self.root = root
         self.width = width
         self.frameHeight = frameHeight
@@ -18,8 +18,8 @@ class menuButtonsCreate:
         self.numOfCustomButtons = ryuConf.readJsonConfig("GUI_template", "num_of_opt_buttons")
         self.howManyCustomButtonsOnFrame = ryuConf.readJsonConfig("GUI_template", "num_of_opt_on_frame")
         # pokus sekce
-        self.lowestID = 1
-        self.highestID = 1
+        self.lowestID: int = 1
+        self.highestID: int = 1
         # end of pokus sekce
         # subframes
         self.menuButtonFrame = customtkinter.CTkFrame(master=self.masterFrame)
@@ -51,12 +51,9 @@ class menuButtonsCreate:
         moduloThing = self.numOfCustomButtons % self.howManyCustomButtonsOnFrame
         if moduloThing == 0:
             numOfMenuButtons = self.numOfCustomButtons / self.howManyCustomButtonsOnFrame
-            print(numOfMenuButtons)
             return numOfMenuButtons
-
         else:
             numOfMenuButtons = int(self.numOfCustomButtons / self.howManyCustomButtonsOnFrame)
-            print(numOfMenuButtons + 1)
             return numOfMenuButtons + 1
 
     def switchingCustomButtons(self):  # this thing handle switching buttons on its subframe
@@ -95,9 +92,9 @@ class menuButtonsCreate:
                 counterUP += 1
 
     def createMenuButtons(self):
-        menuList = []
-        menuDict = {}
-        num = 1
+        menuList: list = []
+        menuDict: dict = {}
+        num: int = 1
         numberOfButtons = self.getHowManyMenuButtons()
         while num <= numberOfButtons:
             menuList.append(num)
@@ -126,8 +123,8 @@ class menuButtonsCreate:
             else:
                 menuDict[number].configure(fg_color="white", text_color="black")
 
-        menuDict[1].pack(padx=5, pady=2)  # show only first
-        self.switchingCustomButtons()
+        menuDict[1].pack(padx=5, pady=2)  # show only first menu Button
+        self.switchingCustomButtons()  # 
 
     def createCustomButtons(self):
         customBtnList = []
@@ -138,7 +135,7 @@ class menuButtonsCreate:
             num += 1
         for number in customBtnList:
             def storeEachButtonsNum(storedNum=number):
-                print(storedNum)
+                print(f"ID of button is: {storedNum}")
             self.customBtnDict[number] = customtkinter.CTkButton(self.customButtonsFrame)
             if number == 1:
                 self.customBtnDict[number].configure(text="EXIT", font=("Helvetica", 36, "bold"))
@@ -155,12 +152,12 @@ class menuButtonsCreate:
                 self.customBtnDict[number].configure(fg_color="white", text_color="black")
 
 
-class gui:
-    def __init__(self, root):
+class App:
+    def __init__(self, root: customtkinter.CTk):
         self.root = root
-        # TODO: change screen number to conf.json read
-        self.screenWidth = get_monitors()[0].width  # screen width
-        self.screenHeight = get_monitors()[0].height  # screen height
+        screenNum = ryuConf.readJsonConfig("GlobalConfiguration", "numOfScreen")
+        self.screenWidth = get_monitors()[screenNum].width  # screen width
+        self.screenHeight = get_monitors()[screenNum].height  # screen height
         self.heightDivisor = ryuConf.readJsonConfig("GUI_template", "height_divisor")
         # calls for root window setup etc
         self.rootWindowSetup()
@@ -177,10 +174,10 @@ class gui:
         menuFrame.configure(width=self.screenWidth, height=self.screenHeight / self.heightDivisor)
         menuFrame.pack(side=customtkinter.TOP)
         # calling class for menuFrame actions
-        menuButtonsCreate(menuFrame, self.screenWidth, self.screenHeight / self.heightDivisor, self.root)
+        MenuBar(menuFrame, self.screenWidth, self.screenHeight / self.heightDivisor, self.root)
 
 
 if __name__ == '__main__':
     root = customtkinter.CTk()
-    gui(root)
+    App(root)
     root.mainloop()
