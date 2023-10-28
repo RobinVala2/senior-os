@@ -81,6 +81,8 @@ class MyBrowser(QMainWindow):
         self.setCentralWidget(self.browser)
         self.lang_translator = Translator()
         self.get_height_and_width = GetHeightAndWidthFromScreen()
+        #self.browser.page().createWindow.connect(self.on_create_window)
+        
         #page = MyWebEnginePage(self.browser)
         #page.urlChangedSignal.connect(self.navigate_to_url)
         #self.browser.setPage(page)
@@ -211,6 +213,11 @@ class MyBrowser(QMainWindow):
         self.browser.setUrl(QUrl("https://edition.cnn.com"))
         self.browser.urlChanged.connect(self.security_again_phishing)
         self.browser.loadFinished.connect(self.onLoadFinished)
+        
+    def on_create_window(self, type):
+        # Ignore the type of window to be created and return the existing page
+        # This ensures that all links open in the same window
+        return self.browser.page()
         
     def onLoadFinished(self, success):
         url_in_browser = self.browser.url()
@@ -394,7 +401,9 @@ class MyBrowser(QMainWindow):
         self.menu2Address = QPushButton(self)
         # Create Home QvBoxLayout
         menu2Address_layout = QVBoxLayout(self.menu2Address)
-        self.menu2_addres_new_text_label = QLabel("Address", self.menu2_button)
+        self.menu2_addres_new_text_label = QLabel("Page out of list", self.menu2_button)
+        self.menu2_addres_new_text_label.setWordWrap(True)
+        self.menu2_addres_new_text_label.setAlignment(Qt.AlignCenter)
         menu2Address_layout.addWidget(self.menu2_addres_new_text_label)
         # Align text and icon in the center
         menu2Address_layout.setAlignment(self.menu2_addres_new_text_label,Qt.AlignCenter)
@@ -635,7 +644,7 @@ class MyBrowser(QMainWindow):
         
     # Method for connect to the second www2 ct24.ceskatelevize.cz
     def navigate_www1(self):
-        self.browser.setUrl(QUrl("https://ct24.ceskatelevize.cz"))
+        self.browser.setUrl(QUrl("https://edition.cnn.com"))
         
     # Method for connect to the irozhlas.cz
     def navigate_www2(self):
