@@ -1,6 +1,6 @@
 [Unit]
 Description=Automated LUKS decryption
-Before=default.target
+Before=mutli-user.target
 
 [Service]
 type=simple
