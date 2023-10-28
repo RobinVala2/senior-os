@@ -4,7 +4,7 @@
         "path_to_tar_github": "https://github.com/mitchellkrogza/Phishing.Database/raw/master/ALL-phishing-domains.tar.gz/"
     },
     "language":{
-                "default_language" : "cz"
+                "default_language" : "en"
     },
     "image":{
         "sweb_image_exit" : "../sconf/images/SWEB_EXIT.png",
@@ -23,13 +23,13 @@
     "text": {
                 "sweb_en_menu1": "Menu 1",
                 "sweb_en_menu2": "Menu 2",
-                "sweb_en_menu2Address": "Address",
+                "sweb_en_menu2Address": "Page out of list",
                 "sweb_cz_menu1": "Menu 1",
                 "sweb_cz_menu2": "Menu 2",
-                "sweb_cz_menu2Address": "Adresa",
+                "sweb_cz_menu2Address": "Stránka mimo seznam",
                 "sweb_de_menu1": "Menü 1",
                 "sweb_de_menu2": "Menü 2",
-                "sweb_de_menu2Address": "Adresse"
+                "sweb_de_menu2Address": "Seite nicht aufgeführt"
             },
     "audio": {
                 "sweb_en_menu1": "../sconf/audio/SWEB_EN_MENU_1.mp3",
