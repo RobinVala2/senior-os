@@ -23,4 +23,4 @@ with open(file_path, 'r') as file:
 				subprocess.run(f'mount /dev/mapper/EncHome /home', shell=True)
 				subprocess.run(f'echo "Decrypted" > ssec_crypt.txt', shell=True)
 			else:
-				subprocess.run(f'echo "Encrypted > ssec_crypt.txt"', shell=True)
+				subprocess.run(f'echo "Encrypted" > ssec_crypt.txt', shell=True)
