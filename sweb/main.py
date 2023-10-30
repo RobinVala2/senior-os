@@ -1,40 +1,41 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QStyle, QLabel, QVBoxLayout, QMessageBox
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar,QLineEdit, QWidget, QSizePolicy
-from PyQt5.QtGui import QIcon, QCursor
+from PyQt5.QtGui import QIcon
 from urllib.parse import urlparse
-from PyQt5.QtWebEngineWidgets import *
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 from PyQt5.QtCore import QEvent, QUrl, Qt, QTimer, QSize, pyqtSignal
-import sys, os, tarfile, subprocess
+import sys, os
 from antiPhishing.URLBlocker import URLBlocker
 from antiPhishing.URLLogger import URLLogger
 from antiPhishing.UpdatePhishingTXT import TXTFileModificationChecker
 from loadConfig import *
 from languge_Translator import Translator
 import pygame, math
-from PyQt5.QtWebChannel import QWebChannel
 from screeninfo import get_monitors
 
 
 class MyWebEnginePage(QWebEnginePage):
     # Define a signal that will carry a URL as its argument
-    urlChangedSignal = pyqtSignal(str)
-    def acceptNavigationRequest(self, url, _type, isMainFrame):
-        if _type == QWebEnginePage.NavigationTypeLinkClicked:
-            # This check ensures you're only modifying behavior for clicked links.
-            if isMainFrame:  # you might want to navigate only if it's the main frame
-                self.load(url)  # navigate to the url
-                return False  # return False here to tell the view we've handled this navigation request
-        return True  # return True for all other navigation requests you haven't explicitly handled
-    
-    def createWindow(self, _type):
-        # Instead of creating a new window, navigate to the requested URL in the current window
-        page = MyWebEnginePage(self)
-        page.urlChanged.connect(self.on_url_changed)
-        return page
+    urlChangedSignal = pyqtSignal(QUrl)
 
-    def on_url_changed(self, url):
-        # Emit the signal with the URL
-        self.urlChangedSignal.emit(url.toString())
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        
+    def acceptNavigationRequest(self, url, _type, isMainFrame):
+        # Ensure only modifying behavior for clicked links
+        if _type == QWebEnginePage.NavigationTypeLinkClicked and isMainFrame:
+            # Navigate to the url
+            self.urlChangedSignal.emit(url)
+            # Tell the view that handled this navigation request
+            return False
+        # Return True for all other navigation requests
+        return True
+
+    def createWindow(self, _type):
+        # Create a new instance of MyWebEnginePage for the new window request
+        new_page = MyWebEnginePage(self)
+        new_page.urlChangedSignal.connect(self.urlChangedSignal.emit)
+        return new_page
         
 class GetHeightAndWidthFromScreen:
     def __init__(self):
@@ -78,14 +79,15 @@ class MyBrowser(QMainWindow):
         # Remove standard window controls
         self.setWindowFlags(Qt.CustomizeWindowHint)
         self.browser = QWebEngineView()
+        # Set cutstom page to open in the same browser
+        self.custom_page = MyWebEnginePage(self.browser)
+        self.custom_page.urlChangedSignal.connect(self.on_url_changed_my_custom_page)
+        # Set page for page
+        self.browser.setPage(self.custom_page)
         self.setCentralWidget(self.browser)
+        self.browser.setUrl(QUrl("https://edition.cnn.com"))
         self.lang_translator = Translator()
         self.get_height_and_width = GetHeightAndWidthFromScreen()
-        #self.browser.page().createWindow.connect(self.on_create_window)
-        
-        #page = MyWebEnginePage(self.browser)
-        #page.urlChangedSignal.connect(self.navigate_to_url)
-        #self.browser.setPage(page)
         
         #settings = self.browser.settings()
         #settings.setFontSize(QWebEngineSettings.DefaultFontSize, 50) 
@@ -210,14 +212,12 @@ class MyBrowser(QMainWindow):
         # Run this methods for the set Current language in Translator
         self.update_ui_text()
         self.update_ui_audio()
-        self.browser.setUrl(QUrl("https://edition.cnn.com"))
         self.browser.urlChanged.connect(self.security_again_phishing)
         self.browser.loadFinished.connect(self.onLoadFinished)
-        
-    def on_create_window(self, type):
-        # Ignore the type of window to be created and return the existing page
-        # This ensures that all links open in the same window
-        return self.browser.page()
+    
+    def on_url_changed_my_custom_page(self, url):
+        # Load the new URL in the existing browser window
+        self.browser.setUrl(url)
         
     def onLoadFinished(self, success):
         url_in_browser = self.browser.url()
@@ -588,8 +588,10 @@ class MyBrowser(QMainWindow):
         self.browser.setUrl(QUrl(url_in_bar))
         
     def security_again_phishing(self,qurl):
+        # Set page for page
         # Get url from QURL
         url_in_browser = qurl.toString()
+        print(f"{url_in_browser}")
         if not url_in_browser.endswith('/'):
             #url_in_browser = url_in_browser[:-1]
             if "about:blank" in url_in_browser:
