@@ -6,15 +6,19 @@ But application should work with python >= 3.8.
 
 ## link to both projects: <br>
 [Graphical interface template](src/gui_template/) <br>
+[CustomTkinter interface template](src/guiTemplateCustomTkinter/) <br>
 [Caregiver application with ML detection of phishing](src/CaregiverApp/) <br>
+
 
 ## TODO:
 - Smail config
 - Web config
 - Better readme
-- ML detection thing (ML itself works)
-- screenshots
+- ml self check on another thread
+- some bug fixes in backend
 ## DONE:
+- screenshots
+- ML predict etc
 - View and sort logs by log level
 - Global configuration
 - Scaling by monitor resolution
