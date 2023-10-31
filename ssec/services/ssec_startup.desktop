@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=application
+Name=Ssec Login Window
+ExecStart=/usr/bin/python3 /ssec/ssec_startup.py
