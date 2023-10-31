@@ -12,6 +12,7 @@ logging.basicConfig(
 )
 
 if __name__ == '__main__':
+    ryuconf.MLcheck()
     whereTheFuckAmI = os.getcwd()
     split = whereTheFuckAmI.split("sgive")
     path = split[0]

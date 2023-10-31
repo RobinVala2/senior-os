@@ -119,3 +119,11 @@ def caregiverAppConfig(path):
     json_object = json.dumps(dictionary, indent=4)
     with open(os.path.join(path, 'config.json'), "w+") as outfile:
         outfile.write(json_object)
+
+def MLcheck():
+    print("ne")
+    path = os.path.join(os.getcwd(), "ML-saved")
+
+    if os.path.exists(path):
+        print(os.listdir(path))
+
