@@ -94,6 +94,8 @@ def getSavedNames():
 def checkForDate():
     pathToDir = os.path.join(os.getcwd(), "ML-saved")
     listFiles = os.listdir(pathToDir)
+    if len(listFiles) == 0:
+        return
     timeModel = listFiles[0].split("_")
     dateObj = datetime.strptime(timeModel[0], '%Y-%m-%d').date()
     timeTreshold = date.today() - relativedelta(months=6)
@@ -115,10 +117,15 @@ if __name__ == '__main__':
         model = gimmeNames[1]  # load saved model
         vectorizer = gimmeNames[0]  # load saved vectorizer
 
-    if os.path.isfile(fullPathToCsv) and not model is None or vectorizer is None:
+    if os.path.isfile(fullPathToCsv):
         inpt = input("Wanna train dataset again? [y/N]")
         if inpt == "y" or inpt == "Y":
-            ML.machineLearning()
+            ML.machineLearning() # traing the model
+            if model is None or vectorizer is None:
+                gimmeNames = getSavedNames()
+                if not gimmeNames is None:
+                    model = gimmeNames[1]  # load saved model
+                    vectorizer = gimmeNames[0]  # load saved vectorizer
             ML.predictURL(model=model, vectorizer=vectorizer)
         else:
             ML.predictURL(model=model, vectorizer=vectorizer)
