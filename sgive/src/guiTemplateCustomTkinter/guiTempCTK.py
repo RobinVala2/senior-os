@@ -9,6 +9,7 @@ customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 
+# Ǚ
 class MenuBar:
     def __init__(self, masterFrame: customtkinter.CTkFrame, width: int, frameHeight: int, root: customtkinter.CTk):
         self.root = root
@@ -17,10 +18,14 @@ class MenuBar:
         self.masterFrame = masterFrame
         self.numOfCustomButtons = ryuConf.readJsonConfig("GUI_template", "num_of_opt_buttons")
         self.howManyCustomButtonsOnFrame = ryuConf.readJsonConfig("GUI_template", "num_of_opt_on_frame")
-        # pokus sekce
+        # menuButtons needed things:
+        self.menuList: list = []
+        self.menuDict: dict = {}
+        self.menuButtonValue = None
+        # switching customButtons
         self.lowestID: int = 1
         self.highestID: int = 1
-        # end of pokus sekce
+        # end of menuButtons section
         # subframes
         self.menuButtonFrame = customtkinter.CTkFrame(master=self.masterFrame)
         self.customButtonsFrame = customtkinter.CTkFrame(master=self.masterFrame)
@@ -60,19 +65,19 @@ class MenuBar:
         if self.highestID < self.numOfCustomButtons:
             print("\nPRVOTNI ROLL  ---")
             counterDown = self.lowestID
-            while counterDown <= self.highestID-1:
+            while counterDown <= self.highestID - 1:
                 print("ID tlacitka na smazani je:", counterDown)
                 self.customBtnDict[counterDown].pack_forget()
-                counterDown +=1
+                counterDown += 1
             self.lowestID = self.highestID
             counter = 1
             while counter <= self.howManyCustomButtonsOnFrame:
-                print("ID tlacitka NA ZOBRAZENI:",self.highestID)
+                print("ID tlacitka NA ZOBRAZENI:", self.highestID)
                 self.customBtnDict[self.highestID].pack(side=customtkinter.LEFT, padx=2, pady=2)
                 if self.highestID > self.numOfCustomButtons - 1:
                     break
                 self.highestID += 1
-                counter +=1
+                counter += 1
         elif self.highestID >= self.numOfCustomButtons:
             print("\nEND ROLL  ---")
             counterDown = self.lowestID
@@ -91,40 +96,64 @@ class MenuBar:
                 self.highestID += 1
                 counterUP += 1
 
+    def menuButtonsSwitching(self, number):
+        self.switchingCustomButtons()
+        if not number == len(self.menuList):
+            self.menuDict[number].pack_forget()
+            self.menuDict[number + 1].pack(padx=5, pady=2)
+            self.menuButtonValue = number
+        else:
+            self.menuDict[number].pack_forget()
+            self.menuDict[1].pack(padx=5, pady=2)
+            self.menuButtonValue = number
+
+    def MenuButtons(self, number):
+        self.menuDict[number] = customtkinter.CTkButton(self.menuButtonFrame)
+        self.menuDict[number].configure(text=f"MENU {number}", font=("Helvetica", 36, "bold"))
+        self.menuDict[number].configure(command=lambda: self.menuButtonsSwitching(number))
+        self.menuDict[number].configure(border_width=3, corner_radius=0)
+        self.menuDict[number].configure(width=(self.width / (1 + self.howManyCustomButtonsOnFrame)),
+                                   height=self.frameHeight)
+        if customtkinter.get_appearance_mode() == "Dark":
+
+            self.menuDict[number].configure(fg_color="#1e1f22")  # , hover_color="#1e1f22"
+        else:
+            self.menuDict[number].configure(fg_color="white", text_color="black")
+
     def createMenuButtons(self):
-        menuList: list = []
-        menuDict: dict = {}
         num: int = 1
         numberOfButtons = self.getHowManyMenuButtons()
         while num <= numberOfButtons:
-            menuList.append(num)
+            self.menuList.append(num)
             num += 1
-        for number in menuList:
-            def storeEachButtonsNum(savedNum=number):
-                self.switchingCustomButtons()
-                if not savedNum == len(menuList):
-                    menuDict[savedNum].pack_forget()
-                    menuDict[savedNum + 1].pack(padx=5, pady=2)
-                    self.menuButtonValue = savedNum
-                else:
-                    menuDict[savedNum].pack_forget()
-                    menuDict[1].pack(padx=5, pady=2)
-                    self.menuButtonValue = savedNum
+        for number in self.menuList:
+            self.MenuButtons(number)
 
-            menuDict[number] = customtkinter.CTkButton(self.menuButtonFrame)
-            menuDict[number].configure(text=f"MENU {number}", font=("Helvetica", 36, "bold"))
-            menuDict[number].configure(command=storeEachButtonsNum)
-            menuDict[number].configure(border_width=3, corner_radius=0)
-            menuDict[number].configure(width=(self.width / (1 + self.howManyCustomButtonsOnFrame)),
-                                       height=self.frameHeight)
-            if customtkinter.get_appearance_mode() == "Dark":
 
-                menuDict[number].configure(fg_color="#1e1f22")  # , hover_color="#1e1f22"
-            else:
-                menuDict[number].configure(fg_color="white", text_color="black")
+        self.menuDict[1].pack(padx=5, pady=2)  # show only first menu Button
+        self.switchingCustomButtons()
+    """
+    # CUSTOM BUTTONS SECTION #########################################
+    """
+    def customButtonCall(self, number):
+        print(f"pressed button is: {number}")
+        # zde se konfigurují akce pro dané tlačítko atd
 
-        menuDict[1].pack(padx=5, pady=2)  # show only first menu Button
-        self.switchingCustomButtons()  # 
+    def customButton(self, number):
+        self.customBtnDict[number] = customtkinter.CTkButton(self.customButtonsFrame)
+        if number == 1:
+            self.customBtnDict[number].configure(text="EXIT", font=("Helvetica", 36, "bold"))
+            self.customBtnDict[number].configure(command=self.root.destroy)
+        else:
+            self.customBtnDict[number].configure(text=f"OPT_{number}", font=("Helvetica", 36, "bold"))
+            self.customBtnDict[number].configure(command=lambda: self.customButtonCall(number))
+        self.customBtnDict[number].configure(width=(self.width / (1 + self.howManyCustomButtonsOnFrame)),
+                                             height=self.frameHeight)
+        self.customBtnDict[number].configure(border_width=3, corner_radius=0)
+        if customtkinter.get_appearance_mode() == "Dark":
+            self.customBtnDict[number].configure(fg_color="#1e1f22")
+        else:
+            self.customBtnDict[number].configure(fg_color="white", text_color="black")
 
     def createCustomButtons(self):
         customBtnList = []
@@ -134,22 +163,7 @@ class MenuBar:
             customBtnList.append(num)
             num += 1
         for number in customBtnList:
-            def storeEachButtonsNum(storedNum=number):
-                print(f"ID of button is: {storedNum}")
-            self.customBtnDict[number] = customtkinter.CTkButton(self.customButtonsFrame)
-            if number == 1:
-                self.customBtnDict[number].configure(text="EXIT", font=("Helvetica", 36, "bold"))
-                self.customBtnDict[number].configure(command=self.root.destroy)
-            else:
-                self.customBtnDict[number].configure(text=f"OPT_{number}", font=("Helvetica", 36, "bold"))
-                self.customBtnDict[number].configure(command=storeEachButtonsNum)
-            self.customBtnDict[number].configure(width=(self.width / (1 + self.howManyCustomButtonsOnFrame)),
-                                                 height=self.frameHeight)
-            self.customBtnDict[number].configure(border_width=3, corner_radius=0)
-            if customtkinter.get_appearance_mode() == "Dark":
-                self.customBtnDict[number].configure(fg_color="#1e1f22")
-            else:
-                self.customBtnDict[number].configure(fg_color="white", text_color="black")
+            self.customButton(number)
 
 
 class App:
