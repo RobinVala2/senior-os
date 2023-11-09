@@ -51,8 +51,6 @@ class GetHeightAndWidthFromScreen:
         monitor = get_monitors()[num_of_monitor]
         screen_width, screen_height = monitor.width, monitor.height
         self.button_height = screen_height / height_divisor
-        self.url_bar_height = screen_height - self.button_height
-        self.url_bar_width = screen_width/2
         # Number of button on menu = numberOfOptions + 1
         total_padding = (num_option_on_frame)*padding
         # Calculate width for button
@@ -63,12 +61,6 @@ class GetHeightAndWidthFromScreen:
     
     def get_width_button(self):
         return self.button_width
-    
-    def get_url_bar_height(self):
-        return self.url_bar_height
-    
-    def get_url_bar_width(self):
-        return self.url_bar_width
 
 # My main browser contains all GUI in this class (Toolbar, Buttons, URLbar)
 class MyBrowser(QMainWindow):
@@ -119,8 +111,6 @@ class MyBrowser(QMainWindow):
         # Get height and width from class GetHeightAndWidthInfo
         self.buttons_width_info = self.get_height_and_width.get_width_button()
         self.buttons_height_info = self.get_height_and_width.get_height_button()
-        self.url_bar_height_info = self.get_height_and_width.get_url_bar_height()
-        self.url_bar_width_info = self.get_height_and_width.get_url_bar_width()
         
         # Get my parametr from file
         self.color_info_menu = my_config_data["colors_info"]["menu_frame"]
@@ -148,6 +138,19 @@ class MyBrowser(QMainWindow):
         
         self.addToolBarBreak()
         
+        self.toolbarSpacer = QToolBar("Spacer")
+        # Set the spacer height
+        self.toolbarSpacer.setFixedHeight(int(self.buttons_height_info))
+        self.toolbarSpacer.setStyleSheet(f"""
+        QToolBar {{
+                background-color: #fff;
+        }}
+        """)
+        self.addToolBar(self.toolbarSpacer)
+        self.toolbarSpacer.setMovable(False)
+        self.toolbarSpacer.setVisible(False)
+        self.addToolBarBreak()
+        
         # Set a style for Menu 1 toolbar
         self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
         
@@ -167,20 +170,11 @@ class MyBrowser(QMainWindow):
         # Set disvisible for menu 2
         self.menu_2_toolbar.setVisible(False)
         
-        left_spacer = QWidget()
-        left_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        
-        # Create another flexible spacer widget
-        right_spacer = QWidget()
-        right_spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        
         # Create toolbar for saving URL
         self.url_toolbar = QToolBar("URL Navigation")
         self.addToolBar(self.url_toolbar)
         self.url_toolbar.setMovable(False)
         
-        
-        self.url_toolbar.addWidget(left_spacer)
         # Create a URL bar
         self.url_bar = QLineEdit()
         self.url_bar.setAlignment(Qt.AlignCenter)
@@ -190,8 +184,7 @@ class MyBrowser(QMainWindow):
                 background-color: {self.color_info_menu};
         }}
         QLineEdit {{
-            width: {self.url_bar_width_info}px;
-            height: {self.url_bar_height_info}px;
+            height: {self.buttons_height_info}px;
             font-family: {self.font_family_info};
             font-size: {int(self.buttons_height_info/3)}px;
             font-weight: {self.font_weight_info};
@@ -202,7 +195,6 @@ class MyBrowser(QMainWindow):
         # When text of URL is changed, check for URL Phishing
         self.url_bar.returnPressed.connect(self.navigate_to_url)
         self.url_toolbar.addWidget(self.url_bar)
-        self.url_toolbar.addWidget(right_spacer)
         
         # Initially make URL toolbar visible
         # This method is used for Address option -> hide and show url bar
@@ -564,6 +556,7 @@ class MyBrowser(QMainWindow):
         self.play_sound_for_button(self.path_to_url_music)
         self.browser.setUrl(QUrl("about:blank"))
         self.url_toolbar.setVisible(not self.url_toolbar.isVisible())
+        self.toolbarSpacer.setVisible(not self.toolbarSpacer.isVisible())
 
     # This method is used for navigation URL bar
     def navigate_to_url(self):
@@ -575,6 +568,8 @@ class MyBrowser(QMainWindow):
         # If in URl not http or https, connect with HTTPS
         if "://" not in url_in_bar:
             url_in_bar = "https://" + url_in_bar
+        if url_in_bar.endswith("/"):
+            url_in_bar = url_in_bar[:-1]
         
         # Set default style for toolbar
         self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
@@ -582,16 +577,15 @@ class MyBrowser(QMainWindow):
           
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
+        self.toolbarSpacer.setVisible(False)
         # Set url bar as clean
         self.url_bar.clear()
         # Connect to URL after entering
         self.browser.setUrl(QUrl(url_in_bar))
         
     def security_again_phishing(self,qurl):
-        # Set page for page
         # Get url from QURL
         url_in_browser = qurl.toString()
-        print(f"{url_in_browser}")
         if not url_in_browser.endswith('/'):
             #url_in_browser = url_in_browser[:-1]
             if "about:blank" in url_in_browser:
@@ -609,6 +603,7 @@ class MyBrowser(QMainWindow):
                     
                     # Set visible after navitigation
                     self.url_toolbar.setVisible(False)
+                    self.toolbarSpacer.setVisible(False)
                     # Set url bar as clean
                     self.url_bar.clear()
                     # Connect to URL after entering
@@ -647,10 +642,16 @@ class MyBrowser(QMainWindow):
     # Method for connect to the second www2 ct24.ceskatelevize.cz
     def navigate_www1(self):
         self.browser.setUrl(QUrl("https://edition.cnn.com"))
+        # Set visible after navitigation
+        self.url_toolbar.setVisible(False)
+        self.toolbarSpacer.setVisible(False)
         
     # Method for connect to the irozhlas.cz
     def navigate_www2(self):
         self.browser.setUrl(QUrl("https://irozhlas.cz"))
+        # Set visible after navitigation
+        self.url_toolbar.setVisible(False)
+        self.toolbarSpacer.setVisible(False)
 
     # Method for connect to the idnes.cz
     def navigate_www3(self):
@@ -658,14 +659,23 @@ class MyBrowser(QMainWindow):
         # !!! using .html but still don't have good Home Page
         html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'homepage.html')
         self.browser.load(QUrl.fromLocalFile(html_path))
+        # Set visible after navitigation
+        self.url_toolbar.setVisible(False)
+        self.toolbarSpacer.setVisible(False)
 
     # Method for connect to the aktualne.cz
     def navigate_www4(self):
         self.browser.setUrl(QUrl("https://www.aktualne.cz"))
+        # Set visible after navitigation
+        self.url_toolbar.setVisible(False)
+        self.toolbarSpacer.setVisible(False)
 
     # Method for connect to the denik.cz
     def navigate_www5(self):
         self.browser.setUrl(QUrl("https://www.denik.cz"))
+        # Set visible after navitigation
+        self.url_toolbar.setVisible(False)
+        self.toolbarSpacer.setVisible(False)
     
 # Definuje funkci Main
 if __name__ == "__main__":
