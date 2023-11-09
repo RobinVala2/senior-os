@@ -9,7 +9,6 @@ customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
 
-# Ǚ
 class MenuBar:
     def __init__(self, masterFrame: customtkinter.CTkFrame, width: int, frameHeight: int, root: customtkinter.CTk):
         self.root = root
@@ -52,7 +51,18 @@ class MenuBar:
         self.customButtonsFrame.configure(height=self.frameHeight)
         self.customButtonsFrame.pack(side=customtkinter.LEFT)
 
+    """
+    # MENU BUTTONS SECTION ############################################################################################
+    - create menu buttons
+    - calls for menu bt. actions
+    - switching customizable buttons
+    """
+
     def getHowManyMenuButtons(self):
+        """
+        this function calculates, how many of menu buttons are needed
+        based on number of buttons and how many can show on frame at once.
+        """
         moduloThing = self.numOfCustomButtons % self.howManyCustomButtonsOnFrame
         if moduloThing == 0:
             numOfMenuButtons = self.numOfCustomButtons / self.howManyCustomButtonsOnFrame
@@ -61,7 +71,11 @@ class MenuBar:
             numOfMenuButtons = int(self.numOfCustomButtons / self.howManyCustomButtonsOnFrame)
             return numOfMenuButtons + 1
 
-    def switchingCustomButtons(self):  # this thing handle switching buttons on its subframe
+    def switchingCustomButtons(self):
+        """
+        this function handles switch number of customizable buttons on frame
+        number of buttons on each frame is based of config.json
+        """
         if self.highestID < self.numOfCustomButtons:
             print("\nPRVOTNI ROLL  ---")
             counterDown = self.lowestID
@@ -97,6 +111,9 @@ class MenuBar:
                 counterUP += 1
 
     def menuButtonsSwitching(self, number):
+        """
+        this func calls switching things for customizable buttons
+        """
         self.switchingCustomButtons()
         if not number == len(self.menuList):
             self.menuDict[number].pack_forget()
@@ -108,19 +125,25 @@ class MenuBar:
             self.menuButtonValue = number
 
     def MenuButtons(self, number):
+        """
+        create menu buttons
+        """
         self.menuDict[number] = customtkinter.CTkButton(self.menuButtonFrame)
         self.menuDict[number].configure(text=f"MENU {number}", font=("Helvetica", 36, "bold"))
         self.menuDict[number].configure(command=lambda: self.menuButtonsSwitching(number))
         self.menuDict[number].configure(border_width=3, corner_radius=0)
         self.menuDict[number].configure(width=(self.width / (1 + self.howManyCustomButtonsOnFrame)),
-                                   height=self.frameHeight)
+                                        height=self.frameHeight)
         if customtkinter.get_appearance_mode() == "Dark":
-
             self.menuDict[number].configure(fg_color="#1e1f22")  # , hover_color="#1e1f22"
         else:
             self.menuDict[number].configure(fg_color="white", text_color="black")
 
     def createMenuButtons(self):
+        """
+        called function
+        add list numbers to dict as object and then go to MenuButtons and create buttons itself
+        """
         num: int = 1
         numberOfButtons = self.getHowManyMenuButtons()
         while num <= numberOfButtons:
@@ -128,14 +151,19 @@ class MenuBar:
             num += 1
         for number in self.menuList:
             self.MenuButtons(number)
-
-
-        self.menuDict[1].pack(padx=5, pady=2)  # show only first menu Button
+        # after initial setup of that, show first menu button
+        self.menuDict[1].pack(padx=5, pady=2)
+        # show first n customizable buttons
         self.switchingCustomButtons()
+
     """
-    # CUSTOM BUTTONS SECTION #########################################
+    # CUSTOM BUTTONS SECTION ##########################################################################################
     """
+
     def customButtonCall(self, number):
+        """
+        customizable buttons calls, this needs to be edited after implementing in each senior-OS SW (add functions etc.)
+        """
         print(f"pressed button is: {number}")
         # zde se konfigurují akce pro dané tlačítko atd
 
@@ -164,6 +192,11 @@ class MenuBar:
             num += 1
         for number in customBtnList:
             self.customButton(number)
+
+
+"""
+# main function, this creates root window and calls other need classes
+"""
 
 
 class App:
