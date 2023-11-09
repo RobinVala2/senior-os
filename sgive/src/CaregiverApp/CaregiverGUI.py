@@ -51,11 +51,11 @@ class menuBarButtons:
         for i in self.options:
             def getButtonNum(y=counter, name=i):
                 self.selectedButton(y)
-                if name == "Global\nconfig":
+                if name == "Global":
                     self.CallConfigFrame.GlobalConfigCall(y + 1)
-                elif name == "Mail\nconfig":
+                elif name == "Mail":
                     self.CallConfigFrame.SmailConfigCall(y + 1)
-                elif name == "Web\nconfig":
+                elif name == "Web":
                     self.CallConfigFrame.swebConfigCall(y + 1)
                 elif name == "LOGS":
                     self.CallConfigFrame.logConfigCall(y + 1)

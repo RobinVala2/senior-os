@@ -67,7 +67,7 @@ class MLdetectionOfSusURL:
 
     def predictURL(self, model, vectorizer):
         print("-- detection --")
-        url = ["https://americasaves.org/"]
+        url = ["https://www.google.com/"]
         vectorizer = pickle.load(open(f"ML-saved/{vectorizer}", "rb"))
         model = pickle.load(open(f"ML-saved/{model}", "rb"))
         feature = vectorizer.transform(url)
