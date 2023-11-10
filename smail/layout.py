@@ -108,16 +108,16 @@ class one_frame(tk.Frame):
                 self.menu.menuFrameCreateButtonsVal.button_dict)[2]
 
             # audio configuration buttons
-            self.audioConfigure(self.exit_button, "exitButton")
-            self.audioConfigure(self.send_mail_person1, "person1")
-            self.audioConfigure(self.send_mail_person2, "person2")
-            self.audioConfigure(self.send_mail_person3, "person3")
-            self.audioConfigure(self.send_mail_person4, "person4")
-            self.audioConfigure(self.send_mail_person5, "person5")
-            self.audioConfigure(self.send_mail_person6, "person6")
-            self.audioConfigure(self.send_mail_to, "sendToButton")
-            self.audioConfigure(self.menu_button_1, "menu1")
-            self.audioConfigure(self.menu_button_2, "menu2")
+            self.audio_configure(self.exit_button, "exitButton")
+            self.audio_configure(self.send_mail_person1, "person1")
+            self.audio_configure(self.send_mail_person2, "person2")
+            self.audio_configure(self.send_mail_person3, "person3")
+            self.audio_configure(self.send_mail_person4, "person4")
+            self.audio_configure(self.send_mail_person5, "person5")
+            self.audio_configure(self.send_mail_person6, "person6")
+            self.audio_configure(self.send_mail_to, "sendToButton")
+            self.audio_configure(self.menu_button_1, "menu1")
+            self.audio_configure(self.menu_button_2, "menu2")
 
             self.exit_button.config(
                 image=self.exit_image,
@@ -126,43 +126,43 @@ class one_frame(tk.Frame):
 
             )
             self.send_mail_person1.config(
-                command=lambda: self.fillRecipient(1),
+                command=lambda: self.fill_recipient(1),
                 image=self.person1_image,
                 text="",
                 width=self.button_width
             )
             self.send_mail_person2.config(
-                command=lambda: self.fillRecipient(2),
+                command=lambda: self.fill_recipient(2),
                 image=self.person2_image,
                 text="",
                 width=self.button_width
             )
             self.send_mail_person3.config(
-                command=lambda: self.fillRecipient(3),
+                command=lambda: self.fill_recipient(3),
                 image=self.person3_image,
                 text="",
                 width=self.button_width
             )
             self.send_mail_person4.config(
-                command=lambda: self.fillRecipient(4),
+                command=lambda: self.fill_recipient(4),
                 image=self.person4_image,
                 text="",
                 width=self.button_width
             )
             self.send_mail_person5.config(
-                command=lambda: self.fillRecipient(5),
+                command=lambda: self.fill_recipient(5),
                 image=self.person5_image,
                 text="",
                 width=self.button_width
             )
             self.send_mail_person6.config(
-                command=lambda: self.fillRecipient(6),
+                command=lambda: self.fill_recipient(6),
                 image=self.person6_image,
                 text="",
                 width=self.button_width
             )
             self.send_mail_to.config(
-                command=lambda: self.fillRecipient(0),
+                command=lambda: self.fill_recipient(0),
                 text=self.text[f"smail_{self.language}_sendToButton"],
                 width=self.button_width
             )
@@ -196,7 +196,7 @@ class one_frame(tk.Frame):
         )
 
         # audio configuration
-        self.audioConfigure(self.inbox_list, "inbox")
+        self.audio_configure(self.inbox_list, "inbox")
 
         # widget placement
         self.inbox_label.grid(
@@ -253,9 +253,9 @@ class one_frame(tk.Frame):
         )
 
         # audio configuration
-        self.audioConfigure(self.recipient_entry, "recipient")
-        self.audioConfigure(self.subject_entry, "subject")
-        self.audioConfigure(self.content_entry, "write_message")
+        self.audio_configure(self.recipient_entry, "recipient")
+        self.audio_configure(self.subject_entry, "subject")
+        self.audio_configure(self.content_entry, "write_message")
 
         # widget placement
         self.recipient_label.grid(
@@ -307,7 +307,7 @@ class one_frame(tk.Frame):
         )
 
         # audio configuration
-        self.audioConfigure(self.message_area, "read_message")
+        self.audio_configure(self.message_area, "read_message")
 
         # widget placement
         self.message_label.grid(
@@ -496,7 +496,7 @@ class one_frame(tk.Frame):
             self.subject_entry.delete(0, tk.END)
             self.content_entry.delete("1.0", tk.END)
 
-    def fillRecipient(self, id):
+    def fill_recipient(self, id):
 
         if self.r_frame == self.rr_frame:
             self.r_frame = self.right_write_frame()
@@ -544,7 +544,7 @@ class one_frame(tk.Frame):
 
         self.button_state = id
 
-    def audioConfigure(self, button, button_name):
+    def audio_configure(self, button, button_name):
         enter_time = [None]
         # This event is triggered when the mouse cursor enters the button.
         button.bind("<Enter>",

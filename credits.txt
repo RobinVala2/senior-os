@@ -1,3 +1,6 @@
+The smail project includes phishing database developed by Mitchell Krog (github.com/mitchellkrogza) and Nissar Chababy (github.com/funilrys), under the MIT License.
+Phishing database: https://github.com/mitchellkrogza/Phishing.Database
+
 Below is a list of images used in this project, along with their respective attributions:
 
 ---
