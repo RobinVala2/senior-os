@@ -26,4 +26,10 @@ Author: shurkin_son - Freepik.com
 Source: https://www.freepik.com/free-photo/expressive-senior-woman-posing_11196440.htm
 License: Free for commercial use WITH ATTRIBUTION license
 ---
+Image: SMAIL_EXIT_1.png
+Author: Moqaccino Resources - Flaticon
+Source: https://www.flaticon.com/free-icons/exit
+License: Free for commercial use WITH ATTRIBUTION license
+---
+
 

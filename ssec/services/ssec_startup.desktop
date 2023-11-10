@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=application
+Name=Ssec Login Window
+Exec=python3 /ssec/ssec_startup.py
+Terminal=false

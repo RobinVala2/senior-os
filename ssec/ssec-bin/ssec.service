@@ -1,0 +1,10 @@
+[Unit]
+Description=Automated LUKS decryption
+Before=mutli-user.target
+
+[Service]
+type=simple
+ExecStart=/usr/bin/python3 /ssec/ssec.py
+
+[Install]
+WantedBy=mutli-user.target

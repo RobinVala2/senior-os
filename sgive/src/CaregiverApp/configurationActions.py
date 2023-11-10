@@ -89,7 +89,7 @@ def caregiverAppConfig(path):
         'GlobalConfiguration': {
             "numOfScreen": 0,
             "language": "English",
-            "colorMode": "Light",
+            "colorMode": "light",
             "soundDelay": 5,
             "alertColor": "#AAFF00",
             "alertSoundLanguage": "English",
@@ -99,9 +99,10 @@ def caregiverAppConfig(path):
             "fontFamily": "Helvetica",
             "macAddress": getMac(),
         },
-        "GUI_template" : {
+        "GUI_template": {
             "num_of_menu_buttons": 2,
             "num_of_opt_on_frame": 4,
+            "num_of_opt_buttons": 18,
             "padx_value": 5,
             "height_divisor": 4.5,
             "width_divisor": 5,
@@ -118,3 +119,11 @@ def caregiverAppConfig(path):
     json_object = json.dumps(dictionary, indent=4)
     with open(os.path.join(path, 'config.json'), "w+") as outfile:
         outfile.write(json_object)
+
+def MLcheck():
+    print("ne")
+    path = os.path.join(os.getcwd(), "ML-saved")
+
+    if os.path.exists(path):
+        print(os.listdir(path))
+

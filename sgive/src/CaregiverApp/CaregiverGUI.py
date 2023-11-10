@@ -51,11 +51,11 @@ class menuBarButtons:
         for i in self.options:
             def getButtonNum(y=counter, name=i):
                 self.selectedButton(y)
-                if name == "Global\nconfig":
+                if name == "Global":
                     self.CallConfigFrame.GlobalConfigCall(y + 1)
-                elif name == "Mail\nconfig":
+                elif name == "Mail":
                     self.CallConfigFrame.SmailConfigCall(y + 1)
-                elif name == "Web\nconfig":
+                elif name == "Web":
                     self.CallConfigFrame.swebConfigCall(y + 1)
                 elif name == "LOGS":
                     self.CallConfigFrame.logConfigCall(y + 1)
@@ -427,7 +427,7 @@ class showGlobalConfigFrame:
 
         self.radioVar2 = StringVar(value=ryuconf.readJsonConfig("GlobalConfiguration", "colorMode"))
         # light mode
-        whiteColorButton = Radiobutton(self.frame, text="Light", variable=self.radioVar2, value="Light")
+        whiteColorButton = Radiobutton(self.frame, text="Light", variable=self.radioVar2, value="light")
         whiteColorButton['command'] = lambda: [
             ryuconf.editConfig("GlobalConfiguration", "colorMode", self.radioVar2.get()),
             self.changeColorColorschemeSelection(whiteColorButton)]
@@ -435,7 +435,7 @@ class showGlobalConfigFrame:
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         whiteColorButton.place(x=self.Xposition, y=self.Yposition, width=self.widthButton, height=self.heightWidgets)
         # dark mode
-        BlackColorButton = Radiobutton(self.frame, text="Dark", variable=self.radioVar2, value="Dark")
+        BlackColorButton = Radiobutton(self.frame, text="Dark", variable=self.radioVar2, value="dark")
         BlackColorButton['command'] = lambda: [
             ryuconf.editConfig("GlobalConfiguration", "colorMode", self.radioVar2.get()),
             self.changeColorColorschemeSelection(BlackColorButton)]

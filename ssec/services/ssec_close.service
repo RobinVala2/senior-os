@@ -1,0 +1,10 @@
+[Unit]
+Description=Unmounting and LUKS closing of /home direcory partition
+Before=shutdown.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /ssec/ssec_close.py
+
+[Install]
+WantedBy=shutdown.target
