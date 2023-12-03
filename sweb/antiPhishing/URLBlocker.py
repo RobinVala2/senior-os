@@ -18,4 +18,7 @@ class URLBlocker:
 
     # Control that if the url is Block
     def is_url_blocked(self, url):
-        return url in self.blocked_urls
+        for blocked_url in self.blocked_urls:
+            if blocked_url in url:
+                return True
+        return False
