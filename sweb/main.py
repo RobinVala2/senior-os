@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QStyle, QLabel, QVBoxLayout, QMessageBox
-from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar,QLineEdit, QWidget, QSizePolicy
+from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar, QWidget, QSizePolicy
 from PyQt5.QtGui import QIcon
 from urllib.parse import urlparse
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
@@ -184,6 +184,7 @@ class MyBrowser(QMainWindow):
                 background-color: {self.color_info_menu};
         }}
         QLineEdit {{
+            border: 2px solid black;
             height: {self.buttons_height_info}px;
             font-family: {self.font_family_info};
             font-size: {int(self.buttons_height_info/3)}px;
@@ -634,11 +635,6 @@ class MyBrowser(QMainWindow):
         #msg.exec_()
         self.play_sound_for_button(self.path_to_alert_phishing_music)
         
-    # Method for updating title
-    def update_title(self):
-        title = self.browser.page().title()
-        self.setWindowTitle(title)
-        
     # Method for connect to the second www2 ct24.ceskatelevize.cz
     def navigate_www1(self):
         self.browser.setUrl(QUrl("https://edition.cnn.com"))
@@ -687,7 +683,7 @@ if __name__ == "__main__":
         mainWindow = MyBrowser(config,sweb_config)
         mainWindow.show_app_fullscreen()
         sys.exit(qApplication.exec_())
-    except Exception as exp:
+    except Exception as excep:
         # Load URL blocker and logger
         sweb_config = load_sweb_config_json()
         file_to_phishing = sweb_config["phishing_database"]["path"]
