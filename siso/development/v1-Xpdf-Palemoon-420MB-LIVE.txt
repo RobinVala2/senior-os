@@ -1,0 +1,63 @@
+##SHELL COMMANDS
+	
+mkdir LIVE-USB && cd LIVE-USB && lb config
+cp /usr/share/doc/live-build/examples/auto/* auto/
+
+nano auto/config
+nano config/package-lists/live.list.chroot
+
+mkdir -p config/includes.chroot/home/user/PDF
+cp /root/OS_practicals_dark.pdf config/includes.chroot/home/user/PDF
+cp /root/OS_theory_dark.pdf config/includes.chroot/home/user/PDF
+
+#BOOT-TIME HOOK
+mkdir -p config/includes.chroot/lib/live/config
+cp /root/palemoon-32.4.0.linux-x86_64-gtk2.tar.xz config/includes.chroot/lib/live/config
+
+nano config/includes.chroot/lib/live/config/0999-Palemoon.sh
+chmod a+x config/includes.chroot/lib/live/config/0999-Palemoon.sh
+
+#HOOK SETTINGS BELONGS THERE
+
+#lb clean
+lb config
+lb build
+
+
+##CONTENT OF AUTO/CONFIG
+#!/bin/sh
+
+set -e
+
+lb config noauto \
+	--bootappend-live "boot=live console=ttyS0 parameters hostname=LIVE" \
+"${@}"
+
+
+##CONTENT OF CONFIG/PACKAGE-LISTS/LIVE.LIST.CHROOT
+live-boot
+live-config
+live-config-systemd
+#
+xz-utils
+#
+xserver-xorg-core
+xserver-xorg-input-libinput
+xserver-xorg-video-fbdev
+#
+xpdf
+xinit
+ca-certificates
+#
+libasound2
+libdbus-glib-1-2
+libgtk2.0-0
+
+##CONTENT OF config/includes.chroot/lib/live/config/0999-Palemoon.sh
+#!/bin/sh
+
+tar xvf /home/user/palemoon-32.4.0.linux-x86_64-gtk2.tar.xz -C /
+
+ln -s /palemoon/palemoon /usr/bin/palemoon
+
+rm -rf /home/user/palemoon-32.4.0.linux-x86_64-gtk2.tar.xz 

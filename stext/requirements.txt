@@ -1,4 +1,0 @@
-markdown
-pyqt5
-xhtml2pdf
-beautifulsoup4
