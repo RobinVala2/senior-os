@@ -10,7 +10,6 @@ from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
 
-
 class MLdetectionOfSusURL:
     def __init__(self, pathToCSV):
         self.pathToCSV = pathToCSV
@@ -94,17 +93,23 @@ def checkForDate():
     pathToDir = os.path.join(os.getcwd(), "ML-saved")
     listFiles = os.listdir(pathToDir)
     if len(listFiles) == 0:
-        return
+        print("ML will be trained again!")
+        return True
     timeModel = listFiles[0].split("_")
     dateObj = datetime.strptime(timeModel[0], '%Y-%m-%d').date()
-    timeTreshold = date.today() - relativedelta(months=6)
+    timeTreshold = date.today() - relativedelta(months=3)  # 3 months threshold
     finalJudgement = dateObj < timeTreshold
     if not finalJudgement:
         print("there is no need to train model again!")
+    else:
+        print("ML will be trained again!")
+        os.remove(os.path.join(pathToDir, listFiles[0]))  # delete old vectorizer
+        os.remove(os.path.join(pathToDir, listFiles[1]))  # delete old model
     return finalJudgement
 
+
 if __name__ == '__main__':
-    checkForDate()
+    timeCheck = checkForDate()
     URLthing = ['www.bankofamerica.com']
     model = None
     vectorizer = None
@@ -118,17 +123,15 @@ if __name__ == '__main__':
         vectorizer = gimmeNames[0]  # load saved vectorizer
 
     if os.path.isfile(fullPathToCsv):
-        inpt = input("Wanna train dataset again? [y/N]")
-        if inpt == "y" or inpt == "Y":
-            ML.machineLearning() # traing the model
+        if timeCheck:  # if the model is older than 3 months, whole ML will be trained again
+            ML.machineLearning()  # training the model
             if model is None or vectorizer is None:
                 gimmeNames = getSavedNames()
                 if not gimmeNames is None:
                     model = gimmeNames[1]  # load saved model
                     vectorizer = gimmeNames[0]  # load saved vectorizer
-
             ML.predictURL(model=model, vectorizer=vectorizer, url=URLthing)
-        else:
+        else:  # model isnt older than 3 month, so its just predicting
             ML.predictURL(model=model, vectorizer=vectorizer, url=URLthing)
     else:
         exit(404)
