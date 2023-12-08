@@ -80,7 +80,7 @@ def getMac():
 
 
 def caregiverAppConfig(path):
-    options = ["Global\nconfig", "Mail\nconfig", "Web\nconfig", "LOGS"]
+    options = ["Global", "Mail", "Web", "LOGS"]
     languageOPT = ["Czech", "English", "German"]
     dictionary = {
         'pathToConfig': {

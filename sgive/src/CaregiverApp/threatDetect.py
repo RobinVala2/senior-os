@@ -65,17 +65,16 @@ class MLdetectionOfSusURL:
         pickle.dump(self.vectorizer, open(f"ML-saved/{timeStamp}_vectorizer", "wb"))
         pickle.dump(self.model, open(f"ML-saved/{timeStamp}_model", "wb"))
 
-    def predictURL(self, model, vectorizer):
+    def predictURL(self, model, vectorizer, url):
         print("-- detection --")
-        url = ["https://www.google.com/"]
         vectorizer = pickle.load(open(f"ML-saved/{vectorizer}", "rb"))
         model = pickle.load(open(f"ML-saved/{model}", "rb"))
         feature = vectorizer.transform(url)
         predict = model.predict(feature)
         if predict == 1:
-            print(f"\n{url} is possible threat")
+            print(f"\n{url} is possible threat...")
         else:
-            print("\nwe chillin")
+            print(f"\n{url} is OK i think...")
 
 
 def getSavedNames():
@@ -106,6 +105,7 @@ def checkForDate():
 
 if __name__ == '__main__':
     checkForDate()
+    URLthing = ['www.bankofamerica.com']
     model = None
     vectorizer = None
     srcPath = os.path.dirname(os.getcwd())
@@ -126,8 +126,9 @@ if __name__ == '__main__':
                 if not gimmeNames is None:
                     model = gimmeNames[1]  # load saved model
                     vectorizer = gimmeNames[0]  # load saved vectorizer
-            ML.predictURL(model=model, vectorizer=vectorizer)
+
+            ML.predictURL(model=model, vectorizer=vectorizer, url=URLthing)
         else:
-            ML.predictURL(model=model, vectorizer=vectorizer)
+            ML.predictURL(model=model, vectorizer=vectorizer, url=URLthing)
     else:
         exit(404)
