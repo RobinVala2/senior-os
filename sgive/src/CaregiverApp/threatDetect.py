@@ -8,6 +8,9 @@ import os
 import pickle
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
+import logging
+logger = logging.getLogger(__file__)
+logger.info("initiated logging")
 
 
 class MLdetectionOfSusURL:
@@ -72,8 +75,10 @@ class MLdetectionOfSusURL:
         predict = model.predict(feature)
         if predict == 1:
             print(f"\n{url} is possible threat...")
+            logging.critical(f"{url} is possible threat... please check for sus activities.")
         else:
             print(f"\n{url} is OK i think...")
+            logging.info(f"{url} that was flagged as threat was false alarm.")
 
 
 def getSavedNames():
@@ -88,6 +93,7 @@ def getSavedNames():
             vectorizer = listFiles[0]
             model = listFiles[1]
         return vectorizer, model
+
 
 def checkForDate():
     pathToDir = os.path.join(os.getcwd(), "ML-saved")
@@ -108,30 +114,38 @@ def checkForDate():
     return finalJudgement
 
 
+class main:
+    def __init__(self, URL):
+        self.timeCheck = checkForDate()
+        self.URLthing = [URL]
+        self.model = None
+        self.vectorizer = None
+        self.srcPath = os.path.dirname(os.getcwd())
+        self.fullPathToCsv = os.path.join(self.srcPath, "PhisingSiteURL/phishing_site_urls.csv")
+        self.ML = MLdetectionOfSusURL(self.fullPathToCsv)
+        self.gimmeNames = getSavedNames()
+        self.loadingML()
+
+    def loadingML(self):
+        global model, vectorizer
+        if not self.gimmeNames is None:
+            model = self.gimmeNames[1]  # load saved model
+            vectorizer = self.gimmeNames[0]  # load saved vectorizer
+
+        if os.path.isfile(self.fullPathToCsv):
+            if self.timeCheck:  # if the model is older than 3 months, whole ML will be trained again
+                self.ML.machineLearning()  # training the model
+                if model is None or vectorizer is None:
+                    gimmeNames = getSavedNames()
+                    if not gimmeNames is None:
+                        model = gimmeNames[1]  # load saved model
+                        vectorizer = gimmeNames[0]  # load saved vectorizer
+                self.ML.predictURL(model=model, vectorizer=vectorizer, url=self.URLthing)
+            else:  # model isnt older than 3 month, so its just predicting
+                self.ML.predictURL(model=model, vectorizer=vectorizer, url=self.URLthing)
+        else:
+            exit(404)
+
+
 if __name__ == '__main__':
-    timeCheck = checkForDate()
-    URLthing = ['www.bankofamerica.com']
-    model = None
-    vectorizer = None
-    srcPath = os.path.dirname(os.getcwd())
-    fullPathToCsv = os.path.join(srcPath, "PhisingSiteURL/phishing_site_urls.csv")
-    ML = MLdetectionOfSusURL(fullPathToCsv)
-
-    gimmeNames = getSavedNames()
-    if not gimmeNames is None:
-        model = gimmeNames[1]  # load saved model
-        vectorizer = gimmeNames[0]  # load saved vectorizer
-
-    if os.path.isfile(fullPathToCsv):
-        if timeCheck:  # if the model is older than 3 months, whole ML will be trained again
-            ML.machineLearning()  # training the model
-            if model is None or vectorizer is None:
-                gimmeNames = getSavedNames()
-                if not gimmeNames is None:
-                    model = gimmeNames[1]  # load saved model
-                    vectorizer = gimmeNames[0]  # load saved vectorizer
-            ML.predictURL(model=model, vectorizer=vectorizer, url=URLthing)
-        else:  # model isnt older than 3 month, so its just predicting
-            ML.predictURL(model=model, vectorizer=vectorizer, url=URLthing)
-    else:
-        exit(404)
+    obj = main('https://www.google.cz/?hl=cs')

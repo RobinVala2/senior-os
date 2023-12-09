@@ -2,6 +2,7 @@ import json
 import os
 import logging
 from getmac import get_mac_address as gmac
+import threatDetect
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
@@ -13,6 +14,8 @@ def temporaryGetPath():  # this is how i get to the sconf/ file, for now :)
     path = split[0]
     configPath = os.path.join(path, "sconf")
     return configPath
+
+
 def getLogFile():
     whereTheFuckAmI = os.getcwd()
     split = whereTheFuckAmI.split("sgive")
@@ -23,6 +26,7 @@ def getLogFile():
     else:
         os.mkdir(os.path.join(configPath, "logs"))
         return os.path.join(configPath, "logs")
+
 
 def readJsonConfig(key, value):
     path = temporaryGetPath()
@@ -57,7 +61,7 @@ def readLog(givenFilter,givenName):
                     break  # bžum bžum bžum brekeke
         return pickedValues
     else:
-        logging.error(f'There is no {givenName}.log in sconf/logs or the folder itself is missing.')
+        logging.error(f"There is no {givenName}.log in sconf/logs or the folder itself is missing.")
         #exit(1)
 
 
@@ -120,10 +124,12 @@ def caregiverAppConfig(path):
     with open(os.path.join(path, 'config.json'), "w+") as outfile:
         outfile.write(json_object)
 
-def MLcheck():
-    print("ne")
+
+def MLcheck(URL):
+    print("TU SE ČUMÍM DO SLOŽKY /ML-SAVED, jestli tu něco je :)")
     path = os.path.join(os.getcwd(), "ML-saved")
 
     if os.path.exists(path):
+        threatDetect.main(URL)
         print(os.listdir(path))
 
