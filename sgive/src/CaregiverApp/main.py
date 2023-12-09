@@ -12,7 +12,8 @@ logging.basicConfig(
 )
 
 if __name__ == '__main__':
-    ryuconf.MLcheck()
+    url = 'https://www.youtube.com/'
+    ryuconf.MLcheck(url)
     whereTheFuckAmI = os.getcwd()
     split = whereTheFuckAmI.split("sgive")
     path = split[0]
