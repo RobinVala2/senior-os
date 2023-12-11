@@ -18,7 +18,12 @@ class URLBlocker:
 
     # Control that if the url is Block
     def is_url_blocked(self, url):
-        for blocked_url in self.blocked_urls:
-            if blocked_url in url:
-                return True
-        return False
+        if "login.microsoft" in url:
+            return False
+        elif "microsoft365.com" in url:
+            return False
+        else:
+            for blocked_url in self.blocked_urls:
+                if blocked_url in url:
+                    return True
+            return False
