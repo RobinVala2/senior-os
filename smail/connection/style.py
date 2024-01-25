@@ -143,3 +143,34 @@ def height_config(parent):
     number_of_lines_textarea = int((usable_height - font_size_in_pixels * 6) / font_size_in_pixels)
 
     return number_of_lines_listbox, number_of_lines_textarea
+
+def get_email_sender(extracted_name):
+    start_index = extracted_name.find(": ")
+    end_index = extracted_name.find("<")
+    # extracting name from email body
+    if start_index != -1 and end_index != -1:
+        name = extracted_name[start_index + 1:end_index].strip()
+        return name
+    else:
+        extracted_name = extracted_name.split(" ")[1]
+        name = extracted_name.split("@")[0]
+        return name
+
+def get_guardian_email():
+    # reading configuration
+    data = load_json_file("../sconf/SMAIL_config.json")
+    mail = data["guardian_email"]
+    return mail
+
+def resend_active():
+    # reading configuration
+    data = load_json_file("../sconf/SMAIL_config.json")
+    active = data["resend_email"]
+    smail = data["credentials"]["username"]
+    gmail = data["guardian_email"]
+    return active ==1, smail, gmail
+
+def get_guardian_email():
+    data = load_json_file("../sconf/SMAIL_config.json")
+    gmail = data["guardian_email"]
+    return gmail

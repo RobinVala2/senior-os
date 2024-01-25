@@ -1,11 +1,14 @@
 import logging
 import threading
 import tkinter as tk
+import webbrowser
 from tkinter import scrolledtext
+import re
+
 from smail.connection.style import (font_config, search_mail,
                                     get_language, button_hover, button_leave,
                                     images, image_config, app_color,
-                                    height_config, play_sound, load_json_file)
+                                    height_config, play_sound, load_json_file, get_email_sender)
 from smail.connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from smail.template import guiTemplate as temp
@@ -325,7 +328,7 @@ class one_frame(tk.Frame):
 
         # getting emails from inbox
         self.emails, self.subject = read_mail()
-        # reversing emails - new emails will be on top of the lisbox
+        # reversing emails - new emails will be on top of the listbox
         self.reversed_list = self.emails[::-1]
 
         try:
@@ -341,14 +344,23 @@ class one_frame(tk.Frame):
         # for now safe_emails and phish_emails are separated
 
         for n in self.safe_emails:
-            self.inbox_list.insert(tk.END, n.split("\n")[0])
+            self.name = get_email_sender(n.split("\n")[1])
+            self.sub = n.split("\n")[0].split(":",1)[1]
+
+            self.inbox_list.insert(tk.END, self.name +" -"+ self.sub)
             # binding listbox to text area to view email
             self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
 
+
         for m in self.phish_emails:
-            self.inbox_list.insert(tk.END, m.split("\n")[0])
+            self.name = get_email_sender(m.split("\n")[1])
+            self.sub = m.split("\n")[0].split(":", 1)[1]
+
+            self.inbox_list.insert(tk.END, self.name +" -"+ self.sub)
             # binding listbox to text area to view email
             self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+
+
 
     def showEmail(self, event):
 
@@ -382,12 +394,44 @@ class one_frame(tk.Frame):
         self.last_selected_email = selected_email
 
     def configure_message_area(self, email):
-
-        # inserting email into text area
+        # Inserting email into text area
         self.message_area.configure(state="normal")
         self.message_area.delete("1.0", tk.END)
-        self.message_area.insert(tk.END, email)
+        self.display_email(email)
         self.message_area.configure(state="disabled")
+
+    def display_email(self, email):
+        # Display the entire email content in the text area
+        self.message_area.insert(tk.END, email)
+        self.tag_urls()
+
+    def tag_urls(self):
+        # Find all URLs in email and tag them
+        for match in re.finditer(r'https?://\S+|www\.\S+', self.message_area.get("1.0", tk.END)):
+            url = match.group()
+            self.tag_and_bind_url(url)
+
+    def tag_and_bind_url(self, url):
+        # Tag and bind URL in the text area for click event
+        start_pos = "1.0"
+        while True:
+            start_index = self.message_area.search(url, start_pos, tk.END)
+            # If there are no other URLs break
+            if not start_index:
+                break
+            # Calculating the end of URL
+            end_index = f"{start_index}+{len(url)}c"
+            # Creating a tag name for the URL: replacing . with _ to make the name valid
+            tag_name = f"clickable_{start_index.replace('.', '_')}"
+            # tag config
+            self.message_area.tag_add(tag_name, start_index, end_index)
+            self.message_area.tag_config(tag_name, foreground="blue", underline=True)
+            self.message_area.tag_bind(tag_name, "<Button-1>", lambda event, u=url: self.open_browser(event, u))
+            start_pos = end_index
+
+    def open_browser(self, event, url):
+        # Open the web browser when clicking on a URL
+        webbrowser.open_new(url)
 
     def alert_buttons(self):
 

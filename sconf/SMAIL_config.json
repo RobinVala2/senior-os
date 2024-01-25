@@ -1,9 +1,9 @@
 {
     "credentials": {
         "username": "ts1bp2023@gmail.com",
-        "password": "dilviuphvrhebfzj",
+        "password": "wuaxnflbzrdyysdy",
         "smtp_server": "smtp.gmail.com",
-        "smtp_port": 465,
+        "smtp_port": 587,
         "imap_server": "imap.gmail.com",
         "imap_port": 993,
         "max": 20
@@ -12,7 +12,7 @@
     "emails":{
         "Person1": "croce.rosay@gmail.com",
         "Person2": "komosny@vut.cz",
-        "Person3": "241124@vutbr.cz",
+        "Person3": "241124@vut.cz",
         "Person4": "email4@gmail.com",
         "Person5": "email5@gmail.com",
         "Person6": "email6@gmail.com"
@@ -29,7 +29,9 @@
         "Person6": "../sconf/images/SMAIL_PERSON_6.png"
     },
 
-    "lang": "de",
+    "resend_email": 0,
+    "guardian_email": "241124@vut.cz",
+    "lang": "cz",
     "timer": 5000,
 
     "text": {

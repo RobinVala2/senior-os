@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 import imaplib
 import smtplib
@@ -6,7 +7,7 @@ import email
 import ssl
 import re
 import chardet
-from smail.connection.style import load_json_file, get_language
+from smail.connection.style import load_json_file, get_language, get_guardian_email, resend_active
 
 logger = logging.getLogger(__file__)
 
@@ -28,6 +29,9 @@ max_emails = credentials["max"]
 sslContext = ssl.create_default_context()
 
 
+phish_senders = []
+
+
 def send_email(recipient, subject, content):
 
     msg = MIMEText(content)
@@ -35,14 +39,23 @@ def send_email(recipient, subject, content):
     msg['From'] = login
     msg['To'] = recipient
 
+
     try:
         # establishing SMTP connection to the SMTP server
-        with smtplib.SMTP_SSL(
-                smtp_server, smtp_port, context=sslContext
+        with smtplib.SMTP(
+                smtp_server, smtp_port
         ) as server:
+            server.starttls(context=sslContext)
             server.login(login, password)
             server.sendmail(login, recipient, msg.as_string())
-        logger.warning(f"An email has been sent to {recipient}")
+            if recipient in phish_senders:
+                content = f"Senior send reply email to phishing email ({recipient}) with content:\n" + content
+                msg = MIMEText(content)
+                msg['Subject'] = f"Reply to phish email by {login}"
+                msg['From'] = login
+                server.sendmail(login, get_guardian_email(), msg.as_string())
+                logger.warning(f"An email has been sent to {recipient}! Resending email to guardian: {get_guardian_email()}!")
+        logger.info(f"An email has been sent to {recipient}.")
         # returning 1 if email was send successfully
         return 1
 
@@ -136,7 +149,10 @@ def read_mail():
                     subjects.append(decoded_subject)
                     break
 
+        resend_mail_to_guardian(emails)
+
         logger.info(f"{len(emails)} emails successfully loaded")
+
         return emails, subjects
 
     except imaplib.IMAP4.error:
@@ -171,6 +187,7 @@ def check_content_of_email(content, sender):
         if clean_url in phish_urls:
             logger.warning(f"Found a phishing URL from {sender}, url: {url}")
             found_phishing_url = True
+            phish_senders.append(sender)
             break
         else:
             logger.info(f"Found URL from {sender}, url: {url}")
@@ -209,5 +226,15 @@ def check_email_for_spam(email_messages):
         else:
             phish_emails.append(email_content)
 
-
     return safe_emails, phish_emails
+
+def resend_mail_to_guardian(emails):
+    active, smail, gmail = resend_active()
+    if active:
+        date = datetime.now().strftime("%d.%m.%Y")
+        email_subject = f"Email report from {smail}, date: {date}"
+        email_content = ""
+        logger.info(f"Sending emails from seniors address {smail} to guardians email address {gmail}.")
+        for e in emails:
+            email_content += e
+        send_email(gmail, email_subject, email_content)
