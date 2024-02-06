@@ -67,7 +67,7 @@ class MLdetectionOfSusURL:
         pickle.dump(self.vectorizer, open(f"ML-saved/{timeStamp}_vectorizer", "wb"))
         pickle.dump(self.model, open(f"ML-saved/{timeStamp}_model", "wb"))
 
-    def predictURL(self, model, vectorizer, url):
+    def predictURL(self,model, vectorizer, url):
         print("-- detection --")
         vectorizer = pickle.load(open(f"ML-saved/{vectorizer}", "rb"))
         model = pickle.load(open(f"ML-saved/{model}", "rb"))
@@ -81,70 +81,69 @@ class MLdetectionOfSusURL:
             logging.info(f"{url} that was flagged as threat was false alarm.")
 
 
-def getSavedNames():
-    pathToDir = os.path.join(os.getcwd(), "ML-saved")
-    listFiles = os.listdir(pathToDir)
-    if os.path.exists(pathToDir) and not len(listFiles) == 0:
-        firstSplit = listFiles[0].split("_")
-        if firstSplit[1] == "model":
-            model = listFiles[0]
-            vectorizer = listFiles[1]
-        else:
-            vectorizer = listFiles[0]
-            model = listFiles[1]
-        return vectorizer, model
-
-
-def checkForDate():
-    pathToDir = os.path.join(os.getcwd(), "ML-saved")
-    listFiles = os.listdir(pathToDir)
-    if len(listFiles) == 0:
-        print("ML will be trained again!")
-        return True
-    timeModel = listFiles[0].split("_")
-    dateObj = datetime.strptime(timeModel[0], '%Y-%m-%d').date()
-    timeTreshold = date.today() - relativedelta(months=3)  # 3 months threshold
-    finalJudgement = dateObj < timeTreshold
-    if not finalJudgement:
-        print("there is no need to train model again!")
-    else:
-        print("ML will be trained again!")
-        os.remove(os.path.join(pathToDir, listFiles[0]))  # delete old vectorizer
-        os.remove(os.path.join(pathToDir, listFiles[1]))  # delete old model
-    return finalJudgement
-
-
 class main:
     def __init__(self, URL):
-        self.timeCheck = checkForDate()
         self.URLthing = [URL]
-        self.model = None
-        self.vectorizer = None
         self.srcPath = os.path.dirname(os.getcwd())
         self.fullPathToCsv = os.path.join(self.srcPath, "PhisingSiteURL/phishing_site_urls.csv")
-        self.ML = MLdetectionOfSusURL(self.fullPathToCsv)
-        self.gimmeNames = getSavedNames()
-        self.loadingML()
+        self.ML = MLdetectionOfSusURL(self.fullPathToCsv)   # call pro classu s ML akcema
+        # modules:
+        self.CheckingAgeOfML()
 
-    def loadingML(self):
-        global model, vectorizer
-        if not self.gimmeNames is None:
-            model = self.gimmeNames[1]  # load saved model
-            vectorizer = self.gimmeNames[0]  # load saved vectorizer
+    def getSavedNames(self):
+        # todo: check že existují obě složky
+        pathToDir = os.path.join(os.getcwd(), "ML-saved")
+        listFiles = os.listdir(pathToDir)
+        if os.path.exists(pathToDir) and not len(listFiles) == 0:
+            firstSplit = listFiles[0].split("_")
+            if firstSplit[1] == "model":
+                model = listFiles[0]
+                vectorizer = listFiles[1]
+            else:
+                vectorizer = listFiles[0]
+                model = listFiles[1]
+            return vectorizer, model
 
-        if os.path.isfile(self.fullPathToCsv):
-            if self.timeCheck:  # if the model is older than 3 months, whole ML will be trained again
-                self.ML.machineLearning()  # training the model
-                if model is None or vectorizer is None:
-                    gimmeNames = getSavedNames()
-                    if not gimmeNames is None:
-                        model = gimmeNames[1]  # load saved model
-                        vectorizer = gimmeNames[0]  # load saved vectorizer
-                self.ML.predictURL(model=model, vectorizer=vectorizer, url=self.URLthing)
-            else:  # model isnt older than 3 month, so its just predicting
-                self.ML.predictURL(model=model, vectorizer=vectorizer, url=self.URLthing)
+    def CheckingAgeOfML(self):
+        pathToDir = os.path.join(os.getcwd(), "ML-saved")
+        listFiles = os.listdir(pathToDir)
+
+        # if there is no model or vectorizer files pressent, traing the model:
+        if len(listFiles) == 0:
+            print("There is no ML files in system, training ML model...")
+            self.MLdetection()
+            return
+
+        timeModel = listFiles[0].split("_")
+        dateObj = datetime.strptime(timeModel[0], '%Y-%m-%d').date()
+        timeTreshold = date.today() - relativedelta(months=3)  # 3 months threshold
+        finalJudgement = dateObj < timeTreshold
+
+        # if the model and vectorizer aint that old:
+        if not finalJudgement:
+            print("there is no need to train model again!")
+            self.MLdetection()
+
+        # bro that shit old af, training again
         else:
-            exit(404)
+            print("ML will be trained again!")
+            os.remove(os.path.join(pathToDir, listFiles[0]))  # delete old vectorizer
+            os.remove(os.path.join(pathToDir, listFiles[1]))  # delete old model
+            self.MLdetection()
+        return finalJudgement
+
+    def MLdetection(self):
+        getNames = self.getSavedNames()  # loading the files again
+        # getNames[1] → MODEL
+        # getNames[0] → vectorizer
+        if not getNames is None:
+            self.ML.predictURL(getNames[1], getNames[0], self.URLthing)  # prediction
+        # when there is no model or vectorizer in OS
+        else:
+            self.ML.machineLearning()  # training
+            getNamesV2 = self.getSavedNames()  # need to check of file names again
+            self.ML.predictURL(getNamesV2[1], getNamesV2[0], self.URLthing)  # prediction
+
 
 
 if __name__ == '__main__':
