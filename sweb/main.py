@@ -41,36 +41,6 @@ class MyWebEnginePage(QWebEnginePage):
         new_page.urlChangedSignal.connect(self.urlChangedSignal.emit)
         return new_page
     
-    # def finished_load_web_page(self, success):
-    #     # Get url value from browser
-    #     url_in_browser_value = self.url()
-    #     if success:
-    #         # If it is home, do not change anything
-    #         if "homepage.html" != url_in_browser_value.toString():
-    #             self.setZoomFactor(1.5)
-    #             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-    #             QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
-    #         else:
-    #             return
-    
-    # # This method is used for changing font in HTML content
-    # def html_injection_to_web_content(self):
-    #     injection_javasript = """
-    #     <!-- Change only paragraph, article, span and header elements with lower levels--> 
-    #     var changed_tag = ['p', 'div', 'article', 'span', 'h3', 'h4', 'h5'];
-    #     var change_content_style = function(element) {
-    #         if (element.children.length === 0) {
-    #             element.style.fontSize = '23px';
-    #             element.style.lineHeight = '1.2';
-    #             element.style.fontFamily = 'Arial';
-    #         }
-    #         Array.from(element.children).forEach(change_content_style);
-    #     }
-    #     <!-- Call created function with input html content-->
-    #     change_content_style(document.body);
-    #     """
-    #     self.runJavaScript(injection_javasript)
-        
 class GetMonitorHeightAndWidth:
     def __init__(self):
         template_config = load_template_config_json()
