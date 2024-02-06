@@ -1,17 +1,22 @@
-from PyQt5.QtWidgets import QMainWindow, QApplication, QStyle, QLabel, QVBoxLayout, QMessageBox
-from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar, QWidget, QSizePolicy
-from PyQt5.QtGui import QIcon
-from urllib.parse import urlparse
+# Frameworks from PyQt5 libraries
+from PyQt5.QtWidgets import QMainWindow, QApplication, QStyle, QLabel, QVBoxLayout
+from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar, QWidget
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
 from PyQt5.QtCore import QEvent, QUrl, Qt, QTimer, QSize, pyqtSignal
-import sys, os
+from PyQt5.QtGui import QIcon
+# Library for parsing URL value
+from urllib.parse import urlparse
+# Library for getting information about user's monitor
+from screeninfo import get_monitors
+# Created own class for logging and blocking phishing URL
 from antiPhishing.URLBlocker import URLBlocker
 from antiPhishing.URLLogger import URLLogger
-from antiPhishing.UpdatePhishingTXT import TXTFileModificationChecker
+from antiPhishing.UpdatePhishingTXT import PhishingDatabaseModificationChecker
 from loadConfig import *
+# Own class for translating
 from languge_Translator import Translator
 import pygame, math
-from screeninfo import get_monitors
+import sys, os
 
 class MyWebEnginePage(QWebEnginePage):
     # Define a signal that will carry a URL as its argument
@@ -35,8 +40,38 @@ class MyWebEnginePage(QWebEnginePage):
         new_page = MyWebEnginePage(self)
         new_page.urlChangedSignal.connect(self.urlChangedSignal.emit)
         return new_page
+    
+    # def finished_load_web_page(self, success):
+    #     # Get url value from browser
+    #     url_in_browser_value = self.url()
+    #     if success:
+    #         # If it is home, do not change anything
+    #         if "homepage.html" != url_in_browser_value.toString():
+    #             self.setZoomFactor(1.5)
+    #             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
+    #             QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
+    #         else:
+    #             return
+    
+    # # This method is used for changing font in HTML content
+    # def html_injection_to_web_content(self):
+    #     injection_javasript = """
+    #     <!-- Change only paragraph, article, span and header elements with lower levels--> 
+    #     var changed_tag = ['p', 'div', 'article', 'span', 'h3', 'h4', 'h5'];
+    #     var change_content_style = function(element) {
+    #         if (element.children.length === 0) {
+    #             element.style.fontSize = '23px';
+    #             element.style.lineHeight = '1.2';
+    #             element.style.fontFamily = 'Arial';
+    #         }
+    #         Array.from(element.children).forEach(change_content_style);
+    #     }
+    #     <!-- Call created function with input html content-->
+    #     change_content_style(document.body);
+    #     """
+    #     self.runJavaScript(injection_javasript)
         
-class GetHeightAndWidthFromScreen:
+class GetMonitorHeightAndWidth:
     def __init__(self):
         template_config = load_template_config_json()
         num_of_monitor = template_config["GlobalConfiguration"]["numOfScreen"]
@@ -64,52 +99,49 @@ class GetHeightAndWidthFromScreen:
 # My main browser contains all GUI in this class (Toolbar, Buttons, URLbar)
 class MyBrowser(QMainWindow):
     # Define the contructor for initialization 
-    def __init__(self,config_data,my_config_data):
+    def __init__(self,template_config_data,my_config_data):
         super(MyBrowser,self).__init__()
         # Set window flags to customize window behavior
         # Remove standard window controls
         self.setWindowFlags(Qt.CustomizeWindowHint)
-        self.browser = QWebEngineView()
-        # Set cutstom page to open in the same browser
-        self.custom_page = MyWebEnginePage(self.browser)
-        self.custom_page.urlChangedSignal.connect(self.on_url_changed_my_custom_page)
-        # Set page for page
-        self.browser.setPage(self.custom_page)
-        self.setCentralWidget(self.browser)
-        self.browser.setUrl(QUrl("https://edition.cnn.com"))
-        self.lang_translator = Translator()
-        self.get_height_and_width = GetHeightAndWidthFromScreen()
-        
-        #settings = self.browser.settings()
-        #settings.setFontSize(QWebEngineSettings.DefaultFontSize, 50) 
+        self.main_browser = QWebEngineView()
+        # Set cutstom page to open new page in the same browser
+        self.my_custom_page = MyWebEnginePage(self.main_browser)
+        self.my_custom_page.urlChangedSignal.connect(self.on_url_changed_my_custom_page)
+        # Add my custom page to browser
+        self.main_browser.setPage(self.my_custom_page)
+        self.setCentralWidget(self.main_browser)
+        self.main_browser.setUrl(QUrl("https://seznam.cz")) # Default page is configured as seznam
+        self.language_translator = Translator()
+        self.get_monitor_height_and_width = GetMonitorHeightAndWidth()
 
         # Load URL blocker and logger
-        file_to_phishing = my_config_data["phishing_database"]["path"]
-        self.url_blocker = URLBlocker(file_to_phishing)
-        self.logger = URLLogger()
+        path_to_phishing_database = my_config_data["phishing_database"]["path"]
+        self.url_blocker = URLBlocker(path_to_phishing_database)
+        self.url_logger = URLLogger()
         
-        # Check if SWEB_PHISH_1.txt is up to date
-        phishing_checker = TXTFileModificationChecker(my_config_data,self.logger)
-        phishing_checker.check_and_update_if_needed()
+        # Check if phishing database is up to date
+        phishing_database_check_update = PhishingDatabaseModificationChecker(my_config_data,self.url_logger)
+        phishing_database_check_update.check_and_update_if_needed()
         
-        # Initialization pygame mixer 
+        # Initialization pygame mixer  for play sounds
         pygame.mixer.init()
         # Sound control attribute
-        self.sound_for_button = None
+        self.sound_mixer_control_for_button = None
         
         self.path_to_alert_phishing_music = my_config_data["audio"]["sweb_cz_alert_phishing"]
         self.path_to_url_music = my_config_data["audio"]["sweb_cz_url"]
         
         # Get parameter from file sconf/TEMPLATE.json
-        self.font_family_info = config_data["GlobalConfiguration"]["fontFamily"]
-        self.font_size_info = config_data["GlobalConfiguration"]["fontSize"]
-        self.font_weight_info = config_data["GlobalConfiguration"]["fontThickness"]
-        self.button_value_padd_info = config_data["GUI_template"]["padx_value"]
-        self.time_hover_button = config_data["GlobalConfiguration"]["soundDelay"] * 1000
+        self.font_family_info = template_config_data["GlobalConfiguration"]["fontFamily"]
+        self.font_size_info = template_config_data["GlobalConfiguration"]["fontSize"]
+        self.font_weight_info = template_config_data["GlobalConfiguration"]["fontThickness"]
+        self.button_value_padd_info = template_config_data["GUI_template"]["padx_value"]
+        self.time_hover_button = template_config_data["GlobalConfiguration"]["soundDelay"] * 1000
         
         # Get height and width from class GetHeightAndWidthInfo
-        self.buttons_width_info = self.get_height_and_width.get_width_button()
-        self.buttons_height_info = self.get_height_and_width.get_height_button()
+        self.buttons_width_info = self.get_monitor_height_and_width.get_width_button()
+        self.buttons_height_info = self.get_monitor_height_and_width.get_height_button()
         
         # Get my parametr from file
         self.color_info_menu = my_config_data["colors_info"]["menu_frame"]
@@ -137,17 +169,17 @@ class MyBrowser(QMainWindow):
         
         self.addToolBarBreak()
         
-        self.toolbarSpacer = QToolBar("Spacer")
+        self.toolbar_space = QToolBar("Spacer")
         # Set the spacer height
-        self.toolbarSpacer.setFixedHeight(int(self.buttons_height_info))
-        self.toolbarSpacer.setStyleSheet(f"""
+        self.toolbar_space.setFixedHeight(int(self.buttons_height_info))
+        self.toolbar_space.setStyleSheet(f"""
         QToolBar {{
                 background-color: #fff;
         }}
         """)
-        self.addToolBar(self.toolbarSpacer)
-        self.toolbarSpacer.setMovable(False)
-        self.toolbarSpacer.setVisible(False)
+        self.addToolBar(self.toolbar_space)
+        self.toolbar_space.setMovable(False)
+        self.toolbar_space.setVisible(False)
         self.addToolBarBreak()
         
         # Set a style for Menu 1 toolbar
@@ -157,8 +189,8 @@ class MyBrowser(QMainWindow):
         self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
         
         # Get number of menu and number of options in the menu from sconf/config.json
-        num_menu_buttons = config_data['GUI_template']['num_of_menu_buttons']
-        num_of_opt_on_menu = config_data['GUI_template']['num_of_opt_on_frame']
+        num_menu_buttons = template_config_data['GUI_template']['num_of_menu_buttons']
+        num_of_opt_on_menu = template_config_data['GUI_template']['num_of_opt_on_frame']
 
         if num_menu_buttons == 2 and num_of_opt_on_menu == 4:
             self.setup_initial_menu_1()
@@ -204,21 +236,13 @@ class MyBrowser(QMainWindow):
         # Run this methods for the set Current language in Translator
         self.update_ui_text()
         self.update_ui_audio()
-        self.browser.urlChanged.connect(self.security_again_phishing)
-        self.browser.loadFinished.connect(self.onLoadFinished)
+        self.main_browser.urlChanged.connect(self.security_against_phishing)
+        # Apply changing text after finishing load
+        #self.main_browser.loadFinished.connect(self.finished_load_web_page)
     
     def on_url_changed_my_custom_page(self, url):
         # Load the new URL in the existing browser window
-        self.browser.setUrl(url)
-        
-    def onLoadFinished(self, success):
-        url_in_browser = self.browser.url()
-        print()
-        if success:
-            if "homepage" not in url_in_browser.toString():
-                self.browser.setZoomFactor(1.5)
-            else:
-                return
+        self.main_browser.setUrl(url)
         
     def setup_initial_menu_1(self):
         # Create first Menu
@@ -231,7 +255,7 @@ class MyBrowser(QMainWindow):
         menu1_news_layout.setAlignment(self.menu1_new_text_label,Qt.AlignCenter)
         # Change to hand when click cursor
         self.menu1_button.setCursor(Qt.PointingHandCursor)
-        self.menu1_button.clicked.connect(self.toggle_toolbar)
+        self.menu1_button.clicked.connect(self.toggle_between_toolbar)
         self.menu_1_toolbar.addWidget(self.menu1_button)
         
         # Add a bliak space between two button
@@ -271,7 +295,7 @@ class MyBrowser(QMainWindow):
         self.back_btn.setCursor(Qt.PointingHandCursor)
         # Align text and icon in the center
         back_layout.setAlignment(back_label,Qt.AlignCenter)
-        self.back_btn.clicked.connect(self.browser.back)
+        self.back_btn.clicked.connect(self.main_browser.back)
         self.menu_1_toolbar.addWidget(self.back_btn)
         
          # Add a blank space between two button
@@ -324,7 +348,7 @@ class MyBrowser(QMainWindow):
         # Change to hand when click cursor
         self.menu2_button.setCursor(Qt.PointingHandCursor)
         # Show menu 1 when clicked
-        self.menu2_button.clicked.connect(self.toggle_toolbar)
+        self.menu2_button.clicked.connect(self.toggle_between_toolbar)
         self.menu_2_toolbar.addWidget(self.menu2_button)
         
         # Add a bliak space between two button
@@ -465,13 +489,44 @@ class MyBrowser(QMainWindow):
         """
         
         return alert_style_string
-        
+    
+    def finished_load_web_page(self):
+        # Get url value from browser
+        url_in_browser_value = self.main_browser.url()
+        if True:
+            # If it is home, do not change anything
+            if "homepage.html" != url_in_browser_value.toString():
+                self.main_browser.setZoomFactor(1.5)
+                # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
+                QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
+            else:
+                return
+    
+    # This method is used for changing font in HTML content
+    def html_injection_to_web_content(self):
+        injection_javasript = """
+        <!-- Change only paragraph, article, span and header elements with lower levels--> 
+        var changed_tag = ['p', 'div', 'article', 'span', 'h3', 'h4', 'h5'];
+        <!-- Create a function to change content style-->
+        var change_content_style = function(element) {
+            if (element.children.length === 0) {
+                element.style.fontSize = '23px';
+                element.style.lineHeight = '1.2';
+                element.style.fontFamily = 'Arial';
+            }
+            Array.from(element.children).forEach(change_content_style);
+        }
+        <!-- Call created function with input html content-->
+        change_content_style(document.body);
+        """
+        self.main_browser.page().runJavaScript(injection_javasript)
+    
     # Show full screen without Minimizing or Moving
     def show_app_fullscreen(self):
         self.showFullScreen()
         
     # Method use for disable menu when click to another menu
-    def toggle_toolbar(self):
+    def toggle_between_toolbar(self):
         # Toggle visibility of toolbars
         if self.menu_1_toolbar.isVisible():
             self.menu_1_toolbar.setVisible(False)
@@ -482,44 +537,45 @@ class MyBrowser(QMainWindow):
         
     # Method for get current language and update default language in app
     # If translate button is clicked, change to other language and audio
-    def toggle_language(self):
-        self.lang_translator.toggle_language()
+    def toggle_supported_language(self):
+        self.language_translator.toggle_supported_language()
         self.update_ui_text()
         self.update_ui_audio()
     
     # Function for updating text on Browser when user clicked to button Translate
     # Default value is "cz" -> "en" -> "de"
     def update_ui_text(self):
-            self.menu1_new_text_label.setText(self.lang_translator.get_text("menu1"))
-            self.menu2_new_text_label.setText(self.lang_translator.get_text("menu2"))
-            self.menu2_addres_new_text_label.setText(self.lang_translator.get_text("menu2Address"))
+            self.menu1_new_text_label.setText(self.language_translator.get_translated_text("menu1"))
+            self.menu2_new_text_label.setText(self.language_translator.get_translated_text("menu2"))
+            self.menu2_addres_new_text_label.setText(self.language_translator.get_translated_text("menu2Address"))
 
     # Function for updating audio on Browser when user clicked to button Translate
     # Default value is "cz" -> "en" -> "de"
     def update_ui_audio(self):
-            self.setup_hover_sound(self.menu1_button,self.time_hover_button,self.lang_translator.get_audio("menu1"))
-            self.setup_hover_sound(self.menu1Exit,self.time_hover_button,self.lang_translator.get_audio("menu1Exit"))
-            self.setup_hover_sound(self.back_btn,self.time_hover_button,self.lang_translator.get_audio("menu1Back"))
-            self.setup_hover_sound(self.menu1WWW1,self.time_hover_button,self.lang_translator.get_audio("menu1WWW1"))
-            self.setup_hover_sound(self.menu1WWW2,self.time_hover_button,self.lang_translator.get_audio("menu1WWW2"))
-            self.setup_hover_sound(self.menu2_button,self.time_hover_button,self.lang_translator.get_audio("menu2"))
-            self.setup_hover_sound(self.menu2WWW3,self.time_hover_button,self.lang_translator.get_audio("menu2WWW3"))
-            self.setup_hover_sound(self.menu2WWW4,self.time_hover_button,self.lang_translator.get_audio("menu2WWW4"))
-            self.setup_hover_sound(self.menu2WWW5,self.time_hover_button,self.lang_translator.get_audio("menu2WWW5"))
-            self.setup_hover_sound(self.menu2Address,self.time_hover_button,self.lang_translator.get_audio("menu2Address"))
-            self.path_to_alert_phishing_music = self.lang_translator.get_audio("alert_phishing")
-            self.path_to_url_music = self.lang_translator.get_audio("url")
+            self.setup_hover_sound_value(self.menu1_button,self.time_hover_button,self.language_translator.get_translated_audio("menu1"))
+            self.setup_hover_sound_value(self.menu1Exit,self.time_hover_button,self.language_translator.get_translated_audio("menu1Exit"))
+            self.setup_hover_sound_value(self.back_btn,self.time_hover_button,self.language_translator.get_translated_audio("menu1Back"))
+            self.setup_hover_sound_value(self.menu1WWW1,self.time_hover_button,self.language_translator.get_translated_audio("menu1WWW1"))
+            self.setup_hover_sound_value(self.menu1WWW2,self.time_hover_button,self.language_translator.get_translated_audio("menu1WWW2"))
+            self.setup_hover_sound_value(self.menu2_button,self.time_hover_button,self.language_translator.get_translated_audio("menu2"))
+            self.setup_hover_sound_value(self.menu2WWW3,self.time_hover_button,self.language_translator.get_translated_audio("menu2WWW3"))
+            self.setup_hover_sound_value(self.menu2WWW4,self.time_hover_button,self.language_translator.get_translated_audio("menu2WWW4"))
+            self.setup_hover_sound_value(self.menu2WWW5,self.time_hover_button,self.language_translator.get_translated_audio("menu2WWW5"))
+            self.setup_hover_sound_value(self.menu2Address,self.time_hover_button,self.language_translator.get_translated_audio("menu2Address"))
+            self.path_to_alert_phishing_music = self.language_translator.get_translated_audio("alert_phishing")
+            self.path_to_url_music = self.language_translator.get_translated_audio("url")
 
     # QpushButton can be set HoverLeave and HoverEnter event with "widget"
-    def setup_hover_sound(self, widget, hover_time,path_to_sound):
+    # Play sound when usesr hovers on button longer than 5 seconds
+    def setup_hover_sound_value(self, input_widget, hover_time,path_to_sound):
         # Using Qtimer to set clock
-        widget.hover_timer = QTimer()
-        widget.hover_timer.setInterval(hover_time)
+        input_widget.hover_timer = QTimer()
+        input_widget.hover_timer.setInterval(hover_time)
         # Run only one times when hover
-        widget.hover_timer.setSingleShot(True)
-        widget.hover_timer.timeout.connect(lambda: self.play_sound_for_button(path_to_sound))
+        input_widget.hover_timer.setSingleShot(True)
+        input_widget.hover_timer.timeout.connect(lambda: self.play_sound_for_button(path_to_sound))
         # Install event to widget -> Event is comefrom eventFilter
-        widget.installEventFilter(self)
+        input_widget.installEventFilter(self)
     
     # Set event for leave and enter button -> Using only with QpushButton
     def eventFilter(self, watched, event):
@@ -539,35 +595,35 @@ class MyBrowser(QMainWindow):
             return
         try:
             # Load and play the sound file
-            self.sound_for_button = pygame.mixer.Sound(path_to_sound)
-            self.sound_for_button.play()
+            self.sound_mixer_control_for_button = pygame.mixer.Sound(path_to_sound)
+            self.sound_mixer_control_for_button.play()
         except Exception as exc:
             print(f"Failed to play sound: {str(exc)}")
             
     # Stop sound immediately when button is leaved hover
     def stop_sound_for_button(self):
-        if self.sound_for_button:
-            self.sound_for_button.stop()
-            self.sound_for_button = None
+        if self.sound_mixer_control_for_button:
+            self.sound_mixer_control_for_button.stop()
+            self.sound_mixer_control_for_button = None
         
     # This method is set for visible and invisible URL bar
     def toggle_url_toolbar(self):
         # Toggle visibility of the URL toolbar
         self.play_sound_for_button(self.path_to_url_music)
-        self.browser.setUrl(QUrl("about:blank"))
+        self.main_browser.setUrl(QUrl("about:blank"))
         self.url_toolbar.setVisible(not self.url_toolbar.isVisible())
-        self.toolbarSpacer.setVisible(not self.toolbarSpacer.isVisible())
+        self.toolbar_space.setVisible(not self.toolbar_space.isVisible())
 
     # This method is used for navigation URL bar
     def navigate_to_url(self):
         # Get url from URL toobal
-        url_in_bar = self.url_bar.text().strip()
+        url_in_bar_value = self.url_bar.text().strip()
         #If "." is not contained in URL
-        if "." not in url_in_bar:
-            url_in_bar = "https://www.google.com/search?q=" + url_in_bar
+        if "." not in url_in_bar_value:
+            url_in_bar_value = "https://www.google.com/search?q=" + url_in_bar_value
         # If in URl not http or https, connect with HTTPS
-        if "://" not in url_in_bar:
-            url_in_bar = "https://" + url_in_bar
+        if "://" not in url_in_bar_value:
+            url_in_bar_value = "https://" + url_in_bar_value
         
         # Set default style for toolbar
         self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
@@ -575,129 +631,120 @@ class MyBrowser(QMainWindow):
           
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
-        self.toolbarSpacer.setVisible(False)
+        self.toolbar_space.setVisible(False)
         # Set url bar as clean
         self.url_bar.clear()
         # Connect to URL after entering
-        self.browser.setUrl(QUrl(url_in_bar))
-        
-    def security_again_phishing(self,qurl):
+        self.main_browser.setUrl(QUrl(url_in_bar_value))
+    
+    # Method for security against phishing    
+    def security_against_phishing(self,qurl):
         # Get url from QURL
-        url_in_browser = qurl.toString()
-        if url_in_browser.endswith('/'):
-            if self.url_blocker.is_url_blocked(url_in_browser):
-                self.show_blocked_message(url_in_browser)
+        url_in_browser_value = qurl.toString()
+        if url_in_browser_value.endswith('/'):
+            if self.url_blocker.is_url_blocked(url_in_browser_value):
+                self.play_sound_for_button(self.path_to_alert_phishing_music)
                  # Log with level 5 when connected to phishing
-                self.logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Connection to Phishing server {url_in_browser}')
+                self.url_logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Connection to Phishing server {url_in_browser_value}')
                     
                 # Set red colour for connect to phishing
                 self.menu_1_toolbar.setStyleSheet(self.phishing_style_toolbar())
                 self.menu_2_toolbar.setStyleSheet(self.phishing_style_toolbar())
                 # Connect to URL after entering
-                self.browser.setUrl(QUrl(url_in_browser))
+                self.main_browser.setUrl(QUrl(url_in_browser_value))
             else:
+                # Set default style for toolbar
                 self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
                 self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
                 # Log with LEVEL 6 INFORMATIONAL
-                self.logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser}')
+                self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
                 # Connect to URL after entering
-                self.browser.setUrl(QUrl(url_in_browser))
-        elif not url_in_browser.endswith('/'):
-            if "about:blank" in url_in_browser:
+                self.main_browser.setUrl(QUrl(url_in_browser_value))
+        elif not url_in_browser_value.endswith('/'):
+            if "about:blank" in url_in_browser_value:
                 return
-            elif "google.com" in url_in_browser:
+            elif "google.com" in url_in_browser_value:
                     self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
                     self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
                     # Log with level 6 INFORMATIONAL
-                    self.logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser}')
+                    self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
                     # Connect to URL after entering
-                    self.browser.setUrl(QUrl(url_in_browser))
-            elif self.url_blocker.is_url_blocked(url_in_browser):
-                self.show_blocked_message(url_in_browser)
+                    self.main_browser.setUrl(QUrl(url_in_browser_value))
+            elif self.url_blocker.is_url_blocked(url_in_browser_value):
+                self.play_sound_for_button(self.path_to_alert_phishing_music)
                 # Log with level 5 when connected to phishing
-                self.logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Connection to Phishing server {url_in_browser}')
+                self.url_logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Connection to Phishing server {url_in_browser_value}')
                     
                 # Set red colour for connect to phishing
                 self.menu_1_toolbar.setStyleSheet(self.phishing_style_toolbar())
                 self.menu_2_toolbar.setStyleSheet(self.phishing_style_toolbar())
                 # Connect to URL after entering
-                self.browser.setUrl(QUrl(url_in_browser))
+                self.main_browser.setUrl(QUrl(url_in_browser_value))
         else:
-            self.browser.setUrl(QUrl(url_in_browser))
+            self.main_browser.setUrl(QUrl(url_in_browser_value))
             self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
             self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
             #self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
             # Log with LEVEL 6 INFORMATIONAL
-            #self.logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser}')
+            #self.logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
             # Connect to URL after entering
-            #self.browser.setUrl(QUrl(url_in_browser))
+            #self.browser.setUrl(QUrl(url_in_browser_value))
+        self.finished_load_web_page()
         
-    # Show block message when User connect to web from Phishing list
-    def show_blocked_message(self, url):
-        #msg = QMessageBox()
-        #msg.setIcon(QMessageBox.Warning)
-        #msg.setText(f"Blocked Phishing URL: {url}")
-        #msg.setWindowTitle("Blocked URL Warning")
-        #msg.exec_()
-        self.play_sound_for_button(self.path_to_alert_phishing_music)
         
     # Method for connect to the second www2 ct24.ceskatelevize.cz
     def navigate_www1(self):
-        self.browser.setUrl(QUrl("https://edition.cnn.com"))
+        self.main_browser.setUrl(QUrl("https://edition.cnn.com"))
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
-        self.toolbarSpacer.setVisible(False)
+        self.toolbar_space.setVisible(False)
         
     # Method for connect to the irozhlas.cz
     def navigate_www2(self):
-        self.browser.setUrl(QUrl("https://irozhlas.cz"))
+        self.main_browser.setUrl(QUrl("https://irozhlas.cz"))
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
-        self.toolbarSpacer.setVisible(False)
+        self.toolbar_space.setVisible(False)
 
     # Method for connect to the idnes.cz
     def navigate_www3(self):
         # Define the Home Page for the Web Browser
         # !!! using .html but still don't have good Home Page
         html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'homepage.html')
-        self.browser.load(QUrl.fromLocalFile(html_path))
+        self.main_browser.load(QUrl.fromLocalFile(html_path))
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
-        self.toolbarSpacer.setVisible(False)
+        self.toolbar_space.setVisible(False)
         self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
         self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
 
     # Method for connect to the aktualne.cz
     def navigate_www4(self):
-        self.browser.setUrl(QUrl("https://www.aktualne.cz"))
+        self.main_browser.setUrl(QUrl("https://www.aktualne.cz"))
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
-        self.toolbarSpacer.setVisible(False)
+        self.toolbar_space.setVisible(False)
 
     # Method for connect to the denik.cz
     def navigate_www5(self):
-        self.browser.setUrl(QUrl("https://www.denik.cz"))
+        self.main_browser.setUrl(QUrl("https://www.denik.cz"))
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
-        self.toolbarSpacer.setVisible(False)
+        self.toolbar_space.setVisible(False)
     
-# Definuje funkci Main
+# Define main function to call application
 if __name__ == "__main__":
     try:
         qApplication = QApplication(sys.argv)
         # Load config data from JSON file
         sweb_config = load_sweb_config_json()
-        config = load_template_config_json()
-        mainWindow = MyBrowser(config,sweb_config)
-        mainWindow.show_app_fullscreen()
+        template_config = load_template_config_json()
+        main_window = MyBrowser(template_config,sweb_config) # Set parametr for main browser window
+        main_window.show_app_fullscreen() # Call main browser window
         sys.exit(qApplication.exec_())
     except Exception as excep:
-        # Load URL blocker and logger
-        sweb_config = load_sweb_config_json()
-        file_to_phishing = sweb_config["phishing_database"]["path"]
-        url_blocker = URLBlocker(file_to_phishing)
-        logger = URLLogger()
-        # Log with level 2
-        logger.log_blocked_url('WEBBROWSER', 2, 'main <security>', f'Application did not work')
+        url_logger = URLLogger()
+        # Log with level 2 - CRITICAL
+        url_logger.log_blocked_url('WEBBROWSER', 2, 'main <security>', f'Application did not work')
         # Exit with an error code
         sys.exit(1)
