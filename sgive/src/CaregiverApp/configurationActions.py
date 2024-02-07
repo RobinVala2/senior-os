@@ -2,7 +2,7 @@ import json
 import os
 import logging
 from getmac import get_mac_address as gmac
-import threatDetect
+from sgive.src.CaregiverApp import threatDetect
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
@@ -40,7 +40,7 @@ def readJsonConfig(key, value):
         exit(1)
 
 
-def readLog(givenFilter,givenName):
+def readLog(givenFilter, givenName):
     print(givenName)
     findPhrases = []
     if givenFilter is None:
@@ -83,6 +83,15 @@ def getMac():
     return mac
 
 
+def MLcheck(URL):
+    print("Checking for /ML-SAVED dir...")
+    path = os.path.join(os.getcwd(), "ML-saved")
+
+    if os.path.exists(path):
+        threatDetect.Main(URL)
+        print(os.listdir(path))
+
+
 def caregiverAppConfig(path):
     options = ["Global", "Mail", "Web", "LOGS"]
     languageOPT = ["Czech", "English", "German"]
@@ -94,6 +103,8 @@ def caregiverAppConfig(path):
             "numOfScreen": 0,
             "language": "English",
             "colorMode": "light",
+            "light_color": "white",
+            "dark_color": "gray",
             "soundDelay": 5,
             "alertColor": "#AAFF00",
             "alertSoundLanguage": "English",
@@ -117,19 +128,10 @@ def caregiverAppConfig(path):
             "heightDivisor": 7,
             "menuButtonsList": options.copy(),
             "LanguageOptions": languageOPT.copy()
-
         },
     }
     json_object = json.dumps(dictionary, indent=4)
     with open(os.path.join(path, 'config.json'), "w+") as outfile:
         outfile.write(json_object)
 
-
-def MLcheck(URL):
-    print("TU SE ČUMÍM DO SLOŽKY /ML-SAVED, jestli tu něco je :)")
-    path = os.path.join(os.getcwd(), "ML-saved")
-
-    if os.path.exists(path):
-        threatDetect.main(URL)
-        print(os.listdir(path))
 

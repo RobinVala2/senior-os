@@ -213,6 +213,7 @@ class App:
     def rootWindowSetup(self):
         self.root.title("custom tkinter gui template")
         self.root.attributes('-fullscreen', True)
+
         self.root.configure(background="white")
 
     def appMenuFrameSetup(self):
@@ -224,7 +225,12 @@ class App:
         MenuBar(menuFrame, self.screenWidth, self.screenHeight / self.heightDivisor, self.root)
 
 
-if __name__ == '__main__':
+def main():
     root = customtkinter.CTk()
     App(root)
     root.mainloop()
+
+
+
+if __name__ == '__main__':
+    main()

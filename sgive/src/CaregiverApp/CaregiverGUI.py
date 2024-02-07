@@ -17,7 +17,7 @@ logger.info("initiated logging")
 
 
 class menuBarButtons:
-    def __init__(self, menuFrame: Frame, root: Tk, heightDivisor: int, height: int, width: int):
+    def __init__(self, menuFrame: Frame, root: Tk, heightDivisor: int, height: int, width: int, color, light_color, dark_color):
         self.height = height
         self.width = width
         self.root = root
@@ -26,9 +26,10 @@ class menuBarButtons:
         self.xValue = 0
         self.options = ryuconf.readJsonConfig("careConf", "menuButtonsList")
         self.buttonDictionary = {}
+        self.color_preset = color
         # calls section
         self.buttons()
-        self.CallConfigFrame = configurationFramesCreate(self.root, self.height, self.width)
+        self.CallConfigFrame = configurationFramesCreate(self.root, self.height, self.width, light_color, dark_color, color)
         self.lastSelectedButton = None
         self.pickedButton = None
 
@@ -85,7 +86,7 @@ class menuBarButtons:
 
 
 class configurationFramesCreate:
-    def __init__(self, root: Tk, height: int, width: int):
+    def __init__(self, root: Tk, height: int, width: int, light_color, dark_color, colorscheme):
         self.whichFrameIsON = None
         self.globalLock = False
         self.smailLock = False
@@ -93,18 +94,24 @@ class configurationFramesCreate:
         self.width = width
         self.height = height
         self.root = root
+        self.color = light_color #color for widgets etc
         self.heightDivisor = ryuconf.readJsonConfig("careConf", "heightDivisor")
         self.numberOfFrames = ryuconf.readJsonConfig("careConf", "menuButtonsList")
         self.crtFrameHeight = self.height - (self.height / self.heightDivisor)  # screen height - appFrame height
         self.frameDictionary = {}
+
+        # checking for colorsheme
+        if colorscheme != "light":
+            self.color = dark_color
         self.createFrame()
+
 
     def createFrame(self):
         valueOfI = 1
         while valueOfI <= len(self.numberOfFrames) + 1:
             self.frameDictionary[valueOfI] = Frame(self.root)
             self.frameDictionary[valueOfI].pack_propagate(False)
-            self.frameDictionary[valueOfI]['bg'] = "white"  # TODO: read color from frame
+            self.frameDictionary[valueOfI]['bg'] = self.color
             self.frameDictionary[valueOfI]['width'] = self.width
             self.frameDictionary[valueOfI]['height'] = self.crtFrameHeight
             valueOfI += 1
@@ -172,11 +179,12 @@ class configurationFramesCreate:
             self.whichFrameIsON = x
             self.frameDictionary[x].pack()
 
-        showLogConfigFrame(self.frameDictionary[x], self.height, self.width)
+        showLogConfigFrame(self.frameDictionary[x], self.height, self.width, self.color)
 
 
 class showLogConfigFrame:
-    def __init__(self, logFrame: Frame, height, width):
+    def __init__(self, logFrame: Frame, height, width, color):
+        self.color = color
         self.height = height
         self.width = width
         self.logFrame = logFrame
@@ -201,12 +209,12 @@ class showLogConfigFrame:
         getNewX = labelWidth + spacer
         buttonsList = ["INFO", "WARNING", "ERROR", "CRITICAL"]
         buttonsDict = {}
-        filterFrame = Frame(self.logFrame, width=self.width, height=frameHeight, bg="white")
+        filterFrame = Frame(self.logFrame, width=self.width, height=frameHeight, bg=self.color)
         filterFrame.pack_propagate(False)
         filterFrame.pack()
 
         logLaleb = Label(filterFrame, text="filter options:")
-        logLaleb.place(x=0,y=0,width=labelWidth,height=frameHeight)
+        logLaleb.place(x=0, y=0, width=labelWidth, height=frameHeight)
 
         filterButtonsC = 0
         for filterOption in buttonsList:
@@ -802,15 +810,22 @@ class AppBase:
     def __init__(self, root: Tk):
         self.root = root
         self.heightDivisor = 7
+        self.colorscheme = readJsonConfig("GlobalConfiguration", "colorMode")
+        self.color = "white"  # default color white
         self.screenWidth = get_monitors()[readJsonConfig("GlobalConfiguration", "numOfScreen")].width  # screen width
         self.screenHeight = get_monitors()[readJsonConfig("GlobalConfiguration", "numOfScreen")].height  # screen height
+        self.light_color = readJsonConfig("GlobalConfiguration", "light_color")
+        self.dark_color = readJsonConfig("GlobalConfiguration", "dark_color")
         self.rootSetup()  # def for root window
         self.menuBarFrameSetup()  # def for creating menu bar frame
 
     def rootSetup(self):
         self.root.title("Caregiver Configuration v:0.0.1")
         self.root.attributes('-fullscreen', True)
-        self.root.configure(background="white")
+        determinate_color = self.light_color
+        if self.colorscheme != "light":
+            determinate_color = self.dark_color
+        self.root.configure(background=determinate_color)
         logger.info("created root window")
 
     def menuBarFrameSetup(self):
@@ -822,4 +837,5 @@ class AppBase:
         masterFrame.pack(side=TOP)
         logger.info("created menuFrame")
         # calling class for creating objects
-        menuBarButtons(masterFrame, self.root, self.heightDivisor, self.screenHeight, self.screenWidth)
+        menuBarButtons(masterFrame, self.root, self.heightDivisor, self.screenHeight, self.screenWidth,
+                       self.colorscheme, self.light_color,self.dark_color)
