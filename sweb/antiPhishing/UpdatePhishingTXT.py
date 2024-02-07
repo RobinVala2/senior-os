@@ -1,66 +1,64 @@
 import os, time, tarfile, requests
 from datetime import datetime, timedelta
 
-# This method will check if the .txt file is up to date
-class TXTFileModificationChecker:
-    def __init__(self,my_config_data,logger):
-        self.logger = logger
+# This method will check if the phishing database is up to date
+class PhishingDatabaseModificationChecker:
+    def __init__(self,my_config_data,input_from_main_url_logger):
+        self.url_logger = input_from_main_url_logger
         # Get path to file SWEB_PHISH_1.txt
-        path_to_txt = my_config_data["phishing_database"]["path"]
+        self.path_to_phishing_database = my_config_data["phishing_database"]["path"]
         url_to_tar_github = my_config_data["phishing_database"]["path_to_tar_github"]
-        self.file_path_to_txt = path_to_txt
-        
 
         # Create update file
-        self.updater = FileUpdater(url_to_tar_github, self.file_path_to_txt)
+        self.database_updater = FileUpdater(url_to_tar_github, self.path_to_phishing_database,self.url_logger)
     
-    # Get the last modified time of the .txt file
+    # Get the last modified time of the phishing database
     def get_last_modification_time(self):
         # Returns as a datetime object.
         # Check if the file is existed
-        if not os.path.exists(self.file_path_to_txt):
-            raise FileNotFoundError(self.logger.log_blocked_url('WEBBROWSER', 2, 'UpdatePhishingTXT', f'File path not found {self.file_path_to_txt}'))
+        if not os.path.exists(self.path_to_phishing_database):
+            raise FileNotFoundError(self.url_logger.log_blocked_url('WEBBROWSER', 2, 'UpdatePhishingTXT', f'File path not found {self.file_path_to_txt}'))
         else:
-            # Get the last modificated time of .txt file
-            timestamp_of_txt = os.path.getmtime(self.file_path_to_txt)
+            # Get the last modificated time
+            last_update_time = os.path.getmtime(self.path_to_phishing_database)
             
             # Using fromtimestamp to change it to Calender
-            return datetime.fromtimestamp(timestamp_of_txt)
+            return datetime.fromtimestamp(last_update_time)
     
-    # This methoud check if the file has been modified since the given check_time.
-    # compared_time should be a datetime object.
     # Returns True if modified after check_time, False otherwise.
     def file_has_been_modified_since(self, compared_time):
         return self.get_last_modification_time() > compared_time
 
-    # This methoud check if the file was last modified more than 2 weeks ago
+    # Methoud check if the file was last modified more than 2 weeks ago
     def check_and_update_if_needed(self):
         two_weeks_ago = datetime.now() - timedelta(weeks=2)
         if not self.file_has_been_modified_since(two_weeks_ago):
-            self.updater.download_and_extract()
+            self.database_updater.download_and_extract_from_github()
 
+# Method for updating phishing database
 class FileUpdater:
-    def __init__(self, github_url, txt_path):
+    def __init__(self, github_url, path_to_database,input_url_logger):
+        self.url_logger = input_url_logger
         self.github_url = github_url
-        self.txt_path = txt_path
+        self.txt_path = path_to_database
         self.max_attempts = 2
         # Set delay after redirect HTTP
         self.delay_betwween_attempts = 0.1
 
-    # This method will download the .gz file from GitHub and extract its contents to a .txt file.
-    def download_and_extract(self):
+    # Method for download the .gz file from GitHub and extract its contents to a .txt file.
+    def download_and_extract_from_github(self):
         for attempt in range(self.max_attempts):
             try:
                 # Connect to file_github and download
-                response = requests.get(self.github_url, stream=True)
+                http_response = requests.get(self.github_url, stream=True)
                 # HTTPError object if an error has occurred during the process.
-                response.raise_for_status()
+                http_response.raise_for_status()
                 
                 # Set file temp
-                temp_gz_filename = "downloaded_file.tar.gz"
-                # Write to file temp (WriteBinary)
+                temp_gz_filename = "downloaded_phishing_database_temp.tar.gz"
+                # Write to file temp
                 with open(temp_gz_filename, "wb") as temp_file:
-                    for chunk in response.iter_content(chunk_size=1024):
+                    for chunk in http_response.iter_content(chunk_size=1024):
                         temp_file.write(chunk)
                 
                 # Extract file to .txt
@@ -76,10 +74,10 @@ class FileUpdater:
                     # Break for if the first HTTP is succeed
                     break
                 except tarfile.ReadError:
-                    self.logger.log_blocked_url('WEBBROWSER', 2, 'UpdatePhishingTXT', f'Can not open and write file tar {temp_gz_filename}')
+                    self.url_logger.log_blocked_url('WEBBROWSER', 2, 'UpdatePhishingTXT', f'Can not open and write file tar {temp_gz_filename}')
             except (requests.ConnectionError, requests.HTTPError) as excep:
                 if attempt < self.max_attempts -1:
                     # Wait for the specified delay before retrying
                     time.sleep(self.delay_betwween_attempts)  
                 else:
-                    self.logger.log_blocked_url("WEBBROWSER",2,"UpdatePhishingTXT",f'Can not update SWEB_PHISHING_1.txt')
+                    self.url_logger.log_blocked_url("WEBBROWSER",2,"UpdatePhishingTXT",f'Can not update SWEB_PHISHING_1.txt')

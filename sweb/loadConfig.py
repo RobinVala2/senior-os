@@ -1,13 +1,13 @@
-import json, sys
+import json
 
-# Load language text and audio for web browser
+# Load file json for inputing language text and audio of web browser
 def load_sweb_config_json():
     # Exit when error occurs and print notification to log
     try:
-        with open("../sconf/SWEB_config.json", "r",encoding='utf-8') as f:
-            langDB = json.load(f)
-        f.close()
-        return langDB
+        with open("../sconf/SWEB_config.json", "r",encoding='utf-8') as open_file:
+            language_database = json.load(open_file)
+        open_file.close()
+        return language_database
     except FileNotFoundError:
         print(f"Configuration file not found /sconf/SWEB_config.json")
     except json.JSONDecodeError:
@@ -17,10 +17,10 @@ def load_sweb_config_json():
 def load_template_config_json():
     # Exit when error occurs and print notification to log
     try:
-        with open("../sconf/TEMPLATE.json", "r",encoding='utf-8') as f:
-            configData = json.load(f)
-        f.close()
-        return configData
+        with open("../sconf/TEMPLATE.json", "r",encoding='utf-8') as open_file:
+            config_data = json.load(open_file)
+        open_file.close()
+        return config_data
     except FileNotFoundError:
         print(f"Configuration file not found /sconf/TEMPLATE.json")
     except json.JSONDecodeError:
@@ -29,9 +29,9 @@ def load_template_config_json():
 def load_config_in_same_directory(file_name):
     # Exit when error occurs and print notification to log
     try:
-        with open(file_name, 'r',encoding='utf-8') as f:
-            data = json.load(f)
-        f.close
+        with open(file_name, 'r',encoding='utf-8') as open_file:
+            data = json.load(open_file)
+        open_file.close
         return data
     except FileNotFoundError:
         print(f"Configuration file not found: {file_name}")
