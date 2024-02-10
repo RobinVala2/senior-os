@@ -30,6 +30,8 @@ sslContext = ssl.create_default_context()
 
 
 phish_senders = []
+resend_emails_g = False
+
 
 
 def send_email(recipient, subject, content):
@@ -49,12 +51,7 @@ def send_email(recipient, subject, content):
             server.login(login, password)
             server.sendmail(login, recipient, msg.as_string())
             if recipient in phish_senders:
-                content = f"Senior send reply email to phishing email ({recipient}) with content:\n" + content
-                msg = MIMEText(content)
-                msg['Subject'] = f"Reply to phish email by {login}"
-                msg['From'] = login
-                server.sendmail(login, get_guardian_email(), msg.as_string())
-                logger.warning(f"An email has been sent to {recipient}! Resending email to guardian: {get_guardian_email()}!")
+                resend_reply(recipient,content,server)
         logger.info(f"An email has been sent to {recipient}.")
         # returning 1 if email was send successfully
         return 1
@@ -73,8 +70,16 @@ def send_email(recipient, subject, content):
         return 0
 
 
-def read_mail():
+def resend_reply(recipient, content, server):
+    content = f"Senior send reply email to phishing email ({recipient}) with content:\n" + content
+    msg = MIMEText(content)
+    msg['Subject'] = f"Reply to phish email by {login}"
+    msg['From'] = login
+    server.sendmail(login, get_guardian_email(), msg.as_string())
+    logger.warning(f"An email has been sent to {recipient}! Resending email to guardian: {get_guardian_email()}!")
 
+def read_mail():
+    global resend_emails_g
     language, text = get_language()
     lang_subject = text[f"smail_{language}_subjectLabel"]
     lang_from = text[f"smail_{language}_from"]
@@ -97,6 +102,7 @@ def read_mail():
         # _, discards the first return value from mail.search
         _, selected_mails = mail.search(None, 'ALL')
         email_ids = selected_mails[0].split()
+
 
         emails = []
         subjects = []
@@ -149,7 +155,10 @@ def read_mail():
                     subjects.append(decoded_subject)
                     break
 
-        resend_mail_to_guardian(emails)
+        if not resend_emails_g:
+            resend_mail_to_guardian(emails)
+            resend_emails_g = True
+
 
         logger.info(f"{len(emails)} emails successfully loaded")
 

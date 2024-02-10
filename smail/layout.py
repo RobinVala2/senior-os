@@ -1,4 +1,5 @@
 import logging
+import sys
 import threading
 import tkinter as tk
 import webbrowser
@@ -51,12 +52,20 @@ class one_frame(tk.Frame):
         self.pack()
 
         # Start a background thread to load emails
-        self.loading_emails = threading.Thread(target=self.load_emails)
+        self.loading_emails = threading.Thread(target=self.periodic_email_loading)
         self.loading_emails.start()
 
     def load_emails(self):
         # function that initializes loading emails
         self.insert_emails()
+
+    def periodic_email_loading(self):
+        while True:
+            # Load and insert emails
+            self.load_emails()
+            self.after(10000,self.periodic_email_loading())
+
+
 
     def redefine_template_buttons(self):
         try:
@@ -123,6 +132,7 @@ class one_frame(tk.Frame):
             self.audio_configure(self.menu_button_2, "menu2")
 
             self.exit_button.config(
+                command = sys.exit,
                 image=self.exit_image,
                 text="",
                 width=self.button_width
@@ -176,6 +186,7 @@ class one_frame(tk.Frame):
             logger.error("KeyError:", exc_info=True)
         except Exception:
             logger.error("Error:", exc_info=True)
+
 
     def left_frame(self):
 
@@ -342,23 +353,28 @@ class one_frame(tk.Frame):
 
         # inserting emails into the listbox,
         # for now safe_emails and phish_emails are separated
+        self.inbox_list.delete(0, tk.END)
+        print("Clearing the listbox")
 
         for n in self.safe_emails:
             self.name = get_email_sender(n.split("\n")[1])
             self.sub = n.split("\n")[0].split(":",1)[1]
 
-            self.inbox_list.insert(tk.END, self.name +" -"+ self.sub)
+            self.inbox_list.insert(tk.END, f"{self.name} - {self.sub}")
             # binding listbox to text area to view email
             self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+
 
 
         for m in self.phish_emails:
             self.name = get_email_sender(m.split("\n")[1])
             self.sub = m.split("\n")[0].split(":", 1)[1]
 
-            self.inbox_list.insert(tk.END, self.name +" -"+ self.sub)
+            self.inbox_list.insert(tk.END, f"{self.name} - {self.sub}")
             # binding listbox to text area to view email
             self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+
+        print("Inserting emails into listbox")
 
 
 
@@ -403,15 +419,15 @@ class one_frame(tk.Frame):
     def display_email(self, email):
         # Display the entire email content in the text area
         self.message_area.insert(tk.END, email)
-        self.tag_urls()
+        self.mark_email()
 
-    def tag_urls(self):
+    def mark_email(self):
         # Find all URLs in email and tag them
         for match in re.finditer(r'https?://\S+|www\.\S+', self.message_area.get("1.0", tk.END)):
             url = match.group()
-            self.tag_and_bind_url(url)
+            self.mark_and_link_email(url)
 
-    def tag_and_bind_url(self, url):
+    def mark_and_link_email(self, url):
         # Tag and bind URL in the text area for click event
         start_pos = "1.0"
         while True:
