@@ -8,7 +8,7 @@ logger = logging.getLogger(__file__)
 logger.info("initiated logging")
 
 
-def temporaryGetPath():  # this is how i get to the sconf/ file, for now :)
+def get_path():  # this is how i get to the sconf/ file, for now :)
     whereTheFuckAmI = os.getcwd()
     split = whereTheFuckAmI.split("sgive")
     path = split[0]
@@ -16,7 +16,8 @@ def temporaryGetPath():  # this is how i get to the sconf/ file, for now :)
     return configPath
 
 
-def getLogFile():
+# LOG FILES ACTIONS: ---------------------------------------------------------------------------------------------------
+def get_log():
     whereTheFuckAmI = os.getcwd()
     split = whereTheFuckAmI.split("sgive")
     path = split[0]
@@ -28,30 +29,19 @@ def getLogFile():
         return os.path.join(configPath, "logs")
 
 
-def readJsonConfig(key, value):
-    path = temporaryGetPath()
-    if os.path.exists(path) and os.path.isfile(
-            os.path.join(temporaryGetPath(), 'config.json')):  # checks for the conf file, if there is any
-        with open(os.path.join(path, 'config.json'), "r") as file:
-            jsonData = json.load(file)
-        return jsonData[key][value]
-    else:
-        logging.critical('There is no config.json or sconf/ file present in system, exiting program now.')
-        exit(1)
-
-
-def readLog(givenFilter, givenName):
+def read_log(givenFilter, givenName):
     print(givenName)
     findPhrases = []
     if givenFilter is None:
         print("given value is NONE")
-        findPhrases = ["INFO", "WARNING", "CRITICAL","ERROR"]
+        findPhrases = ["INFO", "WARNING", "CRITICAL", "ERROR"]
     else:
         findPhrases.append(givenFilter)
         print(f"filtering by:{givenFilter}")
     pickedValues = []
-    path = getLogFile()
-    if os.path.exists(path) and os.path.isfile(os.path.join(getLogFile(), f'{givenName}.log')):  # check if log and folder exists
+    path = get_log()
+    if os.path.exists(path) and os.path.isfile(
+            os.path.join(get_log(), f'{givenName}.log')):  # check if log and folder exists
         with open(os.path.join(path, f'{givenName}.log')) as f:  # open log file
             f = f.readlines()  # read
         for line in f:  # check each lines
@@ -62,27 +52,9 @@ def readLog(givenFilter, givenName):
         return pickedValues
     else:
         logging.error(f"There is no {givenName}.log in sconf/logs or the folder itself is missing.")
-        #exit(1)
 
 
-def editConfig(key, name, value):
-    # this def edits name in conf.json to value
-    path = temporaryGetPath()
-    # checks for the conf file, if there is any
-    if os.path.exists(path) and os.path.isfile(os.path.join(temporaryGetPath(), 'config.json')):
-        with open(os.path.join(path, 'config.json'), 'r') as file:
-            data = json.load(file)
-            data[key][name] = value
-        with open(os.path.join(path, 'config.json'), 'w') as f:
-            json.dump(data, f, indent=4)
-    logging.info(f'successfully edited value: "{value}" at key: "{name}".')
-
-
-def getMac():
-    mac = gmac()
-    return mac
-
-
+# CHECK FOR ML LEARNING ------------------------------------------------------------------------------------------------
 def MLcheck(URL):
     print("Checking for /ML-SAVED dir...")
     path = os.path.join(os.getcwd(), "ML-saved")
@@ -92,9 +64,46 @@ def MLcheck(URL):
         print(os.listdir(path))
 
 
-def caregiverAppConfig(path):
+# MAIN (GLOBAL) CONFIG ACTIONS: ----------------------------------------------------------------------------------------
+def red_main_config(key, value):  # this reads only main config
+    path = get_path()
+    if os.path.exists(path) and os.path.isfile(
+            os.path.join(get_path(), 'config.json')):  # checks for the conf file, if there is any
+        with open(os.path.join(path, 'config.json'), "r") as file:
+            jsonData = json.load(file)
+        return jsonData[key][value]
+    else:
+        logging.critical('There is no config.json or sconf/ file present in system, exiting program now.')
+        exit(1)
+
+
+def edit_main_config(key, name, value):
+    # this def edits name in conf.json to value
+    path = get_path()
+    # checks for the conf file, if there is any
+    if os.path.exists(path) and os.path.isfile(os.path.join(get_path(), 'config.json')):
+        with open(os.path.join(path, 'config.json'), 'r') as file:
+            data = json.load(file)
+            data[key][name] = value
+        with open(os.path.join(path, 'config.json'), 'w') as f:
+            json.dump(data, f, indent=4)
+    logging.info(f'successfully edited value: "{value}" at key: "{name}".')
+
+
+def restore_main_config():
+    print("Restoring config")
+    path = red_main_config("pathToConfig", "path")
+    main_config_default(path)
+
+
+def main_config_default(path):
     options = ["Global", "Mail", "Web", "LOGS"]
     languageOPT = ["Czech", "English", "German"]
+    GLobalFramesOptions = ["Choose primary display:", "Choose OS language:", "Choose alert language:",
+                           "Choose colorscheme:", "Choose alert color (hex):", "Choose alert delay:",
+                           "Choose font size:", "Choose label size:", "Choose boldness:", "add later:"]
+    SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add emails:", "Activation for care. email",
+                         "Caregiver email:"]
     dictionary = {
         'pathToConfig': {
             "path": path
@@ -112,7 +121,6 @@ def caregiverAppConfig(path):
             "labelFontSize": 12,
             "fontThickness": "bold",
             "fontFamily": "Helvetica",
-            "macAddress": getMac(),
         },
         "GUI_template": {
             "num_of_menu_buttons": 2,
@@ -127,11 +135,11 @@ def caregiverAppConfig(path):
             "bg": 5,
             "heightDivisor": 7,
             "menuButtonsList": options.copy(),
-            "LanguageOptions": languageOPT.copy()
+            "LanguageOptions": languageOPT.copy(),
+            "GlobalFrameLabels": GLobalFramesOptions.copy(),
+            "SMailFrameLabels": SMailLabelOptions.copy(),
         },
     }
     json_object = json.dumps(dictionary, indent=4)
     with open(os.path.join(path, 'config.json'), "w+") as outfile:
         outfile.write(json_object)
-
-
