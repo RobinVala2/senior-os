@@ -4,7 +4,7 @@ import sgive.src.CaregiverApp.configurationActions as ryuConf
 
 # if there are any issues, install "packaging"
 
-colorScheme = ryuConf.readJsonConfig("GlobalConfiguration", "colorMode")
+colorScheme = ryuConf.red_main_config("GlobalConfiguration", "colorMode")
 customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
@@ -15,8 +15,8 @@ class MenuBar:
         self.width = width
         self.frameHeight = frameHeight
         self.masterFrame = masterFrame
-        self.numOfCustomButtons = ryuConf.readJsonConfig("GUI_template", "num_of_opt_buttons")
-        self.howManyCustomButtonsOnFrame = ryuConf.readJsonConfig("GUI_template", "num_of_opt_on_frame")
+        self.numOfCustomButtons = ryuConf.red_main_config("GUI_template", "num_of_opt_buttons")
+        self.howManyCustomButtonsOnFrame = ryuConf.red_main_config("GUI_template", "num_of_opt_on_frame")
         # menuButtons needed things:
         self.menuList: list = []
         self.menuDict: dict = {}
@@ -202,10 +202,10 @@ class MenuBar:
 class App:
     def __init__(self, root: customtkinter.CTk):
         self.root = root
-        screenNum = ryuConf.readJsonConfig("GlobalConfiguration", "numOfScreen")
+        screenNum = ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")
         self.screenWidth = get_monitors()[screenNum].width  # screen width
         self.screenHeight = get_monitors()[screenNum].height  # screen height
-        self.heightDivisor = ryuConf.readJsonConfig("GUI_template", "height_divisor")
+        self.heightDivisor = ryuConf.red_main_config("GUI_template", "height_divisor")
         # calls for root window setup etc
         self.rootWindowSetup()
         self.appMenuFrameSetup()

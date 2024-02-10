@@ -2,7 +2,7 @@ from tkinter import *  # gui framework
 from tkinter import ttk
 import configurationActions as ryuconf  # mine thing for json actions
 from screeninfo import get_monitors  # get all monitors
-from configurationActions import readJsonConfig  # mine thing for json actions
+from configurationActions import red_main_config  # mine thing for json actions
 import logging  # loging
 import re  # regex
 
@@ -24,7 +24,7 @@ class menuBarButtons:
         self.menuFrame = menuFrame
         self.heightDivisor = heightDivisor
         self.xValue = 0
-        self.options = ryuconf.readJsonConfig("careConf", "menuButtonsList")
+        self.options = ryuconf.red_main_config("careConf", "menuButtonsList")
         self.buttonDictionary = {}
         self.color_preset = color
         # calls section
@@ -95,8 +95,8 @@ class configurationFramesCreate:
         self.height = height
         self.root = root
         self.color = light_color #color for widgets etc
-        self.heightDivisor = ryuconf.readJsonConfig("careConf", "heightDivisor")
-        self.numberOfFrames = ryuconf.readJsonConfig("careConf", "menuButtonsList")
+        self.heightDivisor = ryuconf.red_main_config("careConf", "heightDivisor")
+        self.numberOfFrames = ryuconf.red_main_config("careConf", "menuButtonsList")
         self.crtFrameHeight = self.height - (self.height / self.heightDivisor)  # screen height - appFrame height
         self.frameDictionary = {}
 
@@ -271,7 +271,7 @@ class showLogConfigFrame:
         scroll.config(command=textThing.yview, )
         textThing["yscrollcommand"] = scroll.set
         textThing.pack()
-        file = ryuconf.readLog(self.filterOptionValue,self.logNameValue)
+        file = ryuconf.read_log(self.filterOptionValue, self.logNameValue)
         if file is None:
             textThing.insert(END, "There is no log file present yet.")
         else:
@@ -289,20 +289,20 @@ class showGlobalConfigFrame:
         self.height = height
         self.widthLabel = width / 2
         self.widthButton = width / 10
-        self.heightDivisor = ryuconf.readJsonConfig("careConf", "heightDivisor")
+        self.heightDivisor = ryuconf.red_main_config("careConf", "heightDivisor")
         self.spacer = 10
         self.heightWidgets = ((height - (height / self.heightDivisor)) / 11) - self.spacer
         self.Xposition = 0
         self.Yposition = self.spacer
         self.activeColor = "#5c6447"
         self.normalColor = "#D3D3D3"
-        self.options = ryuconf.readJsonConfig("careConf", "LanguageOptions")
-        self.fontGet = (f"{ryuconf.readJsonConfig('GlobalConfiguration', 'fontFamily')} "  # font family
-                        f"{ryuconf.readJsonConfig('GlobalConfiguration', 'labelFontSize')} "  # font size
-                        f"{ryuconf.readJsonConfig('GlobalConfiguration', 'fontThickness')}")  # font thicc?
-        self.fontInputThing = (f"{ryuconf.readJsonConfig('GlobalConfiguration', 'fontFamily')} "
-                               f"{ryuconf.readJsonConfig('GlobalConfiguration', 'fontSize')} "
-                               f"{ryuconf.readJsonConfig('GlobalConfiguration', 'fontThickness')}")
+        self.options = ryuconf.red_main_config("careConf", "LanguageOptions")
+        self.fontGet = (f"{ryuconf.red_main_config('GlobalConfiguration', 'fontFamily')} "  # font family
+                        f"{ryuconf.red_main_config('GlobalConfiguration', 'labelFontSize')} "  # font size
+                        f"{ryuconf.red_main_config('GlobalConfiguration', 'fontThickness')}")  # font thicc?
+        self.fontInputThing = (f"{ryuconf.red_main_config('GlobalConfiguration', 'fontFamily')} "
+                               f"{ryuconf.red_main_config('GlobalConfiguration', 'fontSize')} "
+                               f"{ryuconf.red_main_config('GlobalConfiguration', 'fontThickness')}")
         # some None things:
         self.inputError = Label(frame, bg="#D2042D")  # TODO: change to reading thing from json
         self.errorLabel = Label(frame, bg="#D2042D")  # TODO: change to reading thing from json
@@ -344,11 +344,11 @@ class showGlobalConfigFrame:
         while counter < len(monitors):
             buttonDict.append(counter)
             counter += 1
-        self.radioVarScreens = IntVar(value=ryuconf.readJsonConfig("GlobalConfiguration", "numOfScreen"))
+        self.radioVarScreens = IntVar(value=ryuconf.red_main_config("GlobalConfiguration", "numOfScreen"))
         for id in buttonDict:
             def getNum(i=id):
                 print(i)
-                ryuconf.editConfig("GlobalConfiguration", "numOfScreen", i)
+                ryuconf.edit_main_config("GlobalConfiguration", "numOfScreen", i)
 
             buttonThing[id] = Radiobutton(self.frame, text=f"monitor č.{id + 1}", variable=self.radioVarScreens,
                                           value=id)
@@ -388,12 +388,12 @@ class showGlobalConfigFrame:
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
 
         counterLangCount = 1
-        self.radioVar = StringVar(value=ryuconf.readJsonConfig("GlobalConfiguration", "language"))
+        self.radioVar = StringVar(value=ryuconf.red_main_config("GlobalConfiguration", "language"))
         for name in self.options:
             def getName(n=name, c=counterLangCount):
                 self.changeColorLanguage(c)
                 self.radioVar.get()  # needs to be here to show picked selection
-                ryuconf.editConfig("GlobalConfiguration", "language", n)
+                ryuconf.edit_main_config("GlobalConfiguration", "language", n)
 
             self.changeLanguageDict[counterLangCount] = Radiobutton(self.frame, text=name, variable=self.radioVar,
                                                                     value=name)
@@ -433,11 +433,11 @@ class showGlobalConfigFrame:
         colorModeLabel['font'] = self.fontGet
         colorModeLabel.place(x=self.Xposition, y=self.Yposition, width=self.widthLabel, height=self.heightWidgets)
 
-        self.radioVar2 = StringVar(value=ryuconf.readJsonConfig("GlobalConfiguration", "colorMode"))
+        self.radioVar2 = StringVar(value=ryuconf.red_main_config("GlobalConfiguration", "colorMode"))
         # light mode
         whiteColorButton = Radiobutton(self.frame, text="Light", variable=self.radioVar2, value="light")
         whiteColorButton['command'] = lambda: [
-            ryuconf.editConfig("GlobalConfiguration", "colorMode", self.radioVar2.get()),
+            ryuconf.edit_main_config("GlobalConfiguration", "colorMode", self.radioVar2.get()),
             self.changeColorColorschemeSelection(whiteColorButton)]
         whiteColorButton['font'] = self.fontGet
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
@@ -445,7 +445,7 @@ class showGlobalConfigFrame:
         # dark mode
         BlackColorButton = Radiobutton(self.frame, text="Dark", variable=self.radioVar2, value="dark")
         BlackColorButton['command'] = lambda: [
-            ryuconf.editConfig("GlobalConfiguration", "colorMode", self.radioVar2.get()),
+            ryuconf.edit_main_config("GlobalConfiguration", "colorMode", self.radioVar2.get()),
             self.changeColorColorschemeSelection(BlackColorButton)]
         BlackColorButton['font'] = self.fontGet
         self.Xposition = self.Xposition + self.widthButton + self.spacer
@@ -480,13 +480,13 @@ class showGlobalConfigFrame:
         # 1 - soundDelay
         # 2 - fontSize
         if whichConfig == 1:
-            ryuconf.editConfig("GlobalConfiguration", "soundDelay", inputInt)
+            ryuconf.edit_main_config("GlobalConfiguration", "soundDelay", inputInt)
             self.delaySubmit.configure(bg=self.activeColor, activebackground=self.activeColor)
         elif whichConfig == 2:
-            ryuconf.editConfig("GlobalConfiguration", "fontSize", inputInt)
+            ryuconf.edit_main_config("GlobalConfiguration", "fontSize", inputInt)
             self.fontSubmit.configure(bg=self.activeColor, activebackground=self.activeColor)
         elif whichConfig == 3:
-            ryuconf.editConfig("GlobalConfiguration", "labelFontSize", inputInt)
+            ryuconf.edit_main_config("GlobalConfiguration", "labelFontSize", inputInt)
             self.labelSubmit.configure(bg=self.activeColor, activebackground=self.activeColor)
 
         self.inputError.place_forget()
@@ -502,7 +502,7 @@ class showGlobalConfigFrame:
 
         self.inputText = Text(self.frame)
         self.inputText['font'] = self.fontInputThing
-        defalultDelayValue = ryuconf.readJsonConfig("GlobalConfiguration", "soundDelay")
+        defalultDelayValue = ryuconf.red_main_config("GlobalConfiguration", "soundDelay")
         self.inputText.insert(1.0, defalultDelayValue)
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         self.inputText.place(x=self.Xposition, y=self.Yposition, width=self.widthButton, height=self.heightWidgets)
@@ -539,7 +539,7 @@ class showGlobalConfigFrame:
 
         if match:
             self.errorLabel.place_forget()
-            ryuconf.editConfig("GlobalConfiguration", "alertColor", hexInput)
+            ryuconf.edit_main_config("GlobalConfiguration", "alertColor", hexInput)
             self.colorSubmit.configure(bg=self.activeColor, activebackground=self.activeColor)
         else:
             self.colorSubmit.configure(bg=self.normalColor, activebackground=self.normalColor)
@@ -559,7 +559,7 @@ class showGlobalConfigFrame:
 
         self.inputHex = Text(self.frame)
         self.inputHex['font'] = self.fontInputThing
-        defaultHexValue = ryuconf.readJsonConfig("GlobalConfiguration", "alertColor")
+        defaultHexValue = ryuconf.red_main_config("GlobalConfiguration", "alertColor")
         self.inputHex.insert(1.0, defaultHexValue)
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         self.inputHex.place(x=self.Xposition, y=self.Yposition, width=self.widthLabel / 3, height=self.heightWidgets)
@@ -602,12 +602,12 @@ class showGlobalConfigFrame:
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
 
         counterLangCount = 1
-        self.soundVar = StringVar(value=ryuconf.readJsonConfig("GlobalConfiguration", "alertSoundLanguage"))
+        self.soundVar = StringVar(value=ryuconf.red_main_config("GlobalConfiguration", "alertSoundLanguage"))
         for name in self.options:
             def getName(n=name, c=counterLangCount):
                 self.soundVar.get()  # needs to be here to show picked selection
                 self.changeColorLanguageAlert(c)
-                ryuconf.editConfig("GlobalConfiguration", "alertSoundLanguage", n)
+                ryuconf.edit_main_config("GlobalConfiguration", "alertSoundLanguage", n)
 
             self.changeLanguageAlertDict[counterLangCount] = Radiobutton(self.frame, text=name, variable=self.soundVar,
                                                                          value=name)
@@ -639,7 +639,7 @@ class showGlobalConfigFrame:
 
         self.inputFont = Text(self.frame)
         self.inputFont['font'] = self.fontInputThing
-        defalultDelayValue = ryuconf.readJsonConfig("GlobalConfiguration", "fontSize")
+        defalultDelayValue = ryuconf.red_main_config("GlobalConfiguration", "fontSize")
         self.inputFont.insert(1.0, defalultDelayValue)
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         self.inputFont.place(x=self.Xposition, y=self.Yposition, width=self.widthButton, height=self.heightWidgets)
@@ -671,7 +671,7 @@ class showGlobalConfigFrame:
 
         self.inputlabelFontSize = Text(self.frame)
         self.inputlabelFontSize['font'] = self.fontInputThing
-        defalultDelayValue = ryuconf.readJsonConfig("GlobalConfiguration", "labelFontSize")
+        defalultDelayValue = ryuconf.red_main_config("GlobalConfiguration", "labelFontSize")
         self.inputlabelFontSize.insert(1.0, defalultDelayValue)
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         self.inputlabelFontSize.place(x=self.Xposition, y=self.Yposition, width=self.widthButton,
@@ -712,20 +712,20 @@ class showGlobalConfigFrame:
         colorModeLabel['font'] = self.fontGet
         colorModeLabel.place(x=self.Xposition, y=self.Yposition, width=self.widthLabel, height=self.heightWidgets)
 
-        self.thicknessVar = StringVar(value=ryuconf.readJsonConfig("GlobalConfiguration", "fontThickness"))
+        self.thicknessVar = StringVar(value=ryuconf.red_main_config("GlobalConfiguration", "fontThickness"))
         # light mode
         boldButton = Radiobutton(self.frame, text="bold", variable=self.thicknessVar, value="bold")
-        boldButton['command'] = lambda: [ryuconf.editConfig("GlobalConfiguration",
-                                                            "fontThickness", self.thicknessVar.get()),
-                                         self.changedColor(boldButton)]
+        boldButton['command'] = lambda: [
+            ryuconf.edit_main_config("GlobalConfiguration", "fontThickness", self.thicknessVar.get()),
+            self.changedColor(boldButton)]
         boldButton['font'] = self.fontGet
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         boldButton.place(x=self.Xposition, y=self.Yposition, width=self.widthButton, height=self.heightWidgets)
         # dark mode
         slimButton = Radiobutton(self.frame, text="slim", variable=self.thicknessVar, value="")
-        slimButton['command'] = lambda: [ryuconf.editConfig("GlobalConfiguration", "fontThickness",
-                                                            self.thicknessVar.get()),
-                                         self.changedColor(slimButton)]
+        slimButton['command'] = lambda: [
+            ryuconf.edit_main_config("GlobalConfiguration", "fontThickness", self.thicknessVar.get()),
+            self.changedColor(slimButton)]
         slimButton['font'] = self.fontGet
         self.Xposition = self.Xposition + self.widthButton + self.spacer
         slimButton.place(x=self.Xposition, y=self.Yposition, width=self.widthButton, height=self.heightWidgets)
@@ -746,7 +746,7 @@ class showGlobalConfigFrame:
 
         self.inputFontFamily = Text(self.frame)
         self.inputFontFamily['font'] = self.fontInputThing
-        defaultHexValue = ryuconf.readJsonConfig("GlobalConfiguration", "fontFamily")
+        defaultHexValue = ryuconf.red_main_config("GlobalConfiguration", "fontFamily")
         self.inputFontFamily.insert(1.0, defaultHexValue)
         self.Xposition = self.Xposition + self.widthLabel + self.spacer
         self.inputFontFamily.place(x=self.Xposition, y=self.Yposition, width=self.widthLabel / 3, height=self.heightWidgets)
@@ -764,8 +764,8 @@ class showGlobalConfigFrame:
     # ------------------------------------------------------------------------------------------------------------------
 
     def restoreColors(self):  # RESTORES ALL SELECTED BUTTONS
-        getWhereConfigIs = ryuconf.readJsonConfig("pathToConfig", "path")
-        ryuconf.caregiverAppConfig(getWhereConfigIs)  # generates default config.json
+        getWhereConfigIs = ryuconf.red_main_config("pathToConfig", "path")
+        ryuconf.main_config_default(getWhereConfigIs)  # generates default config.json
         self.delaySubmit.configure(bg=self.normalColor, activebackground=self.normalColor)
         self.fontSubmit.configure(bg=self.normalColor, activebackground=self.normalColor)
         self.labelSubmit.configure(bg=self.normalColor, activebackground=self.normalColor)
@@ -783,18 +783,18 @@ class showGlobalConfigFrame:
 
     def resetActions(self):
         self.errorLabel.place_forget()
-        self.radioVar.set(ryuconf.readJsonConfig("GlobalConfiguration", "language"))
-        self.radioVar2.set(ryuconf.readJsonConfig("GlobalConfiguration", "colorMode"))
-        self.soundVar.set(ryuconf.readJsonConfig("GlobalConfiguration", "alertSoundLanguage"))
-        self.thicknessVar.set(value=ryuconf.readJsonConfig("GlobalConfiguration", "fontThickness"))
+        self.radioVar.set(ryuconf.red_main_config("GlobalConfiguration", "language"))
+        self.radioVar2.set(ryuconf.red_main_config("GlobalConfiguration", "colorMode"))
+        self.soundVar.set(ryuconf.red_main_config("GlobalConfiguration", "alertSoundLanguage"))
+        self.thicknessVar.set(value=ryuconf.red_main_config("GlobalConfiguration", "fontThickness"))
         self.inputText.delete("1.0", "end")
-        self.inputText.insert(1.0, ryuconf.readJsonConfig("GlobalConfiguration", "soundDelay"))
+        self.inputText.insert(1.0, ryuconf.red_main_config("GlobalConfiguration", "soundDelay"))
         self.inputHex.delete(1.0, "end")
-        self.inputHex.insert(1.0, ryuconf.readJsonConfig("GlobalConfiguration", "alertColor"))
+        self.inputHex.insert(1.0, ryuconf.red_main_config("GlobalConfiguration", "alertColor"))
         self.inputlabelFontSize.delete(1.0, "end")
-        self.inputlabelFontSize.insert(1.0, ryuconf.readJsonConfig("GlobalConfiguration", "labelFontSize"))
+        self.inputlabelFontSize.insert(1.0, ryuconf.red_main_config("GlobalConfiguration", "labelFontSize"))
         self.inputFont.delete(1.0, "end")
-        self.inputFont.insert(1.0, ryuconf.readJsonConfig("GlobalConfiguration", "fontSize"))
+        self.inputFont.insert(1.0, ryuconf.red_main_config("GlobalConfiguration", "fontSize"))
         # final action
         logger.info("resetting config")
 
@@ -810,12 +810,12 @@ class AppBase:
     def __init__(self, root: Tk):
         self.root = root
         self.heightDivisor = 7
-        self.colorscheme = readJsonConfig("GlobalConfiguration", "colorMode")
+        self.colorscheme = red_main_config("GlobalConfiguration", "colorMode")
         self.color = "white"  # default color white
-        self.screenWidth = get_monitors()[readJsonConfig("GlobalConfiguration", "numOfScreen")].width  # screen width
-        self.screenHeight = get_monitors()[readJsonConfig("GlobalConfiguration", "numOfScreen")].height  # screen height
-        self.light_color = readJsonConfig("GlobalConfiguration", "light_color")
-        self.dark_color = readJsonConfig("GlobalConfiguration", "dark_color")
+        self.screenWidth = get_monitors()[red_main_config("GlobalConfiguration", "numOfScreen")].width  # screen width
+        self.screenHeight = get_monitors()[red_main_config("GlobalConfiguration", "numOfScreen")].height  # screen height
+        self.light_color = red_main_config("GlobalConfiguration", "light_color")
+        self.dark_color = red_main_config("GlobalConfiguration", "dark_color")
         self.rootSetup()  # def for root window
         self.menuBarFrameSetup()  # def for creating menu bar frame
 
