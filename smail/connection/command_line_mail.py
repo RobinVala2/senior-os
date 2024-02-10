@@ -1,0 +1,47 @@
+import datetime
+import json
+import smtplib
+import ssl
+import sys
+from email.mime.text import MIMEText
+
+with open("../../sconf/SMAIL_config.json", "r") as f:
+    data = json.load(f)
+credentials = data["credentials"]
+login = credentials["username"]
+password = credentials["password"]
+smtp_server = credentials["smtp_server"]
+smtp_port = credentials["smtp_port"]
+sslContext = ssl.create_default_context()
+
+def send_email(recipient, content):
+
+    date = datetime.datetime.now().strftime("%Y-%m-%d")
+    msg = MIMEText(content)
+    msg['Subject'] = f"Report, date: {date}"
+    msg['From'] = login
+    msg['To'] = recipient
+
+
+    try:
+        # establishing SMTP connection to the SMTP server
+        with smtplib.SMTP(
+                smtp_server, smtp_port
+        ) as server:
+            server.starttls(context=sslContext)
+            server.login(login, password)
+            server.sendmail(login, recipient, msg.as_string())
+            print("Email send succesfuly.")
+
+    except Exception:
+        print("Error occurred when trying to send email.")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Usage: python command_line_mail.py <recipient_email> <email_content>")
+        sys.exit(1)
+
+    recipient_email = sys.argv[1]
+    email_content = sys.argv[2]
+
+    send_email(recipient_email, email_content)
