@@ -251,11 +251,11 @@ class showLogConfigFrame:
         def optionSelected(event):
             selectedValue = combobox.get()
             # set new current index
-            if selectedValue == 'ConfigurationApp':
+            if selectedValue == 'ConfigurationApp.log':
                 self.currentPickedLogFile = 0
-            if selectedValue == 'SMAILlog':
+            if selectedValue == 'SMAILlog.log':
                 self.currentPickedLogFile = 1
-            if selectedValue == 'SWEBlog':
+            if selectedValue == 'SWEBlog.log':
                 self.currentPickedLogFile = 2
             # pick log file action
             self.logNameValue = selectedValue

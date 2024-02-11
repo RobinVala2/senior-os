@@ -30,10 +30,10 @@ def get_log():
 
 
 def read_log(givenFilter, givenName):
-    print(givenName)
+    if givenName is None:
+        return
     findPhrases = []
     if givenFilter is None:
-        print("given value is NONE")
         findPhrases = ["INFO", "WARNING", "CRITICAL", "ERROR"]
     else:
         findPhrases.append(givenFilter)
@@ -41,8 +41,8 @@ def read_log(givenFilter, givenName):
     pickedValues = []
     path = get_log()
     if os.path.exists(path) and os.path.isfile(
-            os.path.join(get_log(), f'{givenName}.log')):  # check if log and folder exists
-        with open(os.path.join(path, f'{givenName}.log')) as f:  # open log file
+            os.path.join(get_log(), givenName)):  # check if log and folder exists
+        with open(os.path.join(path, givenName)) as f:  # open log file
             f = f.readlines()  # read
         for line in f:  # check each lines
             for phrase in findPhrases:  # check list
@@ -115,7 +115,7 @@ def main_config_default(path):
             "light_color": "white",
             "dark_color": "gray",
             "soundDelay": 5,
-            "alertColor": "#AAFF00",
+            "alertColor": "#8B0000",
             "alertSoundLanguage": "English",
             "fontSize": 36,
             "labelFontSize": 12,
