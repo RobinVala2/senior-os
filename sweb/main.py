@@ -1,7 +1,7 @@
 # Frameworks from PyQt5 libraries
 from PyQt5.QtWidgets import QMainWindow, QApplication, QStyle, QLabel, QVBoxLayout
-from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar, QWidget
-from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar, QWidget, QAction
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView, QWebEngineProfile
 from PyQt5.QtCore import QEvent, QUrl, Qt, QTimer, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
 # Library for parsing URL value
@@ -81,7 +81,12 @@ class MyBrowser(QMainWindow):
         # Add my custom page to browser
         self.main_browser.setPage(self.my_custom_page)
         self.setCentralWidget(self.main_browser)
-        self.main_browser.setUrl(QUrl("https://seznam.cz")) # Default page is configured as seznam
+        # Default page is configured as seznam.cz
+        # Check if input URL is contained HTTP or HTTPS
+        if input_url_from_terminal.startswith("https") or input_url_from_terminal.startswith("http"):
+            self.main_browser.setUrl(QUrl(input_url_from_terminal))
+        else:
+            self.main_browser.setUrl(QUrl("http://" + input_url_from_terminal)) 
         self.language_translator = Translator()
         self.get_monitor_height_and_width = GetMonitorHeightAndWidth()
 
@@ -706,6 +711,8 @@ class MyBrowser(QMainWindow):
 if __name__ == "__main__":
     try:
         qApplication = QApplication(sys.argv)
+        # If browser is opened in command terminal
+        input_url_from_terminal = sys.argv[1] if len(sys.argv) > 1 else "https://seznam.cz"
         # Load config data from JSON file
         sweb_config = load_sweb_config_json()
         template_config = load_template_config_json()
