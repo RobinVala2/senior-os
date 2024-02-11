@@ -1,7 +1,7 @@
 # Frameworks from PyQt5 libraries
 from PyQt5.QtWidgets import QMainWindow, QApplication, QStyle, QLabel, QVBoxLayout
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar, QWidget
-from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView
+from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView, QWebEngineProfile
 from PyQt5.QtCore import QEvent, QUrl, Qt, QTimer, QSize, pyqtSignal
 from PyQt5.QtGui import QIcon
 # Library for parsing URL value
@@ -41,6 +41,9 @@ class MyWebEnginePage(QWebEnginePage):
         new_page.urlChangedSignal.connect(self.urlChangedSignal.emit)
         return new_page
     
+    def setUserAgent(self, user_agent):
+        self.profile().setHttpUserAgent(user_agent)
+    
 class GetMonitorHeightAndWidth:
     def __init__(self):
         template_config = load_template_config_json()
@@ -49,7 +52,6 @@ class GetMonitorHeightAndWidth:
         height_divisor = template_config["GUI_template"]["height_divisor"]
         width_divisor = template_config["GUI_template"]["width_divisor"]
         num_option_on_frame = template_config["GUI_template"]["num_of_opt_on_frame"]
-        
         # Get monitor size
         # 0 = Get the first monitor
         monitor = get_monitors()[num_of_monitor]
@@ -78,10 +80,17 @@ class MyBrowser(QMainWindow):
         # Set cutstom page to open new page in the same browser
         self.my_custom_page = MyWebEnginePage(self.main_browser)
         self.my_custom_page.urlChangedSignal.connect(self.on_url_changed_my_custom_page)
+        mobile_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
+        self.my_custom_page.setUserAgent(mobile_user_agent)
         # Add my custom page to browser
         self.main_browser.setPage(self.my_custom_page)
         self.setCentralWidget(self.main_browser)
-        self.main_browser.setUrl(QUrl("https://seznam.cz")) # Default page is configured as seznam
+        # Default page is configured as seznam.cz
+        # Check if input URL is contained HTTP or HTTPS
+        if input_url_from_terminal.startswith("https") or input_url_from_terminal.startswith("http"):
+            self.main_browser.setUrl(QUrl(input_url_from_terminal))
+        else:
+            self.main_browser.setUrl(QUrl("http://" + input_url_from_terminal)) 
         self.language_translator = Translator()
         self.get_monitor_height_and_width = GetMonitorHeightAndWidth()
 
@@ -465,7 +474,7 @@ class MyBrowser(QMainWindow):
         url_in_browser_value = self.main_browser.url()
         if True:
             # If it is home, do not change anything
-            if "homepage.html" != url_in_browser_value.toString():
+            if "homepage.html" not in url_in_browser_value.toString():
                 self.main_browser.setZoomFactor(1.5)
                 # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
                 QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
@@ -480,9 +489,8 @@ class MyBrowser(QMainWindow):
         <!-- Create a function to change content style-->
         var change_content_style = function(element) {
             if (element.children.length === 0) {
-                element.style.fontSize = '23px';
-                element.style.lineHeight = '1.2';
-                element.style.fontFamily = 'Arial';
+                element.style.fontSize = '20px';
+                element.style.lineHeight = '1.1';
             }
             Array.from(element.children).forEach(change_content_style);
         }
@@ -492,7 +500,7 @@ class MyBrowser(QMainWindow):
         self.main_browser.page().runJavaScript(injection_javasript)
     
     # Show full screen without Minimizing or Moving
-    def show_app_fullscreen(self):
+    def show_app_full_screen(self):
         self.showFullScreen()
         
     # Method use for disable menu when click to another menu
@@ -650,17 +658,12 @@ class MyBrowser(QMainWindow):
                 self.menu_2_toolbar.setStyleSheet(self.phishing_style_toolbar())
                 # Connect to URL after entering
                 self.main_browser.setUrl(QUrl(url_in_browser_value))
-        else:
-            self.main_browser.setUrl(QUrl(url_in_browser_value))
-            self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
-            self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
-            #self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
-            # Log with LEVEL 6 INFORMATIONAL
-            #self.logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
-            # Connect to URL after entering
-            #self.browser.setUrl(QUrl(url_in_browser_value))
+            else:
+                self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
+                self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
+                # Log with LEVEL 6 INFORMATIONAL
+                self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
         self.finished_load_web_page()
-        
         
     # Method for connect to the second www2 ct24.ceskatelevize.cz
     def navigate_www1(self):
@@ -706,11 +709,13 @@ class MyBrowser(QMainWindow):
 if __name__ == "__main__":
     try:
         qApplication = QApplication(sys.argv)
+        # If browser is opened in command terminal
+        input_url_from_terminal = sys.argv[1] if len(sys.argv) > 1 else "https://seznam.cz"
         # Load config data from JSON file
         sweb_config = load_sweb_config_json()
         template_config = load_template_config_json()
         main_window = MyBrowser(template_config,sweb_config) # Set parametr for main browser window
-        main_window.show_app_fullscreen() # Call main browser window
+        main_window.show_app_full_screen() # Call main browser window
         sys.exit(qApplication.exec_())
     except Exception as excep:
         url_logger = URLLogger()
