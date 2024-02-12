@@ -149,6 +149,7 @@ class Frames:
         else:
             # shouldn't ever happen, because there should always be the last frame, if no configuration is opened
             # it gets called in constructor
+            logger.error("There is no frame to show, even there should be.")
             return
 
         # calling each frame classes for its widgets
@@ -165,6 +166,7 @@ class Frames:
             LogsGlobal(self.frame_dictionary[button_id], self.width, self.height_frame)
 
         else:
+            logger.error("button doesnt have its corresponding frame or it isn't present in config options")
             exit("ryu.02")
 
 
@@ -178,7 +180,7 @@ class FrameDefault:
 
 class FrameGlobal:
     def __init__(self, frame_root, width, height, height_frame, master):
-
+        logger.info("Creating and showing frame for Global configuration.")
         self.master = frame_root
         self.height_frame = height_frame
         self.width = width
@@ -273,6 +275,7 @@ class FrameGlobal:
 
 class MailGlobal:
     def __init__(self, frame_root, width, height, height_frame, master):
+        logger.info("Creating and showing frame for Mail configuration.")
         self.master = frame_root
         self.height_frame = height_frame
         self.width = width
@@ -370,13 +373,14 @@ class MailGlobal:
 class WebGlobal:
     def __init__(self, frame_root):
         self.master = frame_root
-
+        logger.info("Creating and showing frame for Web configuration.")
         label = customtkinter.CTkLabel(master=frame_root, text="WEB CONFIG FRAME SOON")
         label.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
 
 
 class LogsGlobal:
     def __init__(self, frame_root, width, height):
+        logger.info("Creating and showing frame for viewing Logs.")
         self.master = frame_root
         self.height = height
         self.width = width
@@ -414,7 +418,7 @@ class LogsGlobal:
                 if os.path.isfile(full_path) and entry.endswith(".log"):  # Pokud je položka soubor s příponou .log
                     self.log_files_names.append(entry)
         else:
-            print("<ERROR: je to vpiči kolego :)>")
+            logger.error("There is no folder named: \"/sconf/logs\" in senior-os.")
             return
 
 
@@ -477,6 +481,7 @@ class LogsGlobal:
         else:
             for f in file:
                 textbox.insert(customtkinter.END, f)
+        textbox.configure(state="disabled")  # disable editing
 
 
 class Core(customtkinter.CTk):
