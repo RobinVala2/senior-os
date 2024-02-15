@@ -88,6 +88,7 @@ def edit_main_config(key, name, value):
         with open(os.path.join(path, 'config.json'), 'w') as f:
             json.dump(data, f, indent=4)
     logging.info(f'successfully edited value: "{value}" at key: "{name}".')
+    return True
 
 
 def restore_main_config():

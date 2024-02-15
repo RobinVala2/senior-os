@@ -7,8 +7,8 @@ import os
 """
 Author: RYUseless
 Github: https://github.com/RYUseless
-Version: 0.0.1(Alpha)
 """
+Version = "0.0.3(Alpha)"
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
@@ -55,7 +55,14 @@ class LogsFrameWidgets:
         self.log_textbox(None)
 
     def refresh(self):
-        print("todo")
+        print("refreshing???")
+        for widget in self.master.winfo_children():
+            # this forgets all widgets inside a frame
+            widget.pack_forget()
+        self.master.pack_forget()  # this forgets frame itself
+        self.master.pack()
+        for widget in self.master.winfo_children():
+            widget.pack()
 
     def find_log_files(self):
         relative_path = "../../../../senior-os/sconf/logs/"
@@ -204,7 +211,7 @@ class MailFrameWidgets:
 
 
 class GlobalFrameWidgets:
-    def __init__(self, frame_root, width, height_frame):
+    def __init__(self, frame_root, width, height_frame, restore, refresh):
         logger.info("Creating and showing frame for Global configuration.")
         self.master = frame_root
         self.height_frame = height_frame
@@ -214,28 +221,105 @@ class GlobalFrameWidgets:
         self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
         self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
-        self.label_dict = {}
         self.screen_width_diff = 0  # for checkin, if the screen width is correct
+        self.restore_configurations = restore
+        self.refresh_frame = refresh
+        # create objects for widgets:
+        self.screen_arr = []
+        self.screen_num = {}
+        self.label_dict = {}
+        self.language_dict = {}
+        # for showing each buttons at one function and resize calculations ↓ ↓ ↓ ↓ ↓
+        self.mega_array = [self.screen_num, self.language_dict]
         # ---------- CALS --------------
+        self.master.winfo_width()
         self.master.bind("<Configure>", self.on_resize)
         self.create_labels()
-        self.get_screen_dimensions()
+        self.buttons()
+        self.show_buttons()
         # E N D of constructor
 
-    def get_screen_dimensions(self):
-        ctk_screenwidth = self.master.winfo_screenwidth()
-        print("expected screen width:", ctk_screenwidth)
-        print("true screen width:", self.width)
-        print("frame width with ctk shit:", self.master.winfo_width())
+    @staticmethod
+    def update_config(key, name, value, button_id, button_list):
+        # pokud se zadaří a nikde nebude value a button_id rozdílné, tak pak tyto proměnné sloučit
+        return_value = ryuConf.edit_main_config(key, name, value)
+        print("button object is:", button_id)
+        for all_buttons in button_list:  # aka restore all buttons in that row to its original color
+            button_list[all_buttons].configure(fg_color=("#636363", "#222222"), hover_color=("#757474", "#3b3b3b"))
+
+        if return_value is True:
+            button_list[button_id].configure(fg_color=("#4b5946", "#4b5946"), hover_color=("#7c8e76", "#7c8e76"))
+        else:
+            button_list[button_id].configure(fg_color=("red", "red"), hover_color=("#8B0000", "#8B0000"))
+            print("oh fuck")
+
+    def buttons(self):
+        # ryuConf.edit_main_config(key,name,value),
+        # first config row: ------------------------------------------------------------
+        screen_primary = 0
+        while screen_primary < len(get_monitors()):
+            self.screen_arr.append(screen_primary)
+            screen_primary += 1
+        for id_value in self.screen_arr:
+            self.screen_num[id_value] = customtkinter.CTkButton(master=self.master)
+            self.screen_num[id_value].configure(border_width=0,
+                                                corner_radius=0,
+                                                fg_color=("#636363", "#222222"),
+                                                hover_color=("#757474", "#3b3b3b"),
+                                                width=self.master.winfo_width() * (1 / 5),
+                                                height=self.master.winfo_height() * (
+                                                        1 / (len(self.label_names) + 1)),
+                                                text=f"Screen {id_value}",
+                                                command=lambda current_id=id_value: self.update_config(
+                                                    "GlobalConfiguration",
+                                                    "numOfScreen",
+                                                    current_id,
+                                                    current_id,
+                                                    self.screen_num))
+        # -------------------------------------------------------------------------------
+        # second config row: ------------------------------------------------------------
+        language_arr = ryuConf.red_main_config("careConf", "LanguageOptions")
+        for language in language_arr:
+            self.language_dict[language] = customtkinter.CTkButton(master=self.master)
+            self.language_dict[language].configure(border_width=0,
+                                                    corner_radius=0,
+                                                    fg_color=("#636363", "#222222"),
+                                                    hover_color=("#757474", "#3b3b3b"),
+                                                    width=self.master.winfo_width() * (1 / 5),
+                                                    height=self.master.winfo_height() * (
+                                                               1 / (len(self.label_names) + 1)),
+                                                    text=language,
+                                                    command=lambda lang_id=language: self.update_config(
+                                                                                                    "GlobalConfiguration",
+                                                                                                    "language",
+                                                                                                    lang_id,
+                                                                                                    lang_id,
+                                                                                                    self.language_dict))
+
+            # -------------------------------------------------------------------------------
+            # third config row: ------------------------------------------------------------
+            x_position = 1 * (2 / 5)  # reset X position
+            # y_position = y_position + 1 * (1 / (len(self.label_names) + 1))
+            # lower Y position by one button height down
+
+    def show_buttons(self):
+        y_position = 0
+        for array in self.mega_array:
+            x_position = 1 * (2 / 5)
+            for button in array:
+                array[button].place(relx=x_position, rely=y_position)
+                x_position = x_position + (1 * (1 / 5))
+            y_position = y_position + (1 * (1 / (len(self.label_names) + 1)))
+
 
     def create_labels(self):
         y_position = 0
         for label_name in self.label_names:
             label = customtkinter.CTkLabel(self.master)
             label.configure(text=label_name,
-                            font=(self.font_name, self.label_size + 17, self.font_boldness),
                             width=self.master.winfo_width() * (2 / 5),
                             height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)),
+                            font=(self.font_name, self.label_size + 17, self.font_boldness),
                             fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
             label.place(relx=0, rely=y_position)
             self.label_dict[label_name] = label
@@ -243,15 +327,24 @@ class GlobalFrameWidgets:
 
     def on_resize(self, event):
         width_new = event.width * (2 / 5)
+
+        # for loop for labels
         for label in self.label_dict.values():
             label.configure(width=width_new,
                             height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
 
-        # Recalculate button height and width (lower buttons, that are created in frame class)
-        for widget in [self.master.children[child] for child in self.master.children]:
-            if isinstance(widget, customtkinter.CTkButton):
-                widget.configure(height=self.height_frame * (1 / 11),
-                                 width=width_new)
+        # recalculate sizes for all buttons that are 2/5 of the size
+        for btn in [self.restore_configurations, self.refresh_frame]:
+            btn.configure(height=self.height_frame * (1 / 11),
+                          width=self.master.winfo_width() * (2 / 5),
+                          anchor=customtkinter.CENTER)
+
+        # recalculate sizes for all buttons that are 1/5 of the size
+        for array in self.mega_array:
+            for widget in array:
+                array[widget].configure(width=self.master.winfo_width() * (1 / 5),
+                                                     height=self.master.winfo_height() * (
+                                                             1 / (len(self.label_names) + 1)))
 
 
 class Frames:
@@ -274,10 +367,21 @@ class Frames:
         self.alive_frame = self.number_of_buttons  # default frame (highest number from button names array + 1)
         self.frame_array = []
         self.frame_dictionary = {}
+        self.restore_configurations = None
+        self.refresh_frame = None
         # calls:
         self.alocate_frames()
         DefaultFrameWidgets(self.frame_dictionary[self.number_of_buttons])
         self.frame_dictionary[self.number_of_buttons].pack()
+        self.get_screen_dimensions()
+
+    def get_screen_dimensions(self):
+        ctk_screenwidth = self.master.winfo_screenwidth()
+        print("\n------------------------------")
+        print("expected screen width:", ctk_screenwidth)
+        print("true screen width:", self.width)
+        print("frame width with ctk shit:", self.master.winfo_width())
+        print("------------------------------\n")
 
     def get_new_values_for_refresh(self, button_id):
         # set global color:
@@ -298,20 +402,25 @@ class Frames:
 
     def refresh_restore_buttons(self, button_id):
         # create buttons:
-        restore_configurations = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
-                                                         text="Restore Configurations",
-                                                         command=lambda: self.restore_config(button_id))
+        self.restore_configurations = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
+                                                              text="Restore Configurations",
+                                                              border_width=2,
+                                                              corner_radius=0,
+                                                              command=lambda: self.restore_config(button_id),
+                                                              )
 
-        refresh_frame = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
-                                                text="Refresh frame",
-                                                command=lambda: self.get_new_values_for_refresh(button_id))
+        self.refresh_frame = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
+                                                     text="Refresh frame",
+                                                     border_width=2,
+                                                     corner_radius=0,
+                                                     command=lambda: self.get_new_values_for_refresh(button_id))
 
         # place:
-        restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001, rely=0.91)
-        refresh_frame.place(relx=0.5 + 0.001, rely=0.91)
+        self.restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001, rely=0.91)
+        self.refresh_frame.place(relx=0.5 + 0.001, rely=0.91)
 
         # configure stats and size even when it's master frame resizes:
-        for widget in [restore_configurations, refresh_frame]:
+        for widget in [self.restore_configurations, self.refresh_frame]:
             widget.configure(hover_color=(self.hover_alert_color, self.hover_alert_color),
                              font=(
                                  self.font_name, self.label_size + 17,
@@ -360,7 +469,8 @@ class Frames:
                 # manual work for now:
                 # later, maybe add array for frame widgets classes and go through it
                 if name == "Global":
-                    GlobalFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
+                    GlobalFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame,
+                                       self.restore_configurations, self.refresh_frame)
                     return
                 elif name == "Mail":
                     MailFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
@@ -434,6 +544,7 @@ class Toolbar:
             self.button_dictionary[id_num].configure(fg_color=("white", "#1a1a1a"),
                                                      hover_color=(self.hover_alert_color, self.hover_alert_color),
                                                      text_color=("black", "white"))
+            # here lambda works, because its inside of a for loop, so it gets correct id of a number
             self.button_dictionary[id_num].configure(command=lambda: self.master.destroy())
         else:
             self.button_dictionary[id_num].configure(text=self.buttons_names[id_num - 1],
@@ -482,7 +593,7 @@ class Core(customtkinter.CTk):
         self.toolbar_buttons_count = len(ryuConf.red_main_config("careConf", "menuButtonsList"))
         # ---
         # root window setup:
-        self.title("Caregiver configuration application -- Version: 0.0.1(Alpha)")
+        self.title(f"Caregiver configuration application -- Version:{Version}")
         self.minsize(int(self.screenWidth * 0.80), int(self.screenHeight * 0.80))  # width, height
         self.maxsize(self.screenWidth, self.screenHeight)  # width x height + x + y
         self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
