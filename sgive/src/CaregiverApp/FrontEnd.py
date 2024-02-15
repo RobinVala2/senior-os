@@ -18,6 +18,381 @@ customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light
 customtkinter.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
 
 
+class DefaultFrameWidgets:
+    def __init__(self, frame_root):
+        self.master = frame_root
+        text_variable = ("This is configuration application for caregiver only!\n"
+                         "If you are senior yourself, you shouldn't be here.\n"
+                         "\nTo leave, click \"EXIT\" in upper right corner.")
+
+        label = customtkinter.CTkLabel(master=frame_root, text=text_variable, font=("Helvetica", 36, "bold"))
+        label.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
+
+
+class LogsFrameWidgets:
+    def __init__(self, frame_root, width, height):
+        logger.info("Creating and showing frame for viewing Logs.")
+        self.master = frame_root
+        self.height = height
+        self.width = width
+        # ------
+        self.log_filter = None
+        self.log_file = None
+
+        # -----
+        # sub-frame, for buttons and stuff
+        self.options_toolbar_frame = customtkinter.CTkFrame(frame_root)
+        self.options_toolbar_frame.pack_propagate(False)
+        self.options_toolbar_frame.configure(width=width, height=height * 0.10,  # aka XY% of whole frame height
+                                             fg_color=("#dbd9d9", "#222222"))
+        self.options_toolbar_frame.pack(side=customtkinter.TOP)
+        self.log_file_choice = None
+        self.log_files_names = []
+        # func calls:
+        self.find_log_files()
+
+        self.options_toolbar()
+        self.log_textbox(None)
+
+    def refresh(self):
+        print("todo")
+
+    def find_log_files(self):
+        relative_path = "../../../../senior-os/sconf/logs/"
+        # Relativní cesta k hledané složce, skipuje deep dive do diru, který má tento .py
+        base_path = os.path.abspath(relative_path)
+
+        if os.path.exists(base_path):  # Zkontroluje, zda složka existuje
+            for entry in os.listdir(base_path):  # Prochází všechny položky ve složce
+                full_path = os.path.join(base_path, entry)
+                if os.path.isfile(full_path) and entry.endswith(".log"):  # Pokud je položka soubor s příponou .log
+                    self.log_files_names.append(entry)
+        else:
+            logger.error("There is no folder named: \"/sconf/logs\" in senior-os.")
+            return
+
+    def option_menu_call(self, choice):
+        print("Selected option:", choice)
+        self.log_file_choice = choice  # for the self.option_filter_Call() function
+        # call
+        self.log_textbox(choice)
+
+    def option_filter_call(self, choice):
+        print("Selected option:", choice)
+        if choice == "ALL":
+            self.log_filter = None
+        else:
+            self.log_filter = choice
+        # call
+        self.log_textbox(self.log_file_choice)
+
+    def options_toolbar(self):
+        # pick log folder:
+        pick_folder_btn = customtkinter.CTkOptionMenu(master=self.options_toolbar_frame,
+                                                      command=self.option_menu_call,
+                                                      height=self.height * 0.10,
+                                                      width=self.width * 1 / 5)
+        dummy_values = []  # dummy array
+        for name in self.log_files_names:
+            dummy_values.append(name)  # add value to an array
+        pick_folder_btn.configure(values=dummy_values)
+        pick_folder_btn.place(relx=0, rely=0)
+        pick_folder_btn.set("Choose LOG file")  # default showing value
+        # -----------------------------------------------------------------------------
+        # pick log folder:
+        pick_filter_btn = customtkinter.CTkOptionMenu(master=self.options_toolbar_frame,
+                                                      command=self.option_filter_call,
+                                                      height=self.height * 0.10,
+                                                      width=self.width * 1 / 5)
+        filter_options = ["INFO", "WARNING", "CRITICAL", "ERROR", "ALL"]
+        pick_filter_btn.configure(values=filter_options)
+        pick_filter_btn.place(relx=1 * (1 / 5), rely=0)
+        pick_filter_btn.set("Choose LOG filter option")  # default showing value
+        # ---------------------------------------------------------------------------
+        # refresh button:
+        button = customtkinter.CTkButton(master=self.options_toolbar_frame,
+                                         height=self.height * 0.10,
+                                         width=self.width * 1 / 5,
+                                         text="Refresh",
+                                         command=lambda: self.refresh())
+        button.place(relx=1 * (4 / 5), rely=0)
+
+    def log_textbox(self, choice):
+        textbox = customtkinter.CTkTextbox(self.master)
+        textbox.configure(height=self.height - (self.height * 0.10), width=self.width, fg_color=("#D3D3D3", "#171717"),
+                          scrollbar_button_color=("black", "white"),
+                          scrollbar_button_hover_color=("#3b3b3b", "#636363"))
+        textbox.place(relx=0, rely=1 * 0.10)
+        file = ryuConf.read_log(self.log_filter, choice)
+        if file is None:
+            textbox.insert(customtkinter.END, "No log file was selected, nothing to show ...")
+        else:
+            for f in file:
+                textbox.insert(customtkinter.END, f)
+        textbox.configure(state="disabled")  # disable editing
+
+
+class WebFrameWidgets:
+    def __init__(self, frame_root, width, height_frame):
+        self.master = frame_root
+        self.height_frame = height_frame
+        self.width = width
+        # self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
+        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
+        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+        # -----------------
+        # Bind the resize event
+        self.master.bind("<Configure>", self.on_resize)
+        # E N D of constructor
+
+    def on_resize(self, event):
+        width_new = event.width * (2 / 5)
+
+        # Recalculate button height and width (lower buttons, that are created in frame class)
+        for widget in [self.master.children[child] for child in self.master.children]:
+            if isinstance(widget, customtkinter.CTkButton):
+                widget.configure(height=self.height_frame * (1 / 11),
+                                 width=width_new)
+
+
+class MailFrameWidgets:
+    def __init__(self, frame_root, width, height_frame):
+        logger.info("Creating and showing frame for Mail configuration.")
+        self.master = frame_root
+        self.height_frame = height_frame
+        self.width = width
+        self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
+        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
+        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+        self.label_dict = {}
+        self.button_height_fract = 11
+        # -----------------
+        # calls:
+        self.master.bind("<Configure>", self.on_resize)
+        self.create_labels()
+        # E N D of constructor
+
+    def create_labels(self):
+        y_position = 0
+        for label_name in self.label_names:
+            label = customtkinter.CTkLabel(self.master)
+            label.configure(text=label_name,
+                            font=(self.font_name, self.label_size + 17, self.font_boldness),
+                            width=self.master.winfo_width() * (2 / 5),
+                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)),
+                            # height=self.height_frame * (1 / 11),
+                            fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
+            label.place(relx=0, rely=y_position)
+            self.label_dict[label_name] = label
+            y_position += (1 / (len(self.label_names) + 1))
+
+    def on_resize(self, event):
+        width_new = event.width * (2 / 5)
+        for label in self.label_dict.values():
+            label.configure(width=width_new,
+                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
+
+        # Recalculate button height and width (lower buttons, that are created in frame class)
+        for widget in [self.master.children[child] for child in self.master.children]:
+            if isinstance(widget, customtkinter.CTkButton):
+                widget.configure(height=self.height_frame * (1 / 11),
+                                 width=width_new)
+
+
+class GlobalFrameWidgets:
+    def __init__(self, frame_root, width, height_frame):
+        logger.info("Creating and showing frame for Global configuration.")
+        self.master = frame_root
+        self.height_frame = height_frame
+        self.width = width
+        self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
+        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
+        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+        self.label_dict = {}
+        self.screen_width_diff = 0  # for checkin, if the screen width is correct
+        # ---------- CALS --------------
+        self.master.bind("<Configure>", self.on_resize)
+        self.create_labels()
+        self.get_screen_dimensions()
+        # E N D of constructor
+
+    def get_screen_dimensions(self):
+        ctk_screenwidth = self.master.winfo_screenwidth()
+        print("expected screen width:", ctk_screenwidth)
+        print("true screen width:", self.width)
+        print("frame width with ctk shit:", self.master.winfo_width())
+
+    def create_labels(self):
+        y_position = 0
+        for label_name in self.label_names:
+            label = customtkinter.CTkLabel(self.master)
+            label.configure(text=label_name,
+                            font=(self.font_name, self.label_size + 17, self.font_boldness),
+                            width=self.master.winfo_width() * (2 / 5),
+                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)),
+                            fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
+            label.place(relx=0, rely=y_position)
+            self.label_dict[label_name] = label
+            y_position += (1 / (len(self.label_names) + 1))
+
+    def on_resize(self, event):
+        width_new = event.width * (2 / 5)
+        for label in self.label_dict.values():
+            label.configure(width=width_new,
+                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
+
+        # Recalculate button height and width (lower buttons, that are created in frame class)
+        for widget in [self.master.children[child] for child in self.master.children]:
+            if isinstance(widget, customtkinter.CTkButton):
+                widget.configure(height=self.height_frame * (1 / 11),
+                                 width=width_new)
+
+
+class Frames:
+    def __init__(self, master, width, height, divisor, number_of_buttons, name_of_buttons):
+        self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
+        self.frame_names = ryuConf.red_main_config("careConf", "menuButtonsList")
+        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
+        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+        # -------------
+        self.master = master
+        self.width = width
+        self.height_frame = height - (height / divisor)
+        self.divisor = divisor
+        self.number_of_buttons = number_of_buttons + 1  # adding default frame
+        self.buttons_name = name_of_buttons
+        self.height = height
+        # ------------
+        self.alive_frame = self.number_of_buttons  # default frame (highest number from button names array + 1)
+        self.frame_array = []
+        self.frame_dictionary = {}
+        # calls:
+        self.alocate_frames()
+        DefaultFrameWidgets(self.frame_dictionary[self.number_of_buttons])
+        self.frame_dictionary[self.number_of_buttons].pack()
+
+    def get_new_values_for_refresh(self, button_id):
+        # set global color:
+        customtkinter.set_appearance_mode(ryuConf.red_main_config("GlobalConfiguration", "colorMode"))
+        # reread once again all configs
+        self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
+        self.frame_names = ryuConf.red_main_config("careConf", "menuButtonsList")
+        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
+        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+        # refresh:
+        self.choose_frame(button_id, True)
+
+    def restore_config(self, button_id):
+        ryuConf.restore_main_config()
+        self.get_new_values_for_refresh(button_id)
+
+    def refresh_restore_buttons(self, button_id):
+        # create buttons:
+        restore_configurations = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
+                                                         text="Restore Configurations",
+                                                         command=lambda: self.restore_config(button_id))
+
+        refresh_frame = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
+                                                text="Refresh frame",
+                                                command=lambda: self.get_new_values_for_refresh(button_id))
+
+        # place:
+        restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001, rely=0.91)
+        refresh_frame.place(relx=0.5 + 0.001, rely=0.91)
+
+        # configure stats and size even when it's master frame resizes:
+        for widget in [restore_configurations, refresh_frame]:
+            widget.configure(hover_color=(self.hover_alert_color, self.hover_alert_color),
+                             font=(
+                                 self.font_name, self.label_size + 17,
+                                 self.font_boldness),
+                             fg_color=("#D3D3D3", "#171717"),
+                             text_color=("black", "white"),
+                             height=self.height_frame * (1 / 11),
+                             width=self.master.winfo_width() * (2 / 5),
+                             anchor=customtkinter.CENTER)
+
+    def choose_frame(self, button_id, refresh):
+        # refresh frame
+        if refresh is True:
+            for widget in self.frame_dictionary[self.alive_frame].winfo_children():
+                # this forgets all widgets inside a frame
+                widget.pack_forget()
+            self.frame_dictionary[self.alive_frame].pack_forget()  # this forgets frame itself
+            self.frame_dictionary[button_id].pack_forget()
+            # huh?
+            self.frame_dictionary[button_id].pack()
+
+        # check if frame isn't already running
+        elif self.alive_frame == button_id:
+            return
+
+        # pack_forget old frame and pack new one
+        elif not self.alive_frame is None and refresh is False:  # forget showing frame, show new
+            for widget in self.frame_dictionary[self.alive_frame].winfo_children():
+                widget.pack_forget()
+            self.frame_dictionary[self.alive_frame].pack_forget()
+            self.frame_dictionary[button_id].pack()
+            self.alive_frame = button_id
+
+        else:
+            # shouldn't ever happen, because there should always be the last frame, if no configuration is opened
+            # it gets called in constructor
+            logger.error("There is no frame to show, even there should be.")
+            return
+
+        # some ryu:tm: autism stuff for showing corresponding class with widgets to its frame
+        name_counter = 1
+        for name in self.frame_names:
+            if button_id == name_counter:
+                if button_id < (self.number_of_buttons - 1):  # - log frame
+                    self.refresh_restore_buttons(button_id)
+                # manual work for now:
+                # later, maybe add array for frame widgets classes and go through it
+                if name == "Global":
+                    GlobalFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
+                    return
+                elif name == "Mail":
+                    MailFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
+                    return
+                elif name == "Web":
+                    WebFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
+                    return
+                elif name == "LOGS":
+                    LogsFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
+                    return
+                else:
+                    logger.error("button doesnt have its corresponding frame or it isn't present in config options")
+                    return
+            else:
+                name_counter += 1
+
+    def create_frames(self, number):
+        self.frame_dictionary[number] = customtkinter.CTkFrame(self.master)
+        self.frame_dictionary[number].configure(fg_color=("white", "#1a1a1a"))
+        self.frame_dictionary[number].pack_propagate(False)
+        self.frame_dictionary[number].configure(width=self.width, height=self.height_frame)
+        number += 1
+
+    def alocate_frames(self):
+        number = 1
+        while number <= self.number_of_buttons:
+            self.frame_array.append(number)
+            number += 1
+        for num_id in self.frame_array:
+            self.create_frames(num_id)
+
+
 class Toolbar:
     def __init__(self, master, width, height, divisor, toolbar_buttons_count, button_names):
         self.toolbar_frame = customtkinter.CTkFrame(master)
@@ -94,394 +469,6 @@ class Toolbar:
             self.button_dictionary[id_num].configure(fg_color=("#d3d3d3", "#3b3b3b"),
                                                      hover_color=("#d3d3d3", "#3b3b3b"))
             self.button_selected = id_num
-
-
-class Frames:
-    def __init__(self, master, width, height, divisor, number_of_buttons, name_of_buttons):
-        self.master = master
-        self.width = width
-        self.height_frame = height - (height / divisor)
-        self.divisor = divisor
-        self.number_of_buttons = number_of_buttons + 1  # adding default frame
-        self.buttons_name = name_of_buttons
-        self.height = height
-        # ---
-        self.alive_frame = self.number_of_buttons  # default frame (highest number from button names array + 1)
-        self.frame_array = []
-        self.frame_dictionary = {}
-        # calls:
-        self.alocate_frames()
-        FrameDefault(self.frame_dictionary[self.number_of_buttons])
-        self.frame_dictionary[self.number_of_buttons].pack()
-
-    def alocate_frames(self):
-        number = 1
-        while number <= self.number_of_buttons:
-            self.frame_array.append(number)
-            number += 1
-        for num_id in self.frame_array:
-            self.create_frames(num_id)
-
-    def create_frames(self, number):
-        self.frame_dictionary[number] = customtkinter.CTkFrame(self.master)
-        self.frame_dictionary[number].configure(fg_color=("white", "#1a1a1a"))
-        self.frame_dictionary[number].pack_propagate(False)
-        self.frame_dictionary[number].configure(width=self.width, height=self.height_frame)
-        number += 1
-
-    def choose_frame(self, button_id, refresh):
-        if refresh is True:  # only for refreshing, there is no need for .pack, because it was done once already
-            for widget in self.frame_dictionary[self.alive_frame].winfo_children():  # this forgets all widgets inside a frame
-                widget.pack_forget()
-            self.frame_dictionary[self.alive_frame].pack_forget()  # this forgets frame itself
-            self.frame_dictionary[button_id].pack_forget()
-
-        elif self.alive_frame == button_id:  # single instance lock
-            return
-
-        elif not self.alive_frame is None and refresh is False:  # forget showing frame, show new
-            for widget in self.frame_dictionary[self.alive_frame].winfo_children():
-                widget.pack_forget()
-            self.frame_dictionary[self.alive_frame].pack_forget()
-            self.frame_dictionary[button_id].pack()
-            self.alive_frame = button_id
-
-        else:
-            # shouldn't ever happen, because there should always be the last frame, if no configuration is opened
-            # it gets called in constructor
-            logger.error("There is no frame to show, even there should be.")
-            return
-
-        # calling each frame classes for its widgets
-        if button_id == 1 and self.buttons_name[button_id - 1] == "Global":
-            FrameGlobal(self.frame_dictionary[button_id], self.width, self.height, self.height_frame, self.master)
-
-        elif button_id == 2 and self.buttons_name[button_id - 1] == "Mail":
-            MailGlobal(self.frame_dictionary[button_id], self.width, self.height, self.height_frame, self.master)
-
-        elif button_id == 3 and self.buttons_name[button_id - 1] == "Web":
-            WebGlobal(self.frame_dictionary[button_id])
-
-        elif button_id == 4 and self.buttons_name[button_id - 1] == "LOGS":
-            LogsGlobal(self.frame_dictionary[button_id], self.width, self.height_frame)
-
-        else:
-            logger.error("button doesnt have its corresponding frame or it isn't present in config options")
-            exit("ryu.02")
-
-
-class FrameDefault:
-    def __init__(self, frame_root):
-        self.master = frame_root
-
-        label = customtkinter.CTkLabel(master=frame_root, text="DEFAULT FRAME :)", font=("Helvetica", 36, "bold"))
-        label.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
-
-
-class FrameGlobal:
-    def __init__(self, frame_root, width, height, height_frame, master):
-        logger.info("Creating and showing frame for Global configuration.")
-        self.master = frame_root
-        self.height_frame = height_frame
-        self.width = width
-        self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
-        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
-        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
-        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
-        self.label_dict = {}
-        # -----------------
-        # needed for refresh:
-        self.height = height
-        self.master_dummy = master
-        # -----------------
-        # call:
-        self.create_labels()
-        # -----------------
-        # buttons:
-        self.restore_configurations = customtkinter.CTkButton(master=frame_root, text="Restore Configurations",
-                                                              command=lambda: [ryuConf.restore_main_config(),
-                                                                               self.refresh()],
-                                                              height=self.height_frame * (
-                                                                      1 / (len(self.label_names) + 1)),
-                                                              hover_color=(
-                                                                  self.hover_alert_color, self.hover_alert_color),
-                                                              width=self.width * (2 / 5),
-                                                              font=(
-                                                                  self.font_name, self.label_size + 17,
-                                                                  self.font_boldness),
-                                                              fg_color=("#D3D3D3", "#171717"),
-                                                              text_color=("black", "white"),
-                                                              anchor=customtkinter.CENTER)
-        self.restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001, rely=0.91)
-
-        self.refresh_frame = customtkinter.CTkButton(master=frame_root, text="Refresh frame",
-                                                     command=lambda: self.refresh(),
-                                                     height=self.height_frame * (1 / (len(self.label_names) + 1)),
-                                                     hover_color=(self.hover_alert_color, self.hover_alert_color),
-                                                     width=self.width * (2 / 5),
-                                                     font=(
-                                                         self.font_name, self.label_size + 17,
-                                                         self.font_boldness),
-                                                     fg_color=("#D3D3D3", "#171717"),
-                                                     text_color=("black", "white"),
-                                                     anchor=customtkinter.CENTER)
-        self.refresh_frame.place(relx=0.5 + 0.001, rely=0.91)
-        # -----------------
-        # Bind the resize event
-        self.master.bind("<Configure>", self.on_resize)
-        # end ---------------------------
-
-    def refresh(self):
-        customtkinter.set_appearance_mode(ryuConf.red_main_config("GlobalConfiguration", "colorMode"))
-        heightDivisor = ryuConf.red_main_config("GUI_template", "height_divisor")
-        buttons_names = ryuConf.red_main_config("careConf", "menuButtonsList")
-        toolbar_buttons_count = len(ryuConf.red_main_config("careConf", "menuButtonsList"))
-        # call again class for frame generation
-        Frames(self.master_dummy, self.width, self.height, heightDivisor, toolbar_buttons_count,
-               buttons_names).choose_frame(1, True)
-
-    def create_labels(self):
-        y_position = 0
-        for label_name in self.label_names:
-            label = customtkinter.CTkLabel(self.master)
-            label.configure(text=label_name,
-                            font=(self.font_name, self.label_size + 17, self.font_boldness),
-                            width=self.width * (2 / 5),
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)),
-                            # height=self.height_frame * (1 / 11),
-                            fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
-            label.place(relx=0, rely=y_position)
-            self.label_dict[label_name] = label
-            y_position += (1 / (len(self.label_names) + 1))
-
-    def on_resize(self, event):
-        # Update the width and height of the frame
-        self.width = event.width
-        # self.height_frame = event.height
-
-        # Resize labels
-        for label in self.label_dict.values():
-            label.configure(width=self.width * (2 / 5),
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
-            # height=self.height_frame * (1 / 11))
-
-        # Recalculate button height and width
-        self.restore_configurations.configure(height=self.height_frame * (1 / (len(self.label_names) + 1)),
-                                              width=self.width * (2 / 5))
-        self.refresh_frame.configure(height=self.height_frame * (1 / (len(self.label_names) + 1)),
-                                     width=self.width * (2 / 5))
-
-
-class MailGlobal:
-    def __init__(self, frame_root, width, height, height_frame, master):
-        logger.info("Creating and showing frame for Mail configuration.")
-        self.master = frame_root
-        self.height_frame = height_frame
-        self.width = width
-        self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
-        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
-        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
-        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
-        self.label_dict = {}
-        self.button_height_fract = 11
-        # -----------------
-        # needed for refresh:
-        self.height = height
-        self.master_dummy = master
-        # -----------------
-        # call:
-        self.create_labels()
-        # -----------------
-        # lower buttons:
-        self.restore_configurations = customtkinter.CTkButton(master=frame_root, text="Restore Configurations",
-                                                              command=lambda: [ryuConf.restore_main_config(),
-                                                                               self.refresh()],
-                                                              height=self.master.winfo_height() * (
-                                                                      1 / self.button_height_fract),
-                                                              # 1/11, because I allow only 10 options on frame
-                                                              width=self.width * (2 / 5),
-                                                              font=(
-                                                                  self.font_name, self.label_size + 17,
-                                                                  self.font_boldness),
-                                                              hover_color=(
-                                                                  self.hover_alert_color, self.hover_alert_color),
-                                                              fg_color=("#D3D3D3", "#171717"),
-                                                              text_color=("black", "white"),
-                                                              anchor=customtkinter.CENTER)
-        self.restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001, rely=0.91)
-
-        self.refresh_frame = customtkinter.CTkButton(master=frame_root, text="Refresh frame",
-                                                     command=lambda: self.refresh(),
-                                                     height=self.height_frame * (1 / self.button_height_fract),
-                                                     width=self.width * (2 / 5),
-                                                     font=(
-                                                         self.font_name, self.label_size + 17,
-                                                         self.font_boldness),
-                                                     hover_color=(self.hover_alert_color, self.hover_alert_color),
-                                                     fg_color=("#D3D3D3", "#171717"),
-                                                     text_color=("black", "white"),
-                                                     anchor=customtkinter.CENTER)
-        self.refresh_frame.place(relx=0.5 + 0.001, rely=0.91)
-        # -----------------
-        # Bind the resize event
-        self.master.bind("<Configure>", self.on_resize)
-        # end ---------------------------
-
-    def refresh(self):
-        customtkinter.set_appearance_mode(ryuConf.red_main_config("GlobalConfiguration", "colorMode"))
-        heightDivisor = ryuConf.red_main_config("GUI_template", "height_divisor")
-        buttons_names = ryuConf.red_main_config("careConf", "menuButtonsList")
-        toolbar_buttons_count = len(ryuConf.red_main_config("careConf", "menuButtonsList"))
-        # call again class for frame generation
-        Frames(self.master_dummy, self.width, self.height, heightDivisor, toolbar_buttons_count,
-               buttons_names).choose_frame(2, True)
-
-    def create_labels(self):
-        y_position = 0
-        for label_name in self.label_names:
-            label = customtkinter.CTkLabel(self.master)
-            label.configure(text=label_name,
-                            font=(self.font_name, self.label_size + 17, self.font_boldness),
-                            width=self.width * (2 / 5),
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)),
-                            # height=self.height_frame * (1 / 11),
-                            fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
-            label.place(relx=0, rely=y_position)
-            self.label_dict[label_name] = label
-            y_position += (1 / (len(self.label_names) + 1))
-
-    def on_resize(self, event):
-        # Update the width and height of the frame
-        self.width = event.width
-        # self.height_frame = event.height
-
-        # Resize labels
-        for label in self.label_dict.values():
-            label.configure(width=self.width * (2 / 5),
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
-            # height=self.height_frame * (1 / 11))
-
-        # Recalculate button height and width
-        self.restore_configurations.configure(height=self.master.winfo_height() * (1 / self.button_height_fract),
-                                              width=self.width * (2 / 5))
-        self.refresh_frame.configure(height=self.height_frame * (1 / self.button_height_fract),
-                                     width=self.width * (2 / 5))
-
-
-class WebGlobal:
-    def __init__(self, frame_root):
-        self.master = frame_root
-        logger.info("Creating and showing frame for Web configuration.")
-        label = customtkinter.CTkLabel(master=frame_root, text="WEB CONFIG FRAME SOON")
-        label.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
-
-
-class LogsGlobal:
-    def __init__(self, frame_root, width, height):
-        logger.info("Creating and showing frame for viewing Logs.")
-        self.master = frame_root
-        self.height = height
-        self.width = width
-        # ------
-        self.log_filter = None
-        self.log_file = None
-
-        # -----
-        # sub-frame, for buttons and stuff
-        self.options_toolbar_frame = customtkinter.CTkFrame(frame_root)
-        self.options_toolbar_frame.pack_propagate(False)
-        self.options_toolbar_frame.configure(width=width, height=height * 0.10,  # aka XY% of whole frame height
-                                             fg_color=("#dbd9d9", "#222222"))
-        self.options_toolbar_frame.pack(side=customtkinter.TOP)
-        self.log_file_choice = None
-        self.log_files_names = []
-        # func calls:
-        self.find_log_files()
-
-        self.options_toolbar()
-        self.log_textbox(None)
-
-    def refresh(self):
-        print("todo")
-
-
-    def find_log_files(self):
-        relative_path = "../../../../senior-os/sconf/logs/"
-        # Relativní cesta k hledané složce, skipuje deep dive do diru, který má tento .py
-        base_path = os.path.abspath(relative_path)
-
-        if os.path.exists(base_path):  # Zkontroluje, zda složka existuje
-            for entry in os.listdir(base_path):  # Prochází všechny položky ve složce
-                full_path = os.path.join(base_path, entry)
-                if os.path.isfile(full_path) and entry.endswith(".log"):  # Pokud je položka soubor s příponou .log
-                    self.log_files_names.append(entry)
-        else:
-            logger.error("There is no folder named: \"/sconf/logs\" in senior-os.")
-            return
-
-
-    def option_menu_call(self, choice):
-        print("Selected option:", choice)
-        self.log_file_choice = choice  # for the self.option_filter_Call() function
-        # call
-        self.log_textbox(choice)
-
-
-    def option_filter_call(self, choice):
-        print("Selected option:", choice)
-        if choice == "ALL":
-            self.log_filter = None
-        else:
-            self.log_filter = choice
-        # call
-        self.log_textbox(self.log_file_choice)
-
-    def options_toolbar(self):
-        # pick log folder:
-        pick_folder_btn = customtkinter.CTkOptionMenu(master=self.options_toolbar_frame,
-                                                      command=self.option_menu_call,
-                                                      height=self.height * 0.10,
-                                                      width=self.width * 1/5)
-        dummy_values = []  # dummy array
-        for name in self.log_files_names:
-            dummy_values.append(name)  # add value to an array
-        pick_folder_btn.configure(values=dummy_values)
-        pick_folder_btn.place(relx=0, rely=0)
-        pick_folder_btn.set("Choose LOG file")  # default showing value
-        # -----------------------------------------------------------------------------
-        # pick log folder:
-        pick_filter_btn = customtkinter.CTkOptionMenu(master=self.options_toolbar_frame,
-                                                      command=self.option_filter_call,
-                                                      height=self.height * 0.10,
-                                                      width=self.width * 1/5)
-        filter_options = ["INFO", "WARNING", "CRITICAL", "ERROR", "ALL"]
-        pick_filter_btn.configure(values=filter_options)
-        pick_filter_btn.place(relx=1 * (1/5), rely=0)
-        pick_filter_btn.set("Choose LOG filter option")  # default showing value
-        # ---------------------------------------------------------------------------
-        # refresh button:
-        button = customtkinter.CTkButton(master=self.options_toolbar_frame,
-                                         height=self.height * 0.10,
-                                         width=self.width * 1 / 5,
-                                         text="Refresh",
-                                         command=lambda: self.refresh())
-        button.place(relx=1 * (4/5), rely=0)
-
-    def log_textbox(self, choice):
-        textbox = customtkinter.CTkTextbox(self.master)
-        textbox.configure(height=self.height - (self.height * 0.10), width=self.width, fg_color=("#D3D3D3", "#171717"),
-                          scrollbar_button_color=("black", "white"),
-                          scrollbar_button_hover_color=("#3b3b3b", "#636363"))
-        textbox.place(relx=0, rely=1 * 0.10)
-        file = ryuConf.read_log(self.log_filter, choice)
-        if file is None:
-            textbox.insert(customtkinter.END, "No log file was selected, nothing to show ...")
-        else:
-            for f in file:
-                textbox.insert(customtkinter.END, f)
-        textbox.configure(state="disabled")  # disable editing
 
 
 class Core(customtkinter.CTk):

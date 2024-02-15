@@ -101,7 +101,7 @@ def main_config_default(path):
     languageOPT = ["Czech", "English", "German"]
     GLobalFramesOptions = ["Choose primary display:", "Choose OS language:", "Choose alert language:",
                            "Choose colorscheme:", "Choose alert color (hex):", "Choose alert delay:",
-                           "Choose font size:", "Choose label size:", "Choose boldness:", "add later:"]
+                           "Choose font size:", "Choose label size:", "Choose boldness:", "<placeholder>"]
     SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add emails:", "Activation for care. email",
                          "Caregiver email:"]
     dictionary = {
