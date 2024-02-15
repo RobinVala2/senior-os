@@ -1,8 +1,8 @@
 import logging
+import os
 import sys
 import threading
 import tkinter as tk
-import webbrowser
 from tkinter import scrolledtext
 import re
 
@@ -447,7 +447,9 @@ class one_frame(tk.Frame):
 
     def open_browser(self, event, url):
         # Open the web browser when clicking on a URL
-        webbrowser.open_new(url)
+        path_to_script= "../sweb/main.py"
+        os.execl(sys.executable, sys.executable, path_to_script, url)
+        sys.exit()
 
     def alert_buttons(self):
 
