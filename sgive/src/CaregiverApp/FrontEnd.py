@@ -3,6 +3,7 @@ from screeninfo import get_monitors
 import sgive.src.CaregiverApp.configurationActions as ryuConf
 import logging
 import os
+import re  # regex
 
 """
 Author: RYUseless
@@ -226,24 +227,57 @@ class GlobalFrameWidgets:
         self.refresh_frame = refresh
         # create objects for widgets:
         self.screen_arr = []
-        self.screen_num = {}
-        self.label_dict = {}
-        self.language_dict = {}
+        self.screen_num = {}  # choose which screen size scale to
+        self.label_dict = {}  # i forgor what dis :)
+        self.language_dict = {}  # language for applications array
+        self.language_alert_dict = {}  # language alert dictionary
+        self.colorscheme_dict = {}
+        self.entry = customtkinter.CTkEntry(master=self.master)
+        self.submit_button_1 = customtkinter.CTkButton(master=self.master)
+        self.dummy_arr = [self.entry, self.submit_button_1]
+        # ---------
         # for showing each buttons at one function and resize calculations ↓ ↓ ↓ ↓ ↓
-        self.mega_array = [self.screen_num, self.language_dict]
+        self.array_coranteng = [self.screen_num, self.language_dict, self.language_alert_dict, self.colorscheme_dict,
+                                self.dummy_arr]
         # ---------- CALS --------------
         self.master.winfo_width()
         self.master.bind("<Configure>", self.on_resize)
         self.create_labels()
         self.buttons()
         self.show_buttons()
+        self.highlight_configured_widgets()
         # E N D of constructor
+
+    def check_value(self, input_hex):
+        match = re.search(r'^#(?:[0-9a-fA-F]{1,2}){3}$', input_hex)  # regex check
+
+        if match:
+            print("yahoooo")
+        else:
+            print("fuck")
+
+    def highlight_configured_widgets(self):
+        fg_color_values = ("#4b5946", "#4b5946")
+        hover_color_values = ("#7c8e76", "#7c8e76")
+
+        self.colorscheme_dict[ryuConf.red_main_config("GlobalConfiguration", "colorMode")].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+        self.language_alert_dict[ryuConf.red_main_config("GlobalConfiguration", "alertSoundLanguage")].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+        self.language_dict[ryuConf.red_main_config("GlobalConfiguration", "language")].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+        self.screen_num[ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
 
     @staticmethod
     def update_config(key, name, value, button_id, button_list):
+        # ------------
+        # error label s infem what wronk se dá udělat tím, že se přidá nová předávaná proměnná, která určuje, kolikáté
+        # tlačítko to je v ose y a poté se na tuto úroven dá nad tlačítka červený label a ok tlačítko :)
+        # ------------
         # pokud se zadaří a nikde nebude value a button_id rozdílné, tak pak tyto proměnné sloučit
+        # ------------
         return_value = ryuConf.edit_main_config(key, name, value)
-        print("button object is:", button_id)
         for all_buttons in button_list:  # aka restore all buttons in that row to its original color
             button_list[all_buttons].configure(fg_color=("#636363", "#222222"), hover_color=("#757474", "#3b3b3b"))
 
@@ -257,7 +291,8 @@ class GlobalFrameWidgets:
         # ryuConf.edit_main_config(key,name,value),
         # first config row: ------------------------------------------------------------
         screen_primary = 0
-        while screen_primary < len(get_monitors()):
+        while screen_primary < len(
+                get_monitors()) < 3:  # i only allow 3 monitors, cause i dont want to make scalable logic for more :)
             self.screen_arr.append(screen_primary)
             screen_primary += 1
         for id_value in self.screen_arr:
@@ -266,9 +301,9 @@ class GlobalFrameWidgets:
                                                 corner_radius=0,
                                                 fg_color=("#636363", "#222222"),
                                                 hover_color=("#757474", "#3b3b3b"),
-                                                width=self.master.winfo_width() * (1 / 5),
+                                                width=self.master.winfo_width() * (1 / 5) - 2.5,
                                                 height=self.master.winfo_height() * (
-                                                        1 / (len(self.label_names) + 1)),
+                                                        1 / (len(self.label_names) + 1)) - 2.5,
                                                 text=f"Screen {id_value}",
                                                 command=lambda current_id=id_value: self.update_config(
                                                     "GlobalConfiguration",
@@ -282,35 +317,104 @@ class GlobalFrameWidgets:
         for language in language_arr:
             self.language_dict[language] = customtkinter.CTkButton(master=self.master)
             self.language_dict[language].configure(border_width=0,
-                                                    corner_radius=0,
-                                                    fg_color=("#636363", "#222222"),
-                                                    hover_color=("#757474", "#3b3b3b"),
-                                                    width=self.master.winfo_width() * (1 / 5),
-                                                    height=self.master.winfo_height() * (
-                                                               1 / (len(self.label_names) + 1)),
-                                                    text=language,
-                                                    command=lambda lang_id=language: self.update_config(
-                                                                                                    "GlobalConfiguration",
-                                                                                                    "language",
-                                                                                                    lang_id,
-                                                                                                    lang_id,
-                                                                                                    self.language_dict))
+                                                   corner_radius=0,
+                                                   fg_color=("#636363", "#222222"),
+                                                   hover_color=("#757474", "#3b3b3b"),
+                                                   width=self.master.winfo_width() * (1 / 5) - 2.5,
+                                                   height=self.master.winfo_height() * (
+                                                           1 / (len(self.label_names) + 1)) - 2.5,
+                                                   text=language,
+                                                   command=lambda lang_id=language: self.update_config(
+                                                       "GlobalConfiguration",
+                                                       "language",
+                                                       lang_id,
+                                                       lang_id,
+                                                       self.language_dict))
 
             # -------------------------------------------------------------------------------
             # third config row: ------------------------------------------------------------
-            x_position = 1 * (2 / 5)  # reset X position
-            # y_position = y_position + 1 * (1 / (len(self.label_names) + 1))
-            # lower Y position by one button height down
+            for language_alert in language_arr:
+                self.language_alert_dict[language_alert] = customtkinter.CTkButton(master=self.master)
+                self.language_alert_dict[language_alert].configure(border_width=0,
+                                                                   corner_radius=0,
+                                                                   fg_color=("#636363", "#222222"),
+                                                                   hover_color=("#757474", "#3b3b3b"),
+                                                                   width=self.master.winfo_width() * (1 / 5) - 2.5,
+                                                                   height=self.master.winfo_height() * (
+                                                                           1 / (len(self.label_names) + 1)) - 2.5,
+                                                                   text=language_alert,
+                                                                   command=lambda lang_id=language_alert: self.update_config(
+                                                                       "GlobalConfiguration",
+                                                                       "alertSoundLanguage",
+                                                                       lang_id,
+                                                                       lang_id,
+                                                                       self.language_alert_dict))
+            # -------------------------------------------------------------------------------
+            # fourth config row: ------------------------------------------------------------
+            colorscheme_arr = ["Light", "Dark"]
+            for option in colorscheme_arr:
+                self.colorscheme_dict[option] = customtkinter.CTkButton(self.master)
+                self.colorscheme_dict[option].configure(border_width=0,
+                                                        corner_radius=0,
+                                                        fg_color=("#636363", "#222222"),
+                                                        hover_color=("#757474", "#3b3b3b"),
+                                                        width=self.master.winfo_width() * (1 / 5) - 2.5,
+                                                        height=self.master.winfo_height() * (
+                                                                1 / (len(self.label_names) + 1)) - 2.5,
+                                                        text=option,
+                                                        command=lambda colorscheme_id=option:
+                                                        self.update_config(
+                                                            "GlobalConfiguration",
+                                                            "colorMode",
+                                                            colorscheme_id,
+                                                            colorscheme_id,
+                                                            self.colorscheme_dict)
+                                                        )
+
+            # -------------------------------------------------------------------------------
+            # fifth config row: ------------------------------------------------------------
+            read_conf = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+            self.entry.configure(width=self.master.winfo_width() * (2 / 5) - 2.5,
+                                 height=self.master.winfo_height() * (
+                                         1 / (len(self.label_names) + 1)) - 2.5,
+                                 border_width=0,
+                                 corner_radius=0,
+                                 placeholder_text=f"<Add your desired value here, default is: "
+                                                  f"{read_conf}>",
+                                 )
+            self.submit_button_1.configure(width=self.master.winfo_width() * (1 / 5) - 2.5,
+                                           text="Submit",
+                                           height=self.master.winfo_height() * (
+                                                   1 / (len(self.label_names) + 1)) - 2.5,
+                                           command=lambda: self.check_value(self.entry.get()),
+                                           border_width=0,
+                                           corner_radius=0,
+                                           fg_color=("#636363", "#222222"),
+                                           hover_color=("#757474", "#3b3b3b"),
+                                           )
 
     def show_buttons(self):
-        y_position = 0
-        for array in self.mega_array:
-            x_position = 1 * (2 / 5)
-            for button in array:
-                array[button].place(relx=x_position, rely=y_position)
-                x_position = x_position + (1 * (1 / 5))
-            y_position = y_position + (1 * (1 / (len(self.label_names) + 1)))
-
+        """
+        This function is bit of a blackbox, it calculates all of the widgets positions on frame
+        """
+        y_position = 0.001
+        for widget_dictionary in self.array_coranteng:
+            if isinstance(widget_dictionary, dict):
+                x_position = 1 * (2 / 5) + 0.001  # starting place
+                for button in widget_dictionary.values():
+                    button.place(relx=x_position, rely=y_position)
+                    x_position += 1 * (1 / 5)
+                y_position += 1 * (1 / (len(self.label_names) + 1))
+            elif isinstance(widget_dictionary, list):
+                x_position = 1 * (2 / 5) + 0.001  # starting place
+                for widget_object in self.dummy_arr:
+                    if isinstance(widget_object, customtkinter.CTkEntry):
+                        widget_object.place(relx=x_position, rely=y_position)
+                        x_position = x_position + 1 * (2 / 5)
+                    elif isinstance(widget_object, customtkinter.CTkButton):
+                        widget_object.place(relx=x_position, rely=y_position)
+                        x_position = x_position + 1 * (1 / 5)
+                y_position += 1 * (1 / (len(self.label_names) + 1))
 
     def create_labels(self):
         y_position = 0
@@ -333,18 +437,28 @@ class GlobalFrameWidgets:
             label.configure(width=width_new,
                             height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
 
-        # recalculate sizes for all buttons that are 2/5 of the size
+        # recalculate sizes for all buttons that are 2/5 of the size:
         for btn in [self.restore_configurations, self.refresh_frame]:
             btn.configure(height=self.height_frame * (1 / 11),
                           width=self.master.winfo_width() * (2 / 5),
                           anchor=customtkinter.CENTER)
 
-        # recalculate sizes for all buttons that are 1/5 of the size
-        for array in self.mega_array:
-            for widget in array:
-                array[widget].configure(width=self.master.winfo_width() * (1 / 5),
-                                                     height=self.master.winfo_height() * (
-                                                             1 / (len(self.label_names) + 1)))
+        # recalculates widgets in self.array_coranteng giga mega array:
+        for item in self.array_coranteng:
+            if isinstance(item, dict):
+                for key, widget in item.items():
+                    widget.configure(width=self.master.winfo_width() * (1 / 5) - 2.5,
+                                     height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5)
+            elif isinstance(item, list):
+                for widget_object in item:
+                    if isinstance(widget_object, customtkinter.CTkEntry):
+                        widget_object.configure(width=self.master.winfo_width() * (2 / 5) - 2.5,
+                                                height=self.master.winfo_height() * (
+                                                        1 / (len(self.label_names) + 1)) - 2.5)
+                    elif isinstance(widget_object, customtkinter.CTkButton):
+                        widget_object.configure(width=self.master.winfo_width() * (1 / 5) - 2.5,
+                                                height=self.master.winfo_height() * (
+                                                        1 / (len(self.label_names) + 1)) - 2.5)
 
 
 class Frames:

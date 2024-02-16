@@ -112,7 +112,7 @@ def main_config_default(path):
         'GlobalConfiguration': {
             "numOfScreen": 0,
             "language": "English",
-            "colorMode": "light",
+            "colorMode": "Light",
             "light_color": "white",
             "dark_color": "gray",
             "soundDelay": 5,
