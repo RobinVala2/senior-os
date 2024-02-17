@@ -41,6 +41,7 @@ class MyWebEnginePage(QWebEnginePage):
         new_page.urlChangedSignal.connect(self.urlChangedSignal.emit)
         return new_page
     
+    # Method for configuration in Mobile user agent
     def setUserAgent(self, user_agent):
         self.profile().setHttpUserAgent(user_agent)
     
@@ -67,7 +68,7 @@ class GetMonitorHeightAndWidth:
     
     def get_width_button(self):
         return self.button_width
-
+    
 # My main browser contains all GUI in this class (Toolbar, Buttons, URLbar)
 class MyBrowser(QMainWindow):
     # Define the contructor for initialization 
@@ -80,8 +81,10 @@ class MyBrowser(QMainWindow):
         # Set cutstom page to open new page in the same browser
         self.my_custom_page = MyWebEnginePage(self.main_browser)
         self.my_custom_page.urlChangedSignal.connect(self.on_url_changed_my_custom_page)
+        # Configuration for open in Mobile
+        # Value for mobile user agent
         mobile_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1"
-        self.my_custom_page.setUserAgent(mobile_user_agent)
+        #self.my_custom_page.setUserAgent(mobile_user_agent)
         # Add my custom page to browser
         self.main_browser.setPage(self.my_custom_page)
         self.setCentralWidget(self.main_browser)
@@ -484,17 +487,31 @@ class MyBrowser(QMainWindow):
     # This method is used for changing font in HTML content
     def html_injection_to_web_content(self):
         injection_javasript = """
+        <!-- Declare tags for prohibiting input text to textfill>
+        var prohibited_tag_input = document.querySelectorAll('input, textarea, div.input');
+        <!-- Disable input field in webpage-->
+        prohibited_tag_input.forEach(function(input) {
+            <!-- True == input value is disabled-->
+            input.disabled = true;
+        });
         <!-- Change only paragraph, article, span and header elements with lower levels--> 
-        var changed_tag = ['p', 'div', 'article', 'span', 'h3', 'h4', 'h5'];
+        var all_changed_content_tag = ['p', 'div', 'article', 'span', 'h3', 'h4', 'h5'];
         <!-- Create a function to change content style-->
         var change_content_style = function(element) {
-            if (element.children.length === 0) {
+            <!-- Method includes will return value in UPPERCASE>
+            if (['H3', 'H4', 'H5', 'A'].includes(element.tagName)) {
+                <!-- Header with bigger size-->
                 element.style.fontSize = '20px';
+                element.style.lineHeight = '1.0';
+            }
+            <!-- Method includes will return value in UPPERCASE>
+            else if (['P', 'DIV', 'ARTICLE', 'SPAN'].includes(element.tagName)) {
+                <!-- Content with smaller size>
+                element.style.fontSize = '17px';
                 element.style.lineHeight = '1.1';
             }
             Array.from(element.children).forEach(change_content_style);
         }
-        <!-- Call created function with input html content-->
         change_content_style(document.body);
         """
         self.main_browser.page().runJavaScript(injection_javasript)
