@@ -1,15 +1,15 @@
 import logging
+import os
 import sys
 import threading
 import tkinter as tk
-import webbrowser
 from tkinter import scrolledtext
 import re
 
 from smail.connection.style import (font_config, search_mail,
                                     get_language, button_hover, button_leave,
                                     images, image_config, app_color,
-                                    height_config, play_sound, load_json_file, get_email_sender)
+                                    height_config, play_sound, load_json_file, get_email_sender, load_credentials)
 from smail.connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from smail.template import guiTemplate as temp
@@ -337,8 +337,11 @@ class one_frame(tk.Frame):
 
     def insert_emails(self):
 
+        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        language, text = get_language()
+
         # getting emails from inbox
-        self.emails, self.subject = read_mail()
+        self.emails, self.subject = read_mail(login, password, imap_server, imap_port, language, text)
         # reversing emails - new emails will be on top of the listbox
         self.reversed_list = self.emails[::-1]
 
@@ -447,7 +450,9 @@ class one_frame(tk.Frame):
 
     def open_browser(self, event, url):
         # Open the web browser when clicking on a URL
-        webbrowser.open_new(url)
+        path_to_script= "../sweb/main.py"
+        os.execl(sys.executable, sys.executable, path_to_script, url)
+        sys.exit()
 
     def alert_buttons(self):
 
@@ -544,10 +549,11 @@ class one_frame(tk.Frame):
 
     def send_email_status(self):
 
+        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
         # sending email
         status = send_email(
             self.recipient_entry.get(), self.subject_entry.get(),
-            self.content_entry.get("1.0", tk.END)
+            self.content_entry.get("1.0", tk.END), login, password, smtp_server, smtp_port
         )
 
         # if successful, all entries are deleted

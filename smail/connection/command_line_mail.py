@@ -5,16 +5,15 @@ import ssl
 import sys
 from email.mime.text import MIMEText
 
-with open("../../sconf/SMAIL_config.json", "r") as f:
-    data = json.load(f)
-credentials = data["credentials"]
-login = credentials["username"]
-password = credentials["password"]
-smtp_server = credentials["smtp_server"]
-smtp_port = credentials["smtp_port"]
-sslContext = ssl.create_default_context()
-
 def send_email(recipient, content):
+
+    with open("../../sconf/SMAIL_config.json", "r") as f:
+        data = json.load(f)
+    credentials = data["credentials"]
+    login = credentials["username"]
+    password = credentials["password"]
+    smtp_server = credentials["smtp_server"]
+    smtp_port = credentials["smtp_port"]
 
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     msg = MIMEText(content)
@@ -28,7 +27,7 @@ def send_email(recipient, content):
         with smtplib.SMTP(
                 smtp_server, smtp_port
         ) as server:
-            server.starttls(context=sslContext)
+            server.starttls(context=ssl.create_default_context())
             server.login(login, password)
             server.sendmail(login, recipient, msg.as_string())
             print("Email send succesfuly.")
