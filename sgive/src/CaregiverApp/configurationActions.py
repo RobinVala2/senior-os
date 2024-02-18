@@ -88,6 +88,7 @@ def edit_main_config(key, name, value):
         with open(os.path.join(path, 'config.json'), 'w') as f:
             json.dump(data, f, indent=4)
     logging.info(f'successfully edited value: "{value}" at key: "{name}".')
+    return True
 
 
 def restore_main_config():
@@ -99,11 +100,12 @@ def restore_main_config():
 def main_config_default(path):
     options = ["Global", "Mail", "Web", "LOGS"]
     languageOPT = ["Czech", "English", "German"]
-    GLobalFramesOptions = ["Choose primary display:", "Choose OS language:", "Choose alert language:",
-                           "Choose colorscheme:", "Choose alert color (hex):", "Choose alert delay:",
-                           "Choose font size:", "Choose label size:", "Choose boldness:", "add later:"]
+    GLobalFramesOptions = ["Choose primary display:", "Choose text language:", "Choose alert language:",
+                           "Choose colorscheme:", "Choose alert color (hex):", "Choose hover color(hex):", "Choose alert delay:",
+                           "Choose font size:", "Choose label size:", "Choose boldness:"]
     SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add emails:", "Activation for care. email",
                          "Caregiver email:"]
+    EntryOptions = ["alertColor", "hoverColor","soundDelay", "fontSize", "labelFontSize"]
     dictionary = {
         'pathToConfig': {
             "path": path
@@ -111,12 +113,13 @@ def main_config_default(path):
         'GlobalConfiguration': {
             "numOfScreen": 0,
             "language": "English",
-            "colorMode": "light",
+            "alertSoundLanguage": "English",
+            "colorMode": "Light",
             "light_color": "white",
             "dark_color": "gray",
-            "soundDelay": 5,
             "alertColor": "#8B0000",
-            "alertSoundLanguage": "English",
+            "hoverColor": "#7c8e76",
+            "soundDelay": 5,
             "fontSize": 36,
             "labelFontSize": 12,
             "fontThickness": "bold",
@@ -138,6 +141,7 @@ def main_config_default(path):
             "LanguageOptions": languageOPT.copy(),
             "GlobalFrameLabels": GLobalFramesOptions.copy(),
             "SMailFrameLabels": SMailLabelOptions.copy(),
+            "EntryOptions": EntryOptions.copy(),
         },
     }
     json_object = json.dumps(dictionary, indent=4)
