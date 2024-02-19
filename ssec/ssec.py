@@ -39,7 +39,8 @@ try:
 				continue
 			if inside_identification:
 				if line == computer_mac.strip():
-					subprocess.run(f'echo "{password}" | cryptsetup luksOpen {encrypted_device} EncHome 2>/ssec/ssec_err.log', shell=True)
+					subprocess.run(f'echo "{password}" | cryptsetup luksOpen "{encrypted_device}" ' +
+                    + 'EncHome 2>/ssec/ssec_err.log', shell=True)
 					subprocess.run(f'mount /dev/mapper/EncHome /home 2>/ssec/ssec_err.log', shell=True)
 					subprocess.run(f'echo "Decrypted" > /ssec/ssec_crypt.txt 2>/ssec/ssec_err.log', shell=True)
 				else:
@@ -52,3 +53,4 @@ except Exception as e:
 	subprocess.run(f'echo "An error occured: {e}" >> /ssec/ssec_err.log', shell=True)
 
 subprocess.run(f'echo "yes" | rm /var/run/ssec.pid 2>/ssec/ssec_err.log', shell=True)
+
