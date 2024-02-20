@@ -58,14 +58,13 @@ class LogsFrameWidgets:
         self.log_textbox(None)
 
     def refresh(self):
-        print("refreshing???")
         for widget in self.master.winfo_children():
             # this forgets all widgets inside a frame
-            widget.pack_forget()
-        self.master.pack_forget()  # this forgets frame itself
-        self.master.pack()
-        for widget in self.master.winfo_children():
-            widget.pack()
+            widget.place_forget()
+
+        self.options_toolbar()
+        self.log_textbox(None)
+
 
     def find_log_files(self):
         relative_path = "../../../../senior-os/sconf/logs/"
@@ -229,6 +228,7 @@ class GlobalFrameWidgets:
         self.restore_configurations = restore
         self.refresh_frame = refresh
         # create objects for widgets:
+        self.error_label_arr = []
         self.screen_arr = []
         self.screen_num = {}  # choose which screen size scale to
         self.label_dict = {}  # i forgor what dis :)
@@ -250,18 +250,44 @@ class GlobalFrameWidgets:
         self.master.bind("<Configure>", self.on_resize)
         # E N D of constructor
 
-    @staticmethod
-    def show_entry_error(button_object, entry_object):
-        entry_x = entry_object.winfo_x()
-        entry_y = entry_object.winfo_y()
-        button_x = button_object.winfo_x()
-        button_y = button_object.winfo_y()
 
-        print("Entry position: ({}, {})".format(entry_x, entry_y))
-        print("Button position: ({}, {})".format(button_x, button_y))
+
+    def show_entry_error(self, button_object, entry_object, label_id):
+        window_height = self.master.winfo_height()
+        window_width = self.master.winfo_width()
+
+        rel_entry_x = entry_object.winfo_x() / window_width
+        rel_entry_y = entry_object.winfo_y() / window_height
+
+        rel_button_x = button_object.winfo_x() / window_width
+        rel_button_y = button_object.winfo_y() / window_height
 
         button_object.place_forget()
         entry_object.place_forget()
+
+        self.error_label_arr.append(label_id)
+
+        label_id = customtkinter.CTkLabel(self.master)
+        label_id.configure(width=self.master.winfo_width() * (2 / 5) - 2.5,
+                           height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5,
+                           fg_color=(self.hover_alert_color, self.hover_alert_color),
+                           text="There was an error in user input, for more info., please see Log.")
+        label_id.place(relx=rel_entry_x, rely=rel_entry_y)
+
+        label_id_btn = customtkinter.CTkButton(self.master)
+        label_id_btn.configure(width=self.master.winfo_width() * (1 / 5) - 2.5,
+                               height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5,
+                               border_width=0,
+                               corner_radius=0,
+                               fg_color=("#636363", "#222222"),
+                               hover_color=("#757474", "#3b3b3b"),
+                               text="Let me try again!",
+                               command=lambda entry_value=label_id, entry_button=label_id_btn:
+                                [label_id.place_forget(), label_id_btn.place_forget(),
+                                 entry_object.place(relx=rel_entry_x, rely=rel_entry_y),
+                                 button_object.place(relx=rel_button_x, rely=rel_button_y)])
+        label_id_btn.place(relx=rel_button_x, rely=rel_button_y)
+        self.error_label_arr.append(label_id_btn)
 
     def check_value(self, key, name, input_value, button_object, entry_object):
         # hex color regex section
@@ -273,7 +299,7 @@ class GlobalFrameWidgets:
                 return
             else:
                 # zde dodělat fucky wucky s error labelem atd
-                self.show_entry_error(button_object, entry_object)
+                self.show_entry_error(button_object, entry_object, name)
                 logger.error(f"Changed integer value was not in HEX format, user input was: '{input_value}'")
                 return
         # number input regex section
@@ -284,7 +310,7 @@ class GlobalFrameWidgets:
                 ryuConf.edit_main_config(key, name, int(input_value))
                 return
             else:
-                self.show_entry_error(button_object, entry_object)
+                self.show_entry_error(button_object, entry_object, name)
                 logger.error(f"Changed integer value was not number, user input was: {input_value}")
                 return
 
