@@ -98,14 +98,14 @@ def restore_main_config():
 
 
 def main_config_default(path):
-    options = ["Global", "Mail", "Web", "LOGS"]
+    options = ["Global", "Mail", "Web", "Logs"]
     languageOPT = ["Czech", "English", "German"]
     GLobalFramesOptions = ["Choose primary display:", "Choose text language:", "Choose alert language:",
                            "Choose colorscheme:", "Choose alert color (hex):", "Choose hover color(hex):", "Choose alert delay:",
                            "Choose font size:", "Choose label size:", "Choose boldness:"]
     SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add emails:", "Activation for care. email",
                          "Caregiver email:"]
-    EntryOptions = ["alertColor", "hoverColor","soundDelay", "fontSize", "labelFontSize"]
+    EntryOptions = ["alertColor", "hoverColor", "soundDelay", "fontSize", "labelFontSize"]
     dictionary = {
         'pathToConfig': {
             "path": path
