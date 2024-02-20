@@ -15,7 +15,8 @@
 - Only for caregiver, not meant for senior
 - Is resizable, so caregiver can look at other stuff too, for example at config itself.
 - UI is strongly influenced by my UI template, but is newer version, so it is little better. <br>
-![App_screenshot_not_showing](https://github.com/forsenior/senior-os/blob/main/sgive/screenshots/CaregiverApp_GLOBAL.png "MarineGEO logo")
+<img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/CaregiverApp_GLOBAL.png" alt="App_screenshot_not_showing" style="width:50%;">
+
 
 ## User interface template:
 [Graphical interface template](src/gui_template/) <br>
