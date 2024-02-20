@@ -1,7 +1,8 @@
 from tkinter import *
 import configurationActions as ryuconf
 import os
-import CaregiverGUI as ryuGUI
+#  import CaregiverGUI as ryuFrontEnd
+import FrontEnd as ryuFrontEnd
 import logging
 
 logging.basicConfig(
@@ -24,6 +25,7 @@ if __name__ == '__main__':
         ryuconf.main_config_default(configPath)
         logging.error("No config was found, generating new one.")
 
-    root = Tk()
-    ryuGUI.AppBase(root)
-    root.mainloop()
+    # root = Tk()
+    # ryuFrontEnd.AppBase(root)
+    # root.mainloop()
+    ryuFrontEnd.main()  # FRONTEND CALL
