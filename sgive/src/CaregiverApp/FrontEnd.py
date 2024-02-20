@@ -61,8 +61,10 @@ class LogsFrameWidgets:
         for widget in self.master.winfo_children():
             # this forgets all widgets inside a frame
             widget.place_forget()
-        for widget in self.master.winfo_children():
-            widget.pack()
+
+        self.options_toolbar()
+        self.log_textbox(None)
+
 
     def find_log_files(self):
         relative_path = "../../../../senior-os/sconf/logs/"
