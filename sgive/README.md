@@ -19,7 +19,7 @@
 
 
 ## User interface template:
-[Graphical interface template](src/gui_template/) <br>
-[CustomTkinter interface template](src/guiTemplateCustomTkinter/) <br>
+[UI tkinter](src/gui_template/) <br>
+[UI customTkinter](src/guiTemplateCustomTkinter/) <br>
 
 

@@ -1,9 +1,7 @@
-.venv/
-venv/
-.idea/
-idea/
-src/__pychache__
-src/.idea/
-src/idea/
+src/CaregiverApp/__pycache__
+src/CaregiverApp/__pycache__/
 src/gui_template/__pycache__/
-src/old_gui_backup/__pycache__/
+src/gui_template/__pycache__
+src/guiTemplateCustomTkinter/__pycache__/
+src/guiTemplateCustomTkinter/__pycache__
+
