@@ -3,8 +3,9 @@ import os
 import sys
 import threading
 import tkinter as tk
+from ttkwidgets import ScrolledListbox
 import webbrowser
-from tkinter import scrolledtext
+from tkinter import scrolledtext, ttk
 import re
 
 from smail.connection.style import (font_config, search_mail,
@@ -204,11 +205,19 @@ class one_frame(tk.Frame):
             self.frame, text=self.text[f"smail_{self.language}_inboxLabel"],
             font=font_config(), bg=self.background_color
         )
-        self.inbox_list = tk.Listbox(
+
+        #self.inbox_list = tk.Listbox(
+        #    self.frame, font=font_config(),
+        #    height=self.number_of_lines_listbox,
+        #    activestyle="none", selectmode=tk.SINGLE
+        #)
+
+        self.inbox_list = ScrolledListbox(
             self.frame, font=font_config(),
             height=self.number_of_lines_listbox,
             activestyle="none", selectmode=tk.SINGLE
         )
+
 
         # audio configuration
         self.audio_configure(self.inbox_list, "inbox")
@@ -218,6 +227,8 @@ class one_frame(tk.Frame):
             row=0, column=0,
             sticky="nsew", padx=10, pady=10, ipady=5
         )
+
+
         self.inbox_list.grid(
             row=1, column=0,
             sticky="nsew", padx=20, pady=20
@@ -357,14 +368,15 @@ class one_frame(tk.Frame):
 
         # inserting emails into the listbox,
         # for now safe_emails and phish_emails are separated
-        self.inbox_list.delete(0, tk.END)
+        #self.inbox_list.delete(0, tk.END)
+        self.inbox_list.listbox.delete(0, tk.END)
         print("Clearing the listbox")
 
         for n in self.safe_emails:
             self.name = get_email_sender(n.split("\n")[1])
             self.sub = n.split("\n")[0].split(":",1)[1]
 
-            self.inbox_list.insert(tk.END, f"{self.name} - {self.sub}")
+            self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
             # binding listbox to text area to view email
             self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
 
@@ -374,9 +386,9 @@ class one_frame(tk.Frame):
             self.name = get_email_sender(m.split("\n")[1])
             self.sub = m.split("\n")[0].split(":", 1)[1]
 
-            self.inbox_list.insert(tk.END, f"{self.name} - {self.sub}")
+            self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
             # binding listbox to text area to view email
-            self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+            self.inbox_list.listbox.bind("<<ListboxSelect>>", self.showEmail)
 
         print("Inserting emails into listbox")
 
@@ -389,12 +401,12 @@ class one_frame(tk.Frame):
 
         # in case no item in listbox is selected,
         # the last selected email will be displayed in text area
-        if not self.inbox_list.curselection():
+        if not self.inbox_list.listbox.curselection():
             if (self.last_selected_index is not None
                     and self.last_selected_email is not None):
                 self.configure_message_area(self.last_selected_email)
 
-        selected_index = self.inbox_list.curselection()[0]
+        selected_index = self.inbox_list.listbox.curselection()[0]
 
         # Check if the selected index is within the range of safe_emails
         if selected_index < len(self.safe_emails):

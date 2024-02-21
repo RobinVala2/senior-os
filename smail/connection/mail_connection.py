@@ -17,18 +17,6 @@ logger = logging.getLogger(__file__)
 # (password needs to be generated in google account via:
 #   google account -> security -> 2-step verification -> app passwords)
 
-#data = load_json_file("../sconf/SMAIL_config.json")
-#credentials = data["credentials"]
-#login = credentials["username"]
-#password = credentials["password"]
-#smtp_server = credentials["smtp_server"]
-#smtp_port = credentials["smtp_port"]
-#imap_server = credentials["imap_server"]
-#imap_port = credentials["imap_port"]
-#max_emails = credentials["max"]
-#sslContext = ssl.create_default_context()
-
-
 phish_senders = []
 resend_emails_g = False
 
