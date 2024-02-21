@@ -5,7 +5,7 @@ from smail.connection.mail_connection import imap_connection
 
 class TestImapConnection(unittest.TestCase):
     login = "ts1bp2023@gmail.com"
-    password = "wuaxnflbzrdyysdy"
+    password = "password"
     imap_server = "smtp.gmail.com"
     imap_port = 993
 

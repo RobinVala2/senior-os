@@ -7,7 +7,7 @@ import email
 import ssl
 import re
 import chardet
-from smail.connection.style import get_guardian_email, resend_active
+from smail.connection.style import get_guardian_email, resend_active, load_credentials
 
 logger = logging.getLogger(__file__)
 
@@ -265,4 +265,7 @@ def resend_mail_to_guardian(emails):
         logger.info(f"Sending emails from seniors address {smail} to guardians email address {gmail}.")
         for e in emails:
             email_content += e
-        send_email(gmail, email_subject, email_content)
+
+        # recipient, subject, content, login, password, smtp_server, smtp_port
+        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        send_email(gmail, email_subject, email_content, login, password, smtp_server, smtp_port)
