@@ -403,7 +403,6 @@ class GlobalFrameWidgets:
                 ryuConf.edit_main_config(key, name, input_value)
                 return
             else:
-                # zde dodělat fucky wucky s error labelem atd
                 self.show_entry_error(button_object, entry_object, name)
                 logger.error(f"Changed integer value was not in HEX format, user input was: '{input_value}'")
                 return
