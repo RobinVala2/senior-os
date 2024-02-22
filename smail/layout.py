@@ -56,6 +56,7 @@ class one_frame(tk.Frame):
         # Start a background thread to load emails
         self.loading_emails = threading.Thread(target=self.periodic_email_loading)
         self.loading_emails.start()
+        self.allow_show_email = True
 
     def load_emails(self):
         # function that initializes loading emails
@@ -206,17 +207,13 @@ class one_frame(tk.Frame):
             font=font_config(), bg=self.background_color
         )
 
-        #self.inbox_list = tk.Listbox(
-        #    self.frame, font=font_config(),
-        #    height=self.number_of_lines_listbox,
-        #    activestyle="none", selectmode=tk.SINGLE
-        #)
-
         self.inbox_list = ScrolledListbox(
             self.frame, font=font_config(),
             height=self.number_of_lines_listbox,
             activestyle="none", selectmode=tk.SINGLE
         )
+
+        self.inbox_list.listbox.bind("<Enter>", self.activate_show_email)
 
 
         # audio configuration
@@ -237,10 +234,14 @@ class one_frame(tk.Frame):
         logger.info("Created left frame with received emails in listbox.")
         return self.frame
 
+    def activate_show_email(self, event):
+        self.allow_show_email = True
+
     def right_write_frame(self):
 
         # stopping phishing alert
         self.stop_alert()
+
 
         # changeable frame
         self.rw_frame = tk.Frame(self)
@@ -311,6 +312,8 @@ class one_frame(tk.Frame):
 
         return self.rw_frame
 
+    def double_click(self):
+        print("Double clicked.")
     def right_read_frame(self):
 
         # changeable frame
@@ -380,7 +383,7 @@ class one_frame(tk.Frame):
 
                 self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
                 # binding listbox to text area to view email
-                self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+                self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
 
             for m in self.phish_emails:
                 self.name = get_email_sender(m.split("\n")[1])
@@ -388,13 +391,15 @@ class one_frame(tk.Frame):
 
                 self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
                 # binding listbox to text area to view email
-                self.inbox_list.listbox.bind("<<ListboxSelect>>", self.showEmail)
+                self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
 
             print("Inserting emails into listbox")
 
 
+    def show_email(self, event):
 
-    def showEmail(self, event):
+        if not self.allow_show_email:
+            return
 
         # switch frames to reading frame
         self.switch_to_reading_mail()
@@ -405,25 +410,32 @@ class one_frame(tk.Frame):
             if (self.last_selected_index is not None
                     and self.last_selected_email is not None):
                 self.configure_message_area(self.last_selected_email)
+                return
+        try:
+            selected_index = self.inbox_list.listbox.curselection()[0]
 
-        selected_index = self.inbox_list.listbox.curselection()[0]
+            # Check if the selected index is within the range of safe_emails
+            if selected_index < len(self.safe_emails):
+                selected_email = self.safe_emails[selected_index]
+                # no alert will be displayed
+                self.stop_alert()
+            else:
+                # If it's not in safe_emails, it must be in phish_email
+                selected_email = self.phish_emails[selected_index - len(self.safe_emails)]
+                # Alert - phishing URL in email
+                self.alert_buttons()
 
-        # Check if the selected index is within the range of safe_emails
-        if selected_index < len(self.safe_emails):
-            selected_email = self.safe_emails[selected_index]
-            # no alert will be displayed
-            self.stop_alert()
-        else:
-            # If it's not in safe_emails, it must be in phish_email
-            selected_email = self.phish_emails[selected_index - len(self.safe_emails)]
-            # Alert - phishing URL in email
-            self.alert_buttons()
+            self.configure_message_area(selected_email)
 
-        self.configure_message_area(selected_email)
+            # Update the last selected index and email
+            self.last_selected_index = selected_index
+            self.last_selected_email = selected_email
 
-        # Update the last selected index and email
-        self.last_selected_index = selected_index
-        self.last_selected_email = selected_email
+        except IndexError:
+            print("Index out of range.")
+
+
+
 
     def configure_message_area(self, email):
         # Inserting email into text area
@@ -552,6 +564,7 @@ class one_frame(tk.Frame):
     def switch_to_write_mail(self):
         # switching frame
         self.r_frame = self.right_write_frame()
+
         self.r_frame.grid(
             column=1, row=0
         )
@@ -577,6 +590,8 @@ class one_frame(tk.Frame):
             self.content_entry.delete("1.0", tk.END)
 
     def fill_recipient(self, id):
+
+        self.allow_show_email = False
 
         if self.r_frame == self.rr_frame:
             self.r_frame = self.right_write_frame()
