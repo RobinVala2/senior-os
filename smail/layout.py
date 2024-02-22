@@ -11,7 +11,8 @@ import re
 from smail.connection.style import (font_config, search_mail,
                                     get_language, button_hover, button_leave,
                                     images, image_config, app_color,
-                                    height_config, play_sound, load_json_file, get_email_sender, load_credentials)
+                                    height_config, play_sound, load_json_file, get_email_sender, load_credentials,
+                                    load_show_url)
 from smail.connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from smail.template import guiTemplate as temp
@@ -450,10 +451,16 @@ class one_frame(tk.Frame):
         self.mark_email()
 
     def mark_email(self):
-        # Find all URLs in email and tag them
-        for match in re.finditer(r'https?://\S+|www\.\S+', self.message_area.get("1.0", tk.END)):
-            url = match.group()
-            self.mark_and_link_email(url)
+
+        show = load_show_url("../sconf/SMAIL_config.json")
+
+        if show == 1:
+            # Find all URLs in email and tag them
+            for match in re.finditer(r'https?://\S+|www\.\S+', self.message_area.get("1.0", tk.END)):
+                url = match.group()
+                self.mark_and_link_email(url)
+        else:
+            pass
 
     def mark_and_link_email(self, url):
         # Tag and bind URL in the text area for click event

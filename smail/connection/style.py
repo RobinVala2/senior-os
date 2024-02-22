@@ -33,6 +33,12 @@ def load_credentials(path):
 
     return login, password, smtp_server, smtp_port, imap_server, imap_port
 
+def load_show_url(path):
+    data = load_json_file(path)
+    show = data["show_url"]
+    return show
+
+
 
 def font_config():
 
