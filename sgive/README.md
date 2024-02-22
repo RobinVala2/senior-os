@@ -26,7 +26,7 @@
 - can be edited through configuration application for caregiver.
 - every element is dynamic (etc. buttons are) or its in progress to be dynamic.
 
-<img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/CaregiverApp_LOGS.png" alt="App_screenshot_not_showing" style="width:50%;">
+<img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/newGuiTemp-white.png" alt="App_screenshot_not_showing" style="width:50%;">
 
 
 ### TODO:
