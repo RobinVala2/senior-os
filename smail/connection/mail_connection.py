@@ -7,7 +7,7 @@ import email
 import ssl
 import re
 import chardet
-from smail.connection.style import load_json_file, get_language, get_guardian_email, resend_active
+from smail.connection.style import get_guardian_email, resend_active, load_credentials
 
 logger = logging.getLogger(__file__)
 
@@ -17,23 +17,17 @@ logger = logging.getLogger(__file__)
 # (password needs to be generated in google account via:
 #   google account -> security -> 2-step verification -> app passwords)
 
-data = load_json_file("../sconf/SMAIL_config.json")
-credentials = data["credentials"]
-login = credentials["username"]
-password = credentials["password"]
-smtp_server = credentials["smtp_server"]
-smtp_port = credentials["smtp_port"]
-imap_server = credentials["imap_server"]
-imap_port = credentials["imap_port"]
-max_emails = credentials["max"]
-sslContext = ssl.create_default_context()
-
-
 phish_senders = []
+resend_emails_g = False
 
 
-def send_email(recipient, subject, content):
 
+def send_email(recipient, subject, content, login, password, smtp_server, smtp_port):
+    if not login or not password or not smtp_server or not smtp_port:
+        logger.error("Invalid or missing credentials.", exc_info=True)
+        return 0
+
+    sslContext = ssl.create_default_context()
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['From'] = login
@@ -49,12 +43,7 @@ def send_email(recipient, subject, content):
             server.login(login, password)
             server.sendmail(login, recipient, msg.as_string())
             if recipient in phish_senders:
-                content = f"Senior send reply email to phishing email ({recipient}) with content:\n" + content
-                msg = MIMEText(content)
-                msg['Subject'] = f"Reply to phish email by {login}"
-                msg['From'] = login
-                server.sendmail(login, get_guardian_email(), msg.as_string())
-                logger.warning(f"An email has been sent to {recipient}! Resending email to guardian: {get_guardian_email()}!")
+                resend_reply(recipient,content,server, login)
         logger.info(f"An email has been sent to {recipient}.")
         # returning 1 if email was send successfully
         return 1
@@ -62,7 +51,7 @@ def send_email(recipient, subject, content):
     except smtplib.SMTPAuthenticationError:
         logger.error("Authentication error. Check your email and password.",
                      exc_info=True)
-        return 0
+        return -1
     except smtplib.SMTPConnectError:
         logger.error("SMTP connection error. Check your SMTP server and port.",
                      exc_info=True)
@@ -70,26 +59,51 @@ def send_email(recipient, subject, content):
     except Exception:
         logger.error("Error occurred when trying to send email. ",
                      exc_info=True)
+        return -2
+
+
+def resend_reply(recipient, content, server, login):
+    content = f"Senior send reply email to phishing email ({recipient}) with content:\n" + content
+    msg = MIMEText(content)
+    msg['Subject'] = f"Reply to phish email by {login}"
+    msg['From'] = login
+    server.sendmail(login, get_guardian_email(), msg.as_string())
+    logger.warning(f"An email has been sent to {recipient}! Resending email to guardian: {get_guardian_email()}!")
+
+
+def imap_connection(login, password, imap_server, imap_port):
+    try:
+        # establishing a connection to an IMAP server
+        mail = imaplib.IMAP4_SSL(
+            imap_server, imap_port, ssl_context=ssl.create_default_context()
+        )
+
+        mail.login(login, password)
+        logger.info("Successful connection to IMAP server.")
+        return mail
+    except imaplib.IMAP4.error:
+        logger.error("IMAP Error: Failed to connect to the IMAP server.", exc_info=True)
         return 0
+    except ConnectionError:
+        logger.error("Connection Error: Failed to establish a connection"
+                     " to the IMAP server.", exc_info=True)
+        return -1
+    except Exception as error:
+        logger.error("An unexpected error occurred. ", exc_info=True)
+        return -2
+    return None
 
+def read_mail(login, password, imap_server, imap_port, language, text):
 
-def read_mail():
-
-    language, text = get_language()
+    global resend_emails_g
     lang_subject = text[f"smail_{language}_subjectLabel"]
     lang_from = text[f"smail_{language}_from"]
     lang_date = text[f"smail_{language}_date"]
     lang_message = text[f"smail_{language}_messageLabel"]
 
+    mail = imap_connection(login, password, imap_server, imap_port)
+
     try:
-        # establishing a connection to an IMAP server
-        mail = imaplib.IMAP4_SSL(
-            imap_server, imap_port, ssl_context=sslContext
-        )
-
-        mail.login(login, password)
-        logger.info("Successful connection to IMAP server.")
-
         # selecting folder from which to read e-mails
         mail.select("INBOX")
 
@@ -97,6 +111,7 @@ def read_mail():
         # _, discards the first return value from mail.search
         _, selected_mails = mail.search(None, 'ALL')
         email_ids = selected_mails[0].split()
+
 
         emails = []
         subjects = []
@@ -149,22 +164,23 @@ def read_mail():
                     subjects.append(decoded_subject)
                     break
 
-        resend_mail_to_guardian(emails)
+        if not resend_emails_g:
+            resend_mail_to_guardian(emails)
+            resend_emails_g = True
+
 
         logger.info(f"{len(emails)} emails successfully loaded")
 
+
         return emails, subjects
 
-    except imaplib.IMAP4.error:
-        logger.error("IMAP Error: Failed to connect to the IMAP server.", exc_info=True)
-    except ConnectionError:
-        logger.error("Connection Error: Failed to establish a connection"
-                     " to the IMAP server.", exc_info=True)
     except Exception as error:
-        logger.error("An unexpected error occurred. ", exc_info=True)
+        logger.error("An unexpected error occured. ", exc_info=True)
     finally:
         mail.close()
         mail.logout()
+
+
 
 
 def check_content_of_email(content, sender):
@@ -237,4 +253,7 @@ def resend_mail_to_guardian(emails):
         logger.info(f"Sending emails from seniors address {smail} to guardians email address {gmail}.")
         for e in emails:
             email_content += e
-        send_email(gmail, email_subject, email_content)
+
+        # recipient, subject, content, login, password, smtp_server, smtp_port
+        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        send_email(gmail, email_subject, email_content, login, password, smtp_server, smtp_port)

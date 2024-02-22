@@ -1,14 +1,17 @@
 import logging
+import os
+import sys
 import threading
 import tkinter as tk
+from ttkwidgets import ScrolledListbox
 import webbrowser
-from tkinter import scrolledtext
+from tkinter import scrolledtext, ttk
 import re
 
 from smail.connection.style import (font_config, search_mail,
                                     get_language, button_hover, button_leave,
                                     images, image_config, app_color,
-                                    height_config, play_sound, load_json_file, get_email_sender)
+                                    height_config, play_sound, load_json_file, get_email_sender, load_credentials)
 from smail.connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from smail.template import guiTemplate as temp
@@ -51,12 +54,20 @@ class one_frame(tk.Frame):
         self.pack()
 
         # Start a background thread to load emails
-        self.loading_emails = threading.Thread(target=self.load_emails)
+        self.loading_emails = threading.Thread(target=self.periodic_email_loading)
         self.loading_emails.start()
 
     def load_emails(self):
         # function that initializes loading emails
         self.insert_emails()
+
+    def periodic_email_loading(self):
+        while True:
+            # Load and insert emails
+            self.load_emails()
+            self.after(10000,self.periodic_email_loading())
+
+
 
     def redefine_template_buttons(self):
         try:
@@ -123,6 +134,7 @@ class one_frame(tk.Frame):
             self.audio_configure(self.menu_button_2, "menu2")
 
             self.exit_button.config(
+                command = sys.exit,
                 image=self.exit_image,
                 text="",
                 width=self.button_width
@@ -177,6 +189,7 @@ class one_frame(tk.Frame):
         except Exception:
             logger.error("Error:", exc_info=True)
 
+
     def left_frame(self):
 
         # fixed non-changing frame with received emails
@@ -192,11 +205,19 @@ class one_frame(tk.Frame):
             self.frame, text=self.text[f"smail_{self.language}_inboxLabel"],
             font=font_config(), bg=self.background_color
         )
-        self.inbox_list = tk.Listbox(
+
+        #self.inbox_list = tk.Listbox(
+        #    self.frame, font=font_config(),
+        #    height=self.number_of_lines_listbox,
+        #    activestyle="none", selectmode=tk.SINGLE
+        #)
+
+        self.inbox_list = ScrolledListbox(
             self.frame, font=font_config(),
             height=self.number_of_lines_listbox,
             activestyle="none", selectmode=tk.SINGLE
         )
+
 
         # audio configuration
         self.audio_configure(self.inbox_list, "inbox")
@@ -206,6 +227,8 @@ class one_frame(tk.Frame):
             row=0, column=0,
             sticky="nsew", padx=10, pady=10, ipady=5
         )
+
+
         self.inbox_list.grid(
             row=1, column=0,
             sticky="nsew", padx=20, pady=20
@@ -326,39 +349,48 @@ class one_frame(tk.Frame):
 
     def insert_emails(self):
 
+        # Check if there is a change in emails before updating
+        previous_emails = getattr(self, "reversed_list", [])
+
+        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        language, text = get_language()
+
         # getting emails from inbox
-        self.emails, self.subject = read_mail()
+        self.emails, self.subject = read_mail(login, password, imap_server, imap_port, language, text)
         # reversing emails - new emails will be on top of the listbox
         self.reversed_list = self.emails[::-1]
 
-        try:
-            # filtering emails
-            self.safe_emails, self.phish_emails = check_email_for_spam(self.reversed_list)
-        except Exception:
-            # in case filtering fails, all emails will be displayed
-            self.safe_emails = self.reversed_list
-            logger.critical("Failed to apply anti-phishing filters."
-                            "Omitting security steps.", exc_info=True)
+        if previous_emails != self.reversed_list:
+            try:
+                # filtering emails
+                self.safe_emails, self.phish_emails = check_email_for_spam(self.reversed_list)
+            except Exception:
+                # in case filtering fails, all emails will be displayed
+                self.safe_emails = self.reversed_list
+                logger.critical("Failed to apply anti-phishing filters. Omitting security steps.", exc_info=True)
 
-        # inserting emails into the listbox,
-        # for now safe_emails and phish_emails are separated
+            # inserting emails into the listbox,
+            # for now safe_emails and phish_emails are separated
+            self.inbox_list.listbox.delete(0, tk.END)
+            print("Clearing the listbox")
 
-        for n in self.safe_emails:
-            self.name = get_email_sender(n.split("\n")[1])
-            self.sub = n.split("\n")[0].split(":",1)[1]
+            for n in self.safe_emails:
+                self.name = get_email_sender(n.split("\n")[1])
+                self.sub = n.split("\n")[0].split(":", 1)[1]
 
-            self.inbox_list.insert(tk.END, self.name +" -"+ self.sub)
-            # binding listbox to text area to view email
-            self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+                self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
+                # binding listbox to text area to view email
+                self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
 
+            for m in self.phish_emails:
+                self.name = get_email_sender(m.split("\n")[1])
+                self.sub = m.split("\n")[0].split(":", 1)[1]
 
-        for m in self.phish_emails:
-            self.name = get_email_sender(m.split("\n")[1])
-            self.sub = m.split("\n")[0].split(":", 1)[1]
+                self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
+                # binding listbox to text area to view email
+                self.inbox_list.listbox.bind("<<ListboxSelect>>", self.showEmail)
 
-            self.inbox_list.insert(tk.END, self.name +" -"+ self.sub)
-            # binding listbox to text area to view email
-            self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+            print("Inserting emails into listbox")
 
 
 
@@ -369,12 +401,12 @@ class one_frame(tk.Frame):
 
         # in case no item in listbox is selected,
         # the last selected email will be displayed in text area
-        if not self.inbox_list.curselection():
+        if not self.inbox_list.listbox.curselection():
             if (self.last_selected_index is not None
                     and self.last_selected_email is not None):
                 self.configure_message_area(self.last_selected_email)
 
-        selected_index = self.inbox_list.curselection()[0]
+        selected_index = self.inbox_list.listbox.curselection()[0]
 
         # Check if the selected index is within the range of safe_emails
         if selected_index < len(self.safe_emails):
@@ -403,15 +435,15 @@ class one_frame(tk.Frame):
     def display_email(self, email):
         # Display the entire email content in the text area
         self.message_area.insert(tk.END, email)
-        self.tag_urls()
+        self.mark_email()
 
-    def tag_urls(self):
+    def mark_email(self):
         # Find all URLs in email and tag them
         for match in re.finditer(r'https?://\S+|www\.\S+', self.message_area.get("1.0", tk.END)):
             url = match.group()
-            self.tag_and_bind_url(url)
+            self.mark_and_link_email(url)
 
-    def tag_and_bind_url(self, url):
+    def mark_and_link_email(self, url):
         # Tag and bind URL in the text area for click event
         start_pos = "1.0"
         while True:
@@ -431,7 +463,10 @@ class one_frame(tk.Frame):
 
     def open_browser(self, event, url):
         # Open the web browser when clicking on a URL
-        webbrowser.open_new(url)
+        script= "../sweb/main.py"
+        os.execl(sys.executable, sys.executable, script, url)
+        sys.exit()
+        #webbrowser.open_new(url)
 
     def alert_buttons(self):
 
@@ -528,10 +563,11 @@ class one_frame(tk.Frame):
 
     def send_email_status(self):
 
+        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
         # sending email
         status = send_email(
             self.recipient_entry.get(), self.subject_entry.get(),
-            self.content_entry.get("1.0", tk.END)
+            self.content_entry.get("1.0", tk.END), login, password, smtp_server, smtp_port
         )
 
         # if successful, all entries are deleted

@@ -1,7 +1,6 @@
 import logging
 import json
 import pygame
-from tkinter import ttk
 import PIL
 from PIL import Image, ImageTk
 from smail.template.guiTemplate import resolutionMath
@@ -16,10 +15,23 @@ def load_json_file(file_path):
         return data
     except FileNotFoundError:
         logging.error(f"File not found: {file_path}")
+        return 0
     except Exception as error:
         logging.error(f"An unexpected error occurred while loading data from {file_path}", exc_info=True)
-    # Return None to indicate failure
-    return None
+        return -1
+
+
+def load_credentials(path):
+    data = load_json_file(path)
+    credentials = data["credentials"]
+    login = credentials["username"]
+    password = credentials["password"]
+    smtp_server = credentials["smtp_server"]
+    smtp_port = credentials["smtp_port"]
+    imap_server = credentials["imap_server"]
+    imap_port = credentials["imap_port"]
+
+    return login, password, smtp_server, smtp_port, imap_server, imap_port
 
 
 def font_config():
@@ -29,22 +41,12 @@ def font_config():
     font_info = data["font_info"]["font"]
     return font_info
 
-
-def button_config():
-
-    font_info = font_config()
-    style = ttk.Style()
-    style.configure("my.TButton", font=font_info)
-
-    return "my.TButton"
-
 def app_color():
 
     # reading background color configuration
     data = load_json_file("../sconf/config_old.json")
     bg = data["colors_info"]["app_frame"]
     return bg
-
 
 def images():
 
@@ -144,17 +146,32 @@ def height_config(parent):
 
     return number_of_lines_listbox, number_of_lines_textarea
 
-def get_email_sender(extracted_name):
-    start_index = extracted_name.find(": ")
-    end_index = extracted_name.find("<")
-    # extracting name from email body
+def get_email_sender(email_string):
+
+    start_index = email_string.find(": ") + 2
+
+    # check if the string is in format: "Od: <email@seznam.cz>"
+    if start_index < len(email_string) - 1 and email_string[start_index] == "<":
+        end_index = email_string.find(">", start_index)
+        if end_index != -1:
+            email_address = email_string[start_index + 1:end_index].strip()
+            sender_name = email_address.split("@")[0]
+            return sender_name
+    end_index = email_string.find("<")
+
+    # check if the string is in format: "Od: Name Surname <email@seznam.cz>"
     if start_index != -1 and end_index != -1:
-        name = extracted_name[start_index + 1:end_index].strip()
-        return name
+        sender_name = email_string[start_index:end_index].strip()
+        return sender_name
+
+    # If the format is "Od: email@seznam.cz" , extract name differently
     else:
-        extracted_name = extracted_name.split(" ")[1]
-        name = extracted_name.split("@")[0]
-        return name
+        tokens = email_string.split(" ")
+        if len(tokens) > 1:
+            extracted_name = tokens[1]
+            name = extracted_name.split("@")[0]
+            return name
+
 
 def get_guardian_email():
     # reading configuration

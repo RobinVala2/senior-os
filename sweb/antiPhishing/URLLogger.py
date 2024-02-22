@@ -1,30 +1,27 @@
 from datetime import datetime
 
-# Call class URL Logger for logging Phishing url to file
-# Cisco log: seq no:timestamp: %facility-severity-MNEMONIC:description
+# Log: seq no:timestamp: %facility-severity-MNEMONIC:description
 class URLLogger:
-    def __init__(self, log_file="logPhishing.txt"):
-        self.severity_log = ["EMERGENCY","ALERT","CRITICAL","ERROR","WARNING","NOTICE","INFORMATIONAL","DEBUGGING"]
-        self.log_file = log_file
-        # Ensure the name for log file
-        # If the name of file does not exist, create the new file
-        # Ensure that the file is exist
-        self._init_txt()
+    def __init__(self):
+        # 7 security levels for logging
+        self.severity_log_levels = ["EMERGENCY","ALERT","CRITICAL","ERROR","WARNING","NOTICE","INFORMATIONAL","DEBUGGING"]
+        self.log_file_name = "logPhishing.txt"
+        self._init_()
 
     # Method for creating and opening file .txt
-    def _init_txt(self):
+    def _init_(self):
         try:
             # Read file with file name
-            with open(self.log_file, 'r') as f:
-                f.readline()
+            with open(self.log_file_name, 'r') as open_file:
+                open_file.readline()
         except FileNotFoundError:
             # If file does not exist, show use w to create new and write parameter
-            with open(self.log_file, 'w') as f:
-                f.write("Logging phishing URL from Browser\n")
+            with open(self.log_file_name, 'w') as open_file:
+                open_file.write("Logging phishing URL from Browser\n")
                 
-    # Show the the block message to window
+    # Input the the block message
     def log_blocked_url(self, facility, level_of_severity, mnemonic, description):
-        self.log_to_txt(facility, self.severity_log[level_of_severity], mnemonic, description)
+        self.log_to_txt(facility, self.severity_log_levels[level_of_severity], mnemonic, description)
 
     # When the URL is blocked from log_blocked_url, save to file .txt
     def log_to_txt(self, facility, severity, mnemonic, description):
@@ -32,6 +29,6 @@ class URLLogger:
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # seq no:timestamp: %facility-severity-MNEMONIC:description
         log_entry = f"{current_time} : {facility}-{severity} -> {mnemonic} : {description}\n"
-        # Write to exising file txt
-        with open(self.log_file, 'a') as f:
-            f.write(log_entry)
+        # Write to exising file .txt
+        with open(self.log_file_name, 'a') as open_file:
+            open_file.write(log_entry)
