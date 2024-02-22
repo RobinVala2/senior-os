@@ -14,8 +14,8 @@ Version = "0.0.3(Alpha)"
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
 
-colorScheme = ryuConf.red_main_config("GlobalConfiguration", "colorMode")
-customtkinter.set_appearance_mode(colorScheme)  # Modes: system (default), light, dark
+_colorScheme = ryuConf.red_main_config("GlobalConfiguration", "colorMode")
+customtkinter.set_appearance_mode(_colorScheme)  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
 
 
@@ -36,35 +36,43 @@ class LogsFrameWidgets:
         self.master = frame_root
         self.height = height
         self.width = width
-        # ------
         self.log_filter = None
         self.log_file = None
 
-        # -----
-        # sub-frame, for buttons and stuff
         self.options_toolbar_frame = customtkinter.CTkFrame(frame_root)
         self.options_toolbar_frame.pack_propagate(False)
-        self.options_toolbar_frame.configure(width=width, height=height * 0.10,  # aka XY% of whole frame height
+        self.options_toolbar_frame.configure(width=width, height=height * 0.10,
                                              fg_color=("#dbd9d9", "#222222"))
+
         self.options_toolbar_frame.pack(side=customtkinter.TOP)
         self.log_file_choice = None
         self.log_files_names = []
+        self.toolbar_buttons = {}
         self.textbox = customtkinter.CTkTextbox(self.master)
 
-        # func calls:
         self.find_log_files()
-
         self.options_toolbar()
         self.log_textbox(None)
+
+        self.master.bind("<Configure>", lambda event: self.resize_event_handler())
+
+    def resize_event_handler(self):
+        new_width = self.master.winfo_width()
+        new_height = self.master.winfo_height()
+        self.width = new_width
+        self.height = new_height
+        self.options_toolbar_frame.configure(width=new_width, height=new_height * 0.10)
+        for widget_object in self.toolbar_buttons:
+            self.toolbar_buttons[widget_object].configure(height=new_height * 0.10,
+                                                          width=new_width * (1 / 5))
 
     def refresh(self):
-        for widget in self.master.winfo_children():
-            # this forgets all widgets inside a frame
-            widget.place_forget()
-
+        for widget in self.options_toolbar_frame.winfo_children():  # for toolbar widgets
+            widget.pack_forget()
+        for frame in self.master.winfo_children():  # for log text widget
+            frame.place_forget()
         self.options_toolbar()
         self.log_textbox(None)
-
 
     def find_log_files(self):
         relative_path = "../../../../senior-os/sconf/logs/"
@@ -97,38 +105,36 @@ class LogsFrameWidgets:
 
     def options_toolbar(self):
         # pick log folder:
-        pick_folder_btn = customtkinter.CTkOptionMenu(master=self.options_toolbar_frame,
-                                                      command=self.option_menu_call,
-                                                      height=self.height * 0.10,
-                                                      width=self.width * 1 / 5)
-        dummy_values = []  # dummy array
-        for name in self.log_files_names:
-            dummy_values.append(name)  # add value to an array
-        pick_folder_btn.configure(values=dummy_values)
-        pick_folder_btn.place(relx=0, rely=0)
-        pick_folder_btn.set("Choose LOG file")  # default showing value
-        # -----------------------------------------------------------------------------
-        # pick log folder:
-        pick_filter_btn = customtkinter.CTkOptionMenu(master=self.options_toolbar_frame,
-                                                      command=self.option_filter_call,
-                                                      height=self.height * 0.10,
-                                                      width=self.width * 1 / 5)
+        for widget in range(3):
+            if widget < 2:
+                self.toolbar_buttons[widget] = customtkinter.CTkOptionMenu(master=self.options_toolbar_frame,
+                                                                           corner_radius=0,
+                                                                           height=self.height * 0.10,
+                                                                           width=self.width * (1 / 5))
+                self.toolbar_buttons[widget].pack(side=customtkinter.LEFT, fill=customtkinter.Y)
+            else:
+                self.toolbar_buttons[widget] = customtkinter.CTkButton(master=self.options_toolbar_frame,
+                                                                       height=self.height * 0.10,
+                                                                       width=self.width * (1 / 5),
+                                                                       text="Refresh",
+                                                                       command=lambda: self.refresh()
+                                                                       )
+                self.toolbar_buttons[widget].pack(side=customtkinter.RIGHT, fill=customtkinter.Y)
+
+        # first option menu button
+        folderOption_var = customtkinter.StringVar(value="Choose log file")
+        self.toolbar_buttons[0].configure(values=self.log_files_names, variable=folderOption_var,
+                                          command=self.option_menu_call)
+        # second option menu button
         filter_options = ["INFO", "WARNING", "CRITICAL", "ERROR", "ALL"]
-        pick_filter_btn.configure(values=filter_options)
-        pick_filter_btn.place(relx=1 * (1 / 5), rely=0)
-        pick_filter_btn.set("Choose LOG filter option")  # default showing value
-        # ---------------------------------------------------------------------------
-        # refresh button:
-        button = customtkinter.CTkButton(master=self.options_toolbar_frame,
-                                         height=self.height * 0.10,
-                                         width=self.width * 1 / 5,
-                                         text="Refresh",
-                                         command=lambda: self.refresh())
-        button.place(relx=1 * (4 / 5), rely=0)
+        filterOption_var = customtkinter.StringVar(value="Choose log filter")
+        self.toolbar_buttons[1].configure(values=filter_options, variable=filterOption_var,
+                                          command=self.option_filter_call)
 
     def log_textbox(self, choice):
         textbox = customtkinter.CTkTextbox(self.master)
-        textbox.configure(height=self.master.winfo_height() - (self.master.winfo_height() * 0.10), width=self.master.winfo_width(),
+        textbox.configure(height=self.master.winfo_height() - (self.master.winfo_height() * 0.10),
+                          width=self.master.winfo_width(),
                           fg_color=("#D3D3D3", "#171717"),
                           scrollbar_button_color=("black", "white"),
                           scrollbar_button_hover_color=("#3b3b3b", "#636363"),
@@ -161,7 +167,7 @@ class WebFrameWidgets:
     def on_resize(self, event):
         width_new = event.width * (2 / 5)
 
-        # Recalculate button height and width (lower buttons, that are created in frame class)
+        # Recalculate button height and width_frame (lower buttons, that are created in frame class)
         for widget in [self.master.children[child] for child in self.master.children]:
             if isinstance(widget, customtkinter.CTkButton):
                 widget.configure(height=self.height_frame * (1 / 11),
@@ -169,49 +175,139 @@ class WebFrameWidgets:
 
 
 class MailFrameWidgets:
-    def __init__(self, frame_root, width, height_frame):
+    def __init__(self, frame_root, width, height_frame, restore, refresh):
         logger.info("Creating and showing frame for Mail configuration.")
         self.master = frame_root
         self.height_frame = height_frame
-        self.width = width
+        self.width_frame = width
         self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
         self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
         self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
         self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+        self.restore_configurations = restore
+        self.refresh_frame = refresh
+        # ------
+        self.widget_height = None
         self.label_dict = {}
         self.button_height_fract = 11
+        self.entry_widgets = {}
+        self.submit_entry_btn = {}
+        self.caregiver_warning = {}
         # -----------------
         # calls:
-        self.master.bind("<Configure>", self.on_resize)
+        self.scree_size_check()
         self.create_labels()
+        self.create_widgets()
+        self.master.bind("<Configure>", lambda _: self.on_resize())
         # E N D of constructor
+
+    def scree_size_check(self):
+        if not self.height_frame < self.master.winfo_height():
+            self.height_frame = self.master.winfo_height()
+        else:
+            pass
+        if not self.width_frame < self.master.winfo_width():
+            self.width_frame = self.master.winfo_width()
+        else:
+            pass
+        self.widget_height = self.height_frame * (1 / (len(self.label_names) + 1))
 
     def create_labels(self):
         y_position = 0
         for label_name in self.label_names:
-            label = customtkinter.CTkLabel(self.master)
-            label.configure(text=label_name,
-                            font=(self.font_name, self.label_size + 17, self.font_boldness),
-                            width=self.master.winfo_width() * (2 / 5),
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)),
-                            # height=self.height_frame * (1 / 11),
-                            fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
-            label.place(relx=0, rely=y_position)
-            self.label_dict[label_name] = label
+            self.label_dict[label_name] = customtkinter.CTkLabel(self.master)
+            self.label_dict[label_name].configure(text=label_name,
+                                                  font=(self.font_name, self.label_size + 17, self.font_boldness),
+                                                  width=self.width_frame * (2 / 5),
+                                                  height=self.widget_height,
+                                                  fg_color=("#D3D3D3", "#171717"))
+            self.label_dict[label_name].place(relx=0, rely=y_position)
             y_position += (1 / (len(self.label_names) + 1))
 
-    def on_resize(self, event):
-        width_new = event.width * (2 / 5)
-        for label in self.label_dict.values():
-            label.configure(width=width_new,
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
+    def create_widgets(self):
+        rel_x = 1 * (2 / 5) + 0.0001
+        rel_y = 0
+        rel_y_btns = 0
+        rel_x_btns = rel_x
+        # - 1, because one widget is basic pick option and not user input
+        for entry_number in range(len(self.label_names) - 2):
+            self.submit_entry_btn[entry_number] = customtkinter.CTkButton(self.master)
+            self.submit_entry_btn[entry_number].configure(
+                font=(self.font_name, self.label_size + 17, self.font_boldness),
+                width=self.width_frame * (1 / 5) - 2.5,
+                height=self.widget_height - 2.5,
+                border_width=0,
+                corner_radius=0,
+                fg_color=("#636363", "#222222"),
+                hover_color=("#757474", "#3b3b3b"),
+                text="submit",
+                command=lambda entry_id=entry_number: print(f"získaná hodnota z tlačítka {entry_id} je:",
+                                                            self.entry_widgets[entry_id].get())
+            )
+            self.entry_widgets[entry_number] = customtkinter.CTkEntry(self.master)
+            self.entry_widgets[entry_number].configure(font=(self.font_name, self.label_size + 17, self.font_boldness),
+                                                       width=self.width_frame * (2 / 5) - 2.5,
+                                                       height=self.widget_height - 2.5,
+                                                       placeholder_text=f"Please, add something here",
+                                                       border_width=0,
+                                                       corner_radius=0,
+                                                       )
+            if entry_number == 3:
+                rel_y_btns = rel_y
+                rel_y += (1 / (len(self.label_names) + 1))
+                # still need to show entry label
+                self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y)
+                rel_x += (2 / 5)
+                self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y)
+                rel_x -= (2 / 5)
+                rel_y += (1 / (len(self.label_names) + 1))
+            else:
+                self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y)
+                rel_x += (2 / 5)
+                self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y)
+                rel_x -= (2 / 5)
+                rel_y += (1 / (len(self.label_names) + 1))
 
-        # Recalculate button height and width (lower buttons, that are created in frame class)
-        for widget in [self.master.children[child] for child in self.master.children]:
-            if isinstance(widget, customtkinter.CTkButton):
-                widget.configure(height=self.height_frame * (1 / 11),
-                                 width=width_new)
+        number_options = ["Enable", "Disable"]
+        for value_name in number_options:
+            self.caregiver_warning[value_name] = customtkinter.CTkButton(self.master)
+            self.caregiver_warning[value_name].configure(
+                font=(self.font_name, self.label_size + 17, self.font_boldness),
+                width=self.width_frame * (1 / 5) - 2.5,
+                height=self.widget_height - 2.5,
+                border_width=0,
+                corner_radius=0,
+                fg_color=("#636363", "#222222"),
+                hover_color=("#757474", "#3b3b3b"),
+                text=value_name
+            )
+            self.caregiver_warning[value_name].place(relx=rel_x_btns, rely=rel_y_btns)
+            rel_x_btns += (1 / 5) + 0.00015
+
+    def on_resize(self):
+        self.height_frame = self.master.winfo_height()
+        self.width_frame = self.master.winfo_width()
+
+        width_new = self.width_frame * (2 / 5)
+        height_new = self.height_frame * (1 / (len(self.label_names) + 1))
+        width_btn = self.master.winfo_width() * (1 / 5)
+
+        # recalculate sizes for all buttons that are 2/5 of the size:
+        for btn in [self.restore_configurations, self.refresh_frame]:
+            btn.configure(height=self.height_frame * 1 / 11, width=width_new, anchor=customtkinter.CENTER)
+
+        for label in self.label_dict.values():
+            label.configure(width=width_new, height=height_new)
+
+        for entry_widget in self.entry_widgets.values():
+            entry_widget.configure(width=width_new - 2.5, height=height_new - 2.5)
+
+        for entry_button in self.submit_entry_btn.values():
+            entry_button.configure(width=width_btn - 2.5, height=height_new - 2.5)
+
+        for button in self.caregiver_warning.values():
+            button.configure(width=width_btn - 2.5, height=height_new - 2.5)
 
 
 class GlobalFrameWidgets:
@@ -219,7 +315,7 @@ class GlobalFrameWidgets:
         logger.info("Creating and showing frame for Global configuration.")
         self.master = frame_root
         self.height_frame = height_frame
-        self.width = width
+        self.width_frame = width
         self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
         self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
         self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
@@ -243,14 +339,23 @@ class GlobalFrameWidgets:
         self.array_coranteng = [self.screen_num, self.language_dict, self.language_alert_dict, self.colorscheme_dict,
                                 self.entry_dict, self.font_size]
         # ---------- CALS --------------
+        self.scree_size_check()
         self.create_labels()  # creating labels for each lane
         self.buttons()  # creating objects for buttons
         self.show_buttons()  # logic for showing buttons
         self.highlight_configured_widgets()  # set default options
-        self.master.bind("<Configure>", self.on_resize)
+        self.master.bind("<Configure>", lambda _: self.on_resize())
         # E N D of constructor
 
-
+    def scree_size_check(self):
+        if not self.height_frame < self.master.winfo_height():
+            self.height_frame = self.master.winfo_height()
+        else:
+            return
+        if not self.width_frame < self.master.winfo_width():
+            self.width_frame = self.master.winfo_width()
+        else:
+            return
 
     def show_entry_error(self, button_object, entry_object, label_id):
         window_height = self.master.winfo_height()
@@ -268,24 +373,24 @@ class GlobalFrameWidgets:
         self.error_label_arr.append(label_id)
 
         label_id = customtkinter.CTkLabel(self.master)
-        label_id.configure(width=self.master.winfo_width() * (2 / 5) - 2.5,
-                           height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5,
+        label_id.configure(width=self.width_frame * (2 / 5) - 2.5,
+                           height=self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5,
                            fg_color=(self.hover_alert_color, self.hover_alert_color),
                            text="There was an error in user input, for more info., please see Log.")
         label_id.place(relx=rel_entry_x, rely=rel_entry_y)
 
         label_id_btn = customtkinter.CTkButton(self.master)
-        label_id_btn.configure(width=self.master.winfo_width() * (1 / 5) - 2.5,
-                               height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5,
+        label_id_btn.configure(width=self.width_frame * (1 / 5) - 2.5,
+                               height=self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5,
                                border_width=0,
                                corner_radius=0,
                                fg_color=("#636363", "#222222"),
                                hover_color=("#757474", "#3b3b3b"),
                                text="Let me try again!",
                                command=lambda entry_value=label_id, entry_button=label_id_btn:
-                                [label_id.place_forget(), label_id_btn.place_forget(),
-                                 entry_object.place(relx=rel_entry_x, rely=rel_entry_y),
-                                 button_object.place(relx=rel_button_x, rely=rel_button_y)])
+                               [label_id.place_forget(), label_id_btn.place_forget(),
+                                entry_object.place(relx=rel_entry_x, rely=rel_entry_y),
+                                button_object.place(relx=rel_button_x, rely=rel_button_y)])
         label_id_btn.place(relx=rel_button_x, rely=rel_button_y)
         self.error_label_arr.append(label_id_btn)
 
@@ -466,9 +571,9 @@ class GlobalFrameWidgets:
                                                                              corner_radius=0,
                                                                              fg_color=("#636363", "#222222"),
                                                                              hover_color=("#757474", "#3b3b3b"),
-                                                                             width=self.master.winfo_width() *
+                                                                             width=self.width_frame *
                                                                                    (1 / 5) - 2.5,
-                                                                             height=self.master.winfo_height() * (1 / (
+                                                                             height=self.height_frame * (1 / (
                                                                                      len(self.label_names) + 1)) - 2.5)
                     self.entry_buttons_dict[entry_buttons_counter].place(relx=x_button_poss, rely=y_position)
                     entry_object.place(relx=x_position, rely=y_position)
@@ -483,8 +588,8 @@ class GlobalFrameWidgets:
                                      corner_radius=0,
                                      fg_color=("#636363", "#222222"),
                                      hover_color=("#757474", "#3b3b3b"),
-                                     width=self.master.winfo_width() * (1 / 5) - 2.5,
-                                     height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5, )
+                                     width=self.width_frame * (1 / 5) - 2.5,
+                                     height=self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5, )
                     button.place(relx=x_position, rely=y_position)
                     x_position += 1 * (1 / 5)  # Standard size for other dictionaries
             y_position += 1 * (1 / (len(self.label_names) + 1))
@@ -495,8 +600,8 @@ class GlobalFrameWidgets:
         for label_name in self.label_names:
             label = customtkinter.CTkLabel(self.master)
             label.configure(text=label_name,
-                            width=self.master.winfo_width() * (2 / 5),
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)),
+                            width=self.width_frame * (2 / 5),
+                            height=self.height_frame * (1 / (len(self.label_names) + 1)),
                             font=(self.font_name, self.label_size + 17, self.font_boldness),
                             fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
             label.place(relx=0, rely=y_position)
@@ -504,34 +609,41 @@ class GlobalFrameWidgets:
             y_position += (1 / (len(self.label_names) + 1))
         logger.info("Created labels for global frame.")
 
-    def on_resize(self, event):
-        width_new = event.width * (2 / 5)
+    def on_resize(self):
+        # update variables
+        self.height_frame = self.master.winfo_height()
+        self.width_frame = self.master.winfo_width()
+
+        # set new width_frame, height variables:
+        new_width_larger = self.width_frame * (2 / 5)
+        new_width_smaller = self.width_frame * (1 / 5)
+        new_height = self.height_frame * (1 / (len(self.label_names) + 1))
 
         # for loop for labels
         for label in self.label_dict.values():
-            label.configure(width=width_new,
-                            height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)))
+            label.configure(width=new_width_larger,
+                            height=new_height)
 
         # recalculate sizes for all buttons that are 2/5 of the size:
         for btn in [self.restore_configurations, self.refresh_frame]:
-            btn.configure(height=self.height_frame * (1 / 11),
-                          width=self.master.winfo_width() * (2 / 5),
+            btn.configure(height=new_height,
+                          width=new_width_larger,
                           anchor=customtkinter.CENTER)
 
         for _, button_obj in self.entry_buttons_dict.items():
-            button_obj.configure(width=self.master.winfo_width() * (1 / 5) - 2.5,
-                                 height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5)
+            button_obj.configure(width=new_width_smaller - 2.5,
+                                 height=new_height - 2.5)
 
         # recalculates widgets in self.array_coranteng giga mega array:
         for item in self.array_coranteng:
             if item is self.entry_dict:
                 for key, widget in item.items():
-                    widget.configure(width=self.master.winfo_width() * (2 / 5) - 2.5,
-                                     height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5)
+                    widget.configure(width=new_width_larger - 2.5,
+                                     height=new_height - 2.5)
             else:
                 for key, widget in item.items():
-                    widget.configure(width=self.master.winfo_width() * (1 / 5) - 2.5,
-                                     height=self.master.winfo_height() * (1 / (len(self.label_names) + 1)) - 2.5)
+                    widget.configure(width=new_width_smaller - 2.5,
+                                     height=new_height - 2.5)
         logger.info("Calculating logic for frame widget to fit to new sized window.")
 
 
@@ -647,7 +759,8 @@ class Frames:
                     logger.info(f"User picked frame '{name}', creating frame now.")
                     return
                 elif name == "Mail":
-                    MailFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
+                    MailFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame,
+                                     self.restore_configurations, self.refresh_frame)
                     logger.info(f"User picked frame '{name}', creating frame now.")
                     return
                 elif name == "Web":
@@ -765,7 +878,7 @@ class Core(customtkinter.CTk):
     def __init__(self):
         super().__init__()
         screenNum = ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")
-        self.screenWidth = get_monitors()[screenNum].width  # screen width
+        self.screenWidth = get_monitors()[screenNum].width  # screen width_frame
         self.screenHeight = get_monitors()[screenNum].height  # screen height
         self.heightDivisor = ryuConf.red_main_config("GUI_template", "height_divisor")
         self.buttons_names = ryuConf.red_main_config("careConf", "menuButtonsList")
@@ -773,8 +886,8 @@ class Core(customtkinter.CTk):
         # ---
         # root window setup:
         self.title(f"Caregiver configuration application -- Version:{Version}")
-        self.minsize(int(self.screenWidth * 0.80), int(self.screenHeight * 0.80))  # width, height
-        self.maxsize(self.screenWidth, self.screenHeight)  # width x height + x + y
+        self.minsize(int(self.screenWidth * 0.80), int(self.screenHeight * 0.80))  # width_frame, height
+        self.maxsize(self.screenWidth, self.screenHeight)  # width_frame x height + x + y
         self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
         logger.info("Creating root window for application")
         # ---
