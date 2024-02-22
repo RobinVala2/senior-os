@@ -146,17 +146,32 @@ def height_config(parent):
 
     return number_of_lines_listbox, number_of_lines_textarea
 
-def get_email_sender(extracted_name):
-    start_index = extracted_name.find(": ")
-    end_index = extracted_name.find("<")
-    # extracting name from email body
+def get_email_sender(email_string):
+
+    start_index = email_string.find(": ") + 2
+
+    # check if the string is in format: "Od: <email@seznam.cz>"
+    if start_index < len(email_string) - 1 and email_string[start_index] == "<":
+        end_index = email_string.find(">", start_index)
+        if end_index != -1:
+            email_address = email_string[start_index + 1:end_index].strip()
+            sender_name = email_address.split("@")[0]
+            return sender_name
+    end_index = email_string.find("<")
+
+    # check if the string is in format: "Od: Name Surname <email@seznam.cz>"
     if start_index != -1 and end_index != -1:
-        name = extracted_name[start_index + 1:end_index].strip()
-        return name
+        sender_name = email_string[start_index:end_index].strip()
+        return sender_name
+
+    # If the format is "Od: email@seznam.cz" , extract name differently
     else:
-        extracted_name = extracted_name.split(" ")[1]
-        name = extracted_name.split("@")[0]
-        return name
+        tokens = email_string.split(" ")
+        if len(tokens) > 1:
+            extracted_name = tokens[1]
+            name = extracted_name.split("@")[0]
+            return name
+
 
 def get_guardian_email():
     # reading configuration

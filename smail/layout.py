@@ -368,7 +368,6 @@ class one_frame(tk.Frame):
 
         # inserting emails into the listbox,
         # for now safe_emails and phish_emails are separated
-        #self.inbox_list.delete(0, tk.END)
         self.inbox_list.listbox.delete(0, tk.END)
         print("Clearing the listbox")
 
@@ -463,8 +462,8 @@ class one_frame(tk.Frame):
 
     def open_browser(self, event, url):
         # Open the web browser when clicking on a URL
-        path_to_script= "../sweb/main.py"
-        os.execl(sys.executable, sys.executable, path_to_script, url)
+        script= "../sweb/main.py"
+        os.execl(sys.executable, sys.executable, script, url)
         sys.exit()
         #webbrowser.open_new(url)
 
