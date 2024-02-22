@@ -349,6 +349,9 @@ class one_frame(tk.Frame):
 
     def insert_emails(self):
 
+        # Check if there is a change in emails before updating
+        previous_emails = getattr(self, "reversed_list", [])
+
         login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
         language, text = get_language()
 
@@ -357,39 +360,37 @@ class one_frame(tk.Frame):
         # reversing emails - new emails will be on top of the listbox
         self.reversed_list = self.emails[::-1]
 
-        try:
-            # filtering emails
-            self.safe_emails, self.phish_emails = check_email_for_spam(self.reversed_list)
-        except Exception:
-            # in case filtering fails, all emails will be displayed
-            self.safe_emails = self.reversed_list
-            logger.critical("Failed to apply anti-phishing filters."
-                            "Omitting security steps.", exc_info=True)
+        if previous_emails != self.reversed_list:
+            try:
+                # filtering emails
+                self.safe_emails, self.phish_emails = check_email_for_spam(self.reversed_list)
+            except Exception:
+                # in case filtering fails, all emails will be displayed
+                self.safe_emails = self.reversed_list
+                logger.critical("Failed to apply anti-phishing filters. Omitting security steps.", exc_info=True)
 
-        # inserting emails into the listbox,
-        # for now safe_emails and phish_emails are separated
-        self.inbox_list.listbox.delete(0, tk.END)
-        print("Clearing the listbox")
+            # inserting emails into the listbox,
+            # for now safe_emails and phish_emails are separated
+            self.inbox_list.listbox.delete(0, tk.END)
+            print("Clearing the listbox")
 
-        for n in self.safe_emails:
-            self.name = get_email_sender(n.split("\n")[1])
-            self.sub = n.split("\n")[0].split(":",1)[1]
+            for n in self.safe_emails:
+                self.name = get_email_sender(n.split("\n")[1])
+                self.sub = n.split("\n")[0].split(":", 1)[1]
 
-            self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
-            # binding listbox to text area to view email
-            self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
+                self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
+                # binding listbox to text area to view email
+                self.inbox_list.bind("<<ListboxSelect>>", self.showEmail)
 
+            for m in self.phish_emails:
+                self.name = get_email_sender(m.split("\n")[1])
+                self.sub = m.split("\n")[0].split(":", 1)[1]
 
+                self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
+                # binding listbox to text area to view email
+                self.inbox_list.listbox.bind("<<ListboxSelect>>", self.showEmail)
 
-        for m in self.phish_emails:
-            self.name = get_email_sender(m.split("\n")[1])
-            self.sub = m.split("\n")[0].split(":", 1)[1]
-
-            self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
-            # binding listbox to text area to view email
-            self.inbox_list.listbox.bind("<<ListboxSelect>>", self.showEmail)
-
-        print("Inserting emails into listbox")
+            print("Inserting emails into listbox")
 
 
 
