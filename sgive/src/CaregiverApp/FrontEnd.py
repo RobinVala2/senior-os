@@ -5,11 +5,14 @@ import logging
 import os
 import re  # regex
 
+#  from functools import lru_cache
+
+
 """
 Author: RYUseless
 Github: https://github.com/RYUseless
 """
-Version = "0.0.3(Alpha)"
+Version = "0.0.3(Alpha)"  # lmao the most useless thing ever :)
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
@@ -150,10 +153,12 @@ class LogsFrameWidgets:
 
 
 class WebFrameWidgets:
-    def __init__(self, frame_root, width, height_frame):
+    def __init__(self, frame_root, width, height_frame, restore, refresh):
         self.master = frame_root
         self.height_frame = height_frame
         self.width = width
+        self.restore_btn = restore
+        self.refresh_btn = refresh
         # self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
         self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
         self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
@@ -339,7 +344,7 @@ class GlobalFrameWidgets:
         self.array_coranteng = [self.screen_num, self.language_dict, self.language_alert_dict, self.colorscheme_dict,
                                 self.entry_dict, self.font_size]
         # ---------- CALS --------------
-        self.scree_size_check()
+        self.screen_size_check()
         self.create_labels()  # creating labels for each lane
         self.buttons()  # creating objects for buttons
         self.show_buttons()  # logic for showing buttons
@@ -347,7 +352,7 @@ class GlobalFrameWidgets:
         self.master.bind("<Configure>", lambda _: self.on_resize())
         # E N D of constructor
 
-    def scree_size_check(self):
+    def screen_size_check(self):
         if not self.height_frame < self.master.winfo_height():
             self.height_frame = self.master.winfo_height()
         else:
@@ -514,15 +519,17 @@ class GlobalFrameWidgets:
                                                     )
 
         # Fifth config row:
+        width_size = self.width_frame * (2 / 5) - 2.5
+        height_size = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
+
         entry_objects = ryuConf.red_main_config("careConf", "EntryOptions")
         for entry_buttons_counter, entry_name in enumerate(entry_objects):
             self.entry_buttons_dict[entry_buttons_counter] = customtkinter.CTkButton(self.master)
             self.entry_dict[entry_name] = customtkinter.CTkEntry(self.master)
             self.entry_dict[entry_name].configure(border_width=0,
                                                   corner_radius=0,
-                                                  width=self.master.winfo_width() * (2 / 5) - 2.5,
-                                                  height=self.master.winfo_height() *
-                                                         (1 / (len(self.label_names) + 1)) - 2.5,
+                                                  width=width_size,
+                                                  height=height_size,
                                                   placeholder_text=entry_name, )
 
             self.entry_buttons_dict[entry_buttons_counter].configure(text="Submit",
@@ -544,10 +551,8 @@ class GlobalFrameWidgets:
             self.font_size[option] = customtkinter.CTkButton(self.master)
             self.font_size[option].configure(border_width=0,
                                              corner_radius=0,
-                                             width=self.master.winfo_width() * (
-                                                     1 / 5) - 2.5,
-                                             height=self.master.winfo_height() *
-                                                    (1 / (len(self.label_names) + 1)) - 2.5,
+                                             width=width_size,
+                                             height=height_size,
                                              text=option,
                                              command=lambda picked_value=option: self.update_config(
                                                  "GlobalConfiguration",
@@ -648,10 +653,6 @@ class GlobalFrameWidgets:
 
 class Frames:
     def __init__(self, master, width, height, divisor, number_of_buttons, name_of_buttons):
-        self.frame_names = ryuConf.red_main_config("careConf", "menuButtonsList")
-        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
-        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         # -------------
         self.master = master
@@ -675,12 +676,6 @@ class Frames:
     def get_new_values_for_refresh(self, button_id):
         # set global color:
         customtkinter.set_appearance_mode(ryuConf.red_main_config("GlobalConfiguration", "colorMode"))
-        # reread once again all configs
-        self.frame_names = ryuConf.red_main_config("careConf", "menuButtonsList")
-        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
-        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
-        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         # refresh:
         self.choose_frame(button_id, True)
 
@@ -692,31 +687,34 @@ class Frames:
         # create buttons:
         self.restore_configurations = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
                                                               text="Restore Configurations",
-                                                              border_width=2,
-                                                              corner_radius=0,
                                                               command=lambda: self.restore_config(button_id),
                                                               )
 
         self.refresh_frame = customtkinter.CTkButton(master=self.frame_dictionary[button_id],
                                                      text="Refresh frame",
-                                                     border_width=2,
-                                                     corner_radius=0,
                                                      command=lambda: self.get_new_values_for_refresh(button_id))
 
         # place:
-        self.restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001, rely=0.91)
+        self.restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001,
+                                          rely=0.91)  # bro, I forgot why these numbers are here
         self.refresh_frame.place(relx=0.5 + 0.001, rely=0.91)
 
-        # configure stats and size even when it's master frame resizes:
+        # set values needed for both buttons:
+        font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
+        font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+
         for widget in [self.restore_configurations, self.refresh_frame]:
             widget.configure(hover_color=(self.hover_alert_color, self.hover_alert_color),
                              font=(
-                                 self.font_name, self.label_size + 17,
-                                 self.font_boldness),
+                                 font_name, label_size + 17,
+                                 font_boldness),
                              fg_color=("#D3D3D3", "#171717"),
                              text_color=("black", "white"),
                              height=self.height_frame * (1 / 11),
                              width=self.master.winfo_width() * (2 / 5),
+                             border_width=2,
+                             corner_radius=0,
                              anchor=customtkinter.CENTER)
 
     def choose_frame(self, button_id, refresh):
@@ -724,15 +722,13 @@ class Frames:
             # Refresh frame
             for widget in self.frame_dictionary[self.alive_frame].winfo_children():
                 widget.place_forget()
-            # self.frame_dictionary[self.alive_frame].pack_forget()  # Forget the frame itself
-            # self.frame_dictionary[button_id].pack()  # Pack the new frame
             self.alive_frame = button_id  # just making sure, that the frame is set as currently alive frame
             logger.info("Refreshing frame now.")
-
 
         # skip if frame alive is the same as next frame to show
         elif self.alive_frame == button_id:
             return
+
         # Pack the new frame and forget the old one
         elif not self.alive_frame is None:
             self.frame_dictionary[self.alive_frame].pack_forget()
@@ -746,36 +742,36 @@ class Frames:
             return
 
         # Show corresponding class with widgets to its frame
-        name_counter = 1
-        for name in self.frame_names:
-            if button_id == name_counter:
-                if button_id < (self.number_of_buttons - 1):  # - log frame
-                    self.refresh_restore_buttons(button_id)
+        frame_mapping = {
+            "Global": GlobalFrameWidgets,
+            "Mail": MailFrameWidgets,
+            "Web": WebFrameWidgets,
+            "Logs": LogsFrameWidgets
+        }
+        #
+        # Search for frame name based on ID with button id:
+        # AKA: button_id=1, Global frame ID=1 -> match -> show it
+        #
+        global_frame_names = ryuConf.red_main_config("careConf", "menuButtonsList")
+        frame_name = global_frame_names[
+            button_id - 1]  # Adjust button_id to match zero-based indexing (it starts from 0 and not 1)
+        frame_class = frame_mapping.get(frame_name)  # frame mapping
 
-                if name == "Global":
-                    GlobalFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame,
-                                       self.restore_configurations, self.refresh_frame)
-                    logger.info(f"User picked frame '{name}', creating frame now.")
-                    return
-                elif name == "Mail":
-                    MailFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame,
-                                     self.restore_configurations, self.refresh_frame)
-                    logger.info(f"User picked frame '{name}', creating frame now.")
-                    return
-                elif name == "Web":
-                    WebFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
-                    logger.info(f"User picked frame '{name}', creating frame now.")
-                    return
-                elif name == "Logs":
-                    LogsFrameWidgets(self.frame_dictionary[button_id], self.width, self.height_frame)
-                    logger.info(f"User picked frame '{name}', creating frame now.")
-                    return
-                else:
-                    logger.error("Button doesn't have its corresponding frame or it isn't present in config options")
-                    return
+        if frame_class:
+            if frame_name == "Logs":
+                frame_class(self.frame_dictionary[button_id], self.width, self.height_frame)
+                logger.info(f"User picked frame '{frame_name}', creating frame now.")
+                return
             else:
-                name_counter += 1
+                self.refresh_restore_buttons(button_id)  # restore and reset buttons
+                frame_class(self.frame_dictionary[button_id], self.width, self.height_frame,
+                            self.restore_configurations, self.refresh_frame)
+                logger.info(f"User picked frame '{frame_name}', creating frame now.")
+                return
+        else:
+            logger.error("Button doesn't have its corresponding frame or it isn't present in config options")
 
+    # create needed frames for config, based on config.json
     def create_frames(self, number):
         self.frame_dictionary[number] = customtkinter.CTkFrame(self.master)
         self.frame_dictionary[number].configure(fg_color=("white", "#1a1a1a"))
