@@ -1,5 +1,8 @@
 import logging
+import multiprocessing
 import os
+import platform
+import subprocess
 import sys
 import threading
 import tkinter as tk
@@ -137,7 +140,7 @@ class one_frame(tk.Frame):
             self.audio_configure(self.menu_button_2, "menu2")
 
             self.exit_button.config(
-                command = sys.exit,
+                command = self.exit_app,
                 image=self.exit_image,
                 text="",
                 width=self.button_width
@@ -192,6 +195,9 @@ class one_frame(tk.Frame):
         except Exception:
             logger.error("Error:", exc_info=True)
 
+    def exit_app(self):
+        self.master.destroy()
+        subprocess.run(["kill", "-9", str(os.getpid())])
 
     def left_frame(self):
 
