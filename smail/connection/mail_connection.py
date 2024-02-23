@@ -21,6 +21,7 @@ logger = logging.getLogger(__file__)
 
 phish_senders = []
 resend_emails_g = False
+index = 0
 
 def send_email(recipient, subject, content, login, password, smtp_server, smtp_port):
 
@@ -233,6 +234,7 @@ def check_content_of_email(content, sender, subject):
 
 def check_email_for_spam(email_messages):
 
+    global index
     safe_emails = []
     phish_emails = []
 
@@ -256,9 +258,11 @@ def check_email_for_spam(email_messages):
         contentBlock = check_content_of_email(message, modified_sender, email_parts[0])
 
         if contentBlock:
-            safe_emails.append(email_content)
+            safe_emails.append((email_content, index, "safe"))
+            index = index + 1
         else:
-            phish_emails.append(email_content)
+            phish_emails.append((email_content, index, "phish"))
+            index = index + 1
 
     return safe_emails, phish_emails
 

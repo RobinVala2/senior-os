@@ -395,65 +395,53 @@ class one_frame(tk.Frame):
             self.inbox_list.listbox.delete(0, tk.END)
             print("Clearing the listbox")
 
-            for n in self.safe_emails:
-                self.name = get_email_sender(n.split("\n")[1])
-                self.sub = n.split("\n")[0].split(":", 1)[1]
+            self.all_emails = self.safe_emails + self.phish_emails
+            self.all_emails.sort(key=lambda x: x[1])
+            self.tagged_emails = []
 
-                self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
-                # Binding listbox to text area to view email
-                self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
+            for email_content, index, safe in self.all_emails:
+                name = get_email_sender(email_content.split("\n")[1])
+                sub = email_content.split("\n")[0].split(":", 1)[1]
+                email_type = "Safe" if index in [i[1] for i in self.safe_emails] else "Phish"
+                self.inbox_list.listbox.insert(tk.END, f"{email_type} - {name} - {sub}")
+            # Binding listbox to text area to view email
 
-
-            for m in self.phish_emails:
-                self.name = get_email_sender(m.split("\n")[1])
-                self.sub = m.split("\n")[0].split(":", 1)[1]
-
-                self.inbox_list.listbox.insert(tk.END, f"{self.name} - {self.sub}")
-                # Binding listbox to text area to view email
-                self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
-
-            print("Inserting emails into listbox")
-
+            self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
 
     def show_email(self, event):
-
         # If allow_show_email is not allowed, email will not be displayed
         if not self.allow_show_email:
             return
-
-        # Switch frames to reading frame
+        # Switch frames to the reading frame
         self.switch_to_reading_mail()
 
-        # In case no item in listbox is selected,
-        # the last selected email will be displayed in text area
         if not self.inbox_list.listbox.curselection():
             if (self.last_selected_index is not None
                     and self.last_selected_email is not None):
                 self.configure_message_area(self.last_selected_email)
                 return
 
+        # Get the selected index from the listbox
         try:
             selected_index = self.inbox_list.listbox.curselection()[0]
-
-            # Check if the selected index is within the range of safe_emails
-            if selected_index < len(self.safe_emails):
-                selected_email = self.safe_emails[selected_index]
-                # No alert will be displayed
-                self.stop_alert()
-            else:
-                # If it's not in safe_emails, it must be in phish_email
-                selected_email = self.phish_emails[selected_index - len(self.safe_emails)]
-                # Alert - phishing URL in email
-                self.alert_buttons()
-
-            self.configure_message_area(selected_email)
-
-            # Update the last selected index and email
-            self.last_selected_index = selected_index
-            self.last_selected_email = selected_email
-
         except IndexError:
             print("Index out of range.")
+            return
+
+        # Get the selected email based on the sorted combined list
+        selected_email = self.all_emails[selected_index]
+        if selected_email[2] == "phish":
+            self.alert_buttons()
+        else: self.stop_alert()
+
+        # Configure the message area with the selected email content
+        self.configure_message_area(selected_email[0])
+
+        # Update the last selected index and email
+        self.last_selected_index = selected_index
+        self.last_selected_email = selected_email[0]
+
+
 
     def configure_message_area(self, email):
 
