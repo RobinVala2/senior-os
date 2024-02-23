@@ -403,6 +403,7 @@ class one_frame(tk.Frame):
                 # Binding listbox to text area to view email
                 self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
 
+
             for m in self.phish_emails:
                 self.name = get_email_sender(m.split("\n")[1])
                 self.sub = m.split("\n")[0].split(":", 1)[1]

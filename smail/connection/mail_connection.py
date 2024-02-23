@@ -6,6 +6,8 @@ from email.mime.text import MIMEText
 import email
 import ssl
 import re
+from urllib.parse import urlparse
+
 import chardet
 from smail.connection.style import get_guardian_email, resend_active, load_credentials
 
@@ -159,6 +161,7 @@ def read_mail(login, password, imap_server, imap_port, language, text):
                                      f"{lang_date}{date}\n"
                                      f"{lang_message}\n\n{message_decode}")
 
+
                     # Appends the email into emails list
                     emails.append(email_content)
                     subjects.append(decoded_subject)
@@ -194,7 +197,7 @@ def resend_mail_to_guardian(emails):
         send_email(gmail, email_subject, email_content, login, password, smtp_server, smtp_port)
 
 
-def check_content_of_email(content, sender):
+def check_content_of_email(content, sender, subject):
 
     with open("../sconf/phish/SMAIL_PHISH_1.txt") as f:
         phish_urls = f.readlines()
@@ -204,20 +207,25 @@ def check_content_of_email(content, sender):
     phish_urls = [url.strip().lower() for url in phish_urls]
 
     url_pattern = r"https?://(?:www\.)?\S+|www\.\S+"
-    urls = re.findall(url_pattern, content)
+
+    # Extract urls from email body and subject
+    content_urls = re.findall(url_pattern, content)
+    subject_urls = re.findall(url_pattern, subject)
+    urls = content_urls + subject_urls
 
     found_phishing_url = False
 
     for url in urls:
         # Remove newline and convert to lowercase
         clean_url = url.strip().lower()
-        if clean_url in phish_urls:
-            logger.warning(f"Found a phishing URL from {sender}, url: {url}")
-            found_phishing_url = True
-            phish_senders.append(sender)
-            break
-        else:
-            logger.info(f"Found URL from {sender}, url: {url}")
+        for p in phish_urls:
+            if clean_url.startswith(p):
+                logger.warning(f"Found a phishing URL from {sender}, url: {url}")
+                found_phishing_url = True
+                phish_senders.append(sender)
+                break
+            else:
+                logger.info(f"Found URL from {sender}, url: {url}")
 
     if found_phishing_url:
         return False
@@ -246,7 +254,7 @@ def check_email_for_spam(email_messages):
         else:
             modified_sender = sender
 
-        contentBlock = check_content_of_email(message, modified_sender)
+        contentBlock = check_content_of_email(message, modified_sender, email_parts[0])
 
         if contentBlock:
             safe_emails.append(email_content)
