@@ -172,6 +172,12 @@ def get_email_sender(email_string):
     # Check if the string is in format: "Od: Name Surname <email@seznam.cz>"
     if start_index != -1 and end_index != -1:
         sender_name = email_string[start_index:end_index].strip()
+        if '"' in sender_name:
+            start_index = email_string.find('"') + 1
+            end_index = email_string.find('"', start_index)
+            if start_index != -1 and end_index != -1:
+                sender_name = email_string[start_index:end_index].strip()
+
         return sender_name
 
     # If the format is "Od: email@seznam.cz" , extract name differently

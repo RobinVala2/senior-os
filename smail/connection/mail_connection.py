@@ -220,16 +220,15 @@ def check_content_of_email(content, sender, subject):
         clean_url = url.strip().lower()
         for p in phish_urls:
             if clean_url.startswith(p):
-                logger.warning(f"Found a phishing URL from {sender}, url: {url}")
                 found_phishing_url = True
                 phish_senders.append(sender)
                 break
-            else:
-                logger.info(f"Found URL from {sender}, url: {url}")
 
     if found_phishing_url:
+        logger.warning(f"Found a phishing URL from {sender}")
         return False
     else:
+        logger.info(f"Found URL from {sender}")
         return True
 
 def check_email_for_spam(email_messages):
