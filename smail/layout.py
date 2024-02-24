@@ -1,9 +1,6 @@
 import logging
-import multiprocessing
 import os
-import platform
 import subprocess
-import sys
 import threading
 import tkinter as tk
 from ttkwidgets import ScrolledListbox
@@ -403,7 +400,7 @@ class one_frame(tk.Frame):
                 name = get_email_sender(email_content.split("\n")[1])
                 sub = email_content.split("\n")[0].split(":", 1)[1]
                 email_type = "Safe" if index in [i[1] for i in self.safe_emails] else "Phish"
-                self.inbox_list.listbox.insert(tk.END, f"{email_type} - {name} - {sub}")
+                self.inbox_list.listbox.insert(tk.END, f"{name} - {sub}")
             # Binding listbox to text area to view email
 
             self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
@@ -490,12 +487,13 @@ class one_frame(tk.Frame):
             start_pos = end_index
 
     def open_browser(self, event, url):
-
         # Open web browser when clicking on a URL.
-        script= "../sweb/main.py"
-        os.execl(sys.executable, sys.executable, script, url)
-        sys.exit()
-        #webbrowser.open_new(url)
+        try:
+            subprocess.run(["python3", "../sweb/main.py", url])
+            self.exit_app()
+        except Exception as e:
+            webbrowser.open_new(url)
+            logger.error("Failed to open sweb.")
 
     def alert_buttons(self):
 
