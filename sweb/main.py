@@ -399,8 +399,8 @@ class MyBrowser(QMainWindow):
         self.menu2Address = QPushButton(self)
         # Create Home QvBoxLayout
         menu2Address_layout = QVBoxLayout(self.menu2Address)
-        self.menu2_addres_new_text_label = QLabel("Page out of list", self.menu2_button)
-        self.menu2_addres_new_text_label.setWordWrap(True)
+        self.menu2_addres_new_text_label = QLabel("My page", self.menu2_button)
+        #self.menu2_addres_new_text_label.setWordWrap(True)
         self.menu2_addres_new_text_label.setAlignment(Qt.AlignCenter)
         menu2Address_layout.addWidget(self.menu2_addres_new_text_label)
         # Align text and icon in the center
@@ -700,8 +700,10 @@ class MyBrowser(QMainWindow):
     def navigate_www3(self):
         # Define the Home Page for the Web Browser
         # !!! using .html but still don't have good Home Page
-        html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'homepage.html')
-        self.main_browser.load(QUrl.fromLocalFile(html_path))
+        #html_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'homepage.html')
+        #self.main_browser.load(QUrl.fromLocalFile(html_path))
+        # Connect to google.com
+        self.main_browser.setUrl(QUrl("https://google.com"))
         # Set visible after navitigation
         self.url_toolbar.setVisible(False)
         self.toolbar_space.setVisible(False)
