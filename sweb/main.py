@@ -61,7 +61,7 @@ class GetMonitorHeightAndWidth:
         # Number of button on menu = numberOfOptions + 1
         total_padding = (num_option_on_frame)*padding
         # Calculate width for button
-        self.button_width = math.floor((screen_width-total_padding)/width_divisor) - padding*(3/4)
+        self.button_width = math.floor((screen_width-total_padding)/width_divisor) - padding
     
     def get_height_button(self):
         return self.button_height

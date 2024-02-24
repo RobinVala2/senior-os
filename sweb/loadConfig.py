@@ -42,7 +42,7 @@ def load_permitted_website_from_sgive():
     permitted_website_list = set()
     # Exit when error occurs and print notification to log
     try:
-        with open("../sgive/SWEB_Permitted_Websites.txt", 'r') as open_file:
+        with open("../sgive/Demo_SWEB_Permitted_Websites.txt", 'r') as open_file:
             content  = open_file.read()
             reading_website = content.strip().split('\n')
             permitted_website_list.update(reading_website)
