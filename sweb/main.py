@@ -472,20 +472,53 @@ class MyBrowser(QMainWindow):
         
         return alert_style_string
     
+    # This method control HTML injection to web page
+    # Function: Zoom in, block input text and zoom text
     def finished_load_web_page(self):
         # Get url value from browser
-        url_in_browser_value = self.main_browser.url()
-        if True:
-            # If it is home, do not change anything
-            if "homepage.html" not in url_in_browser_value.toString():
+        url_in_browser_value = self.main_browser.url().toString()
+        # Get permitted websites list from sgive
+        permitted_website_list = load_permitted_website_from_sgive()
+        # Check if it is permitted website
+        check_result = any(permitted_website in url_in_browser_value for permitted_website in permitted_website_list)
+        if check_result:
+            if "homepage.html" not in url_in_browser_value:
                 self.main_browser.setZoomFactor(1.5)
                 # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
                 QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
-            else:
-                return
+        else:
+            self.main_browser.setZoomFactor(1.5)
+            # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
+            QTimer.singleShot(1000, lambda: self.html_injection_to_web_content_strict())
     
     # This method is used for changing font in HTML content
     def html_injection_to_web_content(self):
+        injection_javasript = """
+        <!-- Change only paragraph, article, span and header elements with lower levels--> 
+        var all_changed_content_tag = ['p', 'div', 'article', 'span', 'h3', 'h4', 'h5'];
+        <!-- Create a function to change content style-->
+        var change_content_style = function(element) {
+            <!-- Method includes will return value in UPPERCASE>
+            if (['H3', 'H4', 'H5', 'A'].includes(element.tagName)) {
+                <!-- Header with bigger size-->
+                element.style.fontSize = '20px';
+                element.style.lineHeight = '1.0';
+            }
+            <!-- Method includes will return value in UPPERCASE>
+            else if (['P', 'DIV', 'ARTICLE', 'SPAN'].includes(element.tagName)) {
+                <!-- Content with smaller size>
+                element.style.fontSize = '17px';
+                element.style.lineHeight = '1.1';
+            }
+            Array.from(element.children).forEach(change_content_style);
+        }
+        change_content_style(document.body);
+        """
+        self.main_browser.page().runJavaScript(injection_javasript)
+    
+    # This method is used for changing font and block input in HTML content
+    # !!!Apply for not permiited website
+    def html_injection_to_web_content_strict(self):
         injection_javasript = """
         <!-- Declare tags for prohibiting input text to textfill>
         var prohibited_tag_input = document.querySelectorAll('input, textarea, div.input');
