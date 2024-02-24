@@ -24,12 +24,12 @@ Web browser for seniors
 				<!-- This division is do nothing. Just space-->
 			</div>
 			<div class="col1">
-				<div class="card1">
-					<a href="https://www.fekt.vut.cz/">
+				<a href="https://www.fekt.vut.cz/">
+					<div class="card1">
 						<h5>Fekt VUT</h5>
 						<p>Faculty Of Electrical Engineering And Communication</p>
-					</a>
-				</div>
+					</div>
+     				</a>
 			</div>
 			<div class="col2">
 				<div class="card2">
