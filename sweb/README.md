@@ -13,11 +13,11 @@ Web browser for seniors
 		<div class="content_home">
 			<div class="col">
 				<h1>Web Browser for Senior</h1>
-				<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We believe the Internet should be accessible to everyone, regardless of age.
+				<p>We believe the Internet should be accessible to everyone, regardless of age.
 					  Our browser empowers seniors with user-friendly tools, making the online world an enjoyable space to explore.</p>
-				<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Věříme, že by Internet měl být přístupný všem bez ohledu na věk. Náš prohlížeč poskytuje seniorům uživatelské 
+				<p>Věříme, že by Internet měl být přístupný všem bez ohledu na věk. Náš prohlížeč poskytuje seniorům uživatelské 
 					přívětivé nástroje, díky nimž je online svět příjemným prostorem k objevování.</p>
-				<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Wir glauben, dass das Internet für jeden zugänglich sein sollte, unabhängig vom Alter. Unser Browser stellt 
+				<p>Wir glauben, dass das Internet für jeden zugänglich sein sollte, unabhängig vom Alter. Unser Browser stellt 
 					Senioren benutzerfreundliche Tools zur Verfügung und macht die Online-Welt zu einem angenehmen Ort zum Erkunden.</p>
 			</div>
 			<div class="space">
@@ -25,16 +25,16 @@ Web browser for seniors
 			</div>
 			<div class="col1">
 				<div class="card1">
-					<a href="https://www.fekt.vut.cz/" style="text-decoration: none; ">
-						<h5><span>&#8594;</span>Fekt VUT<span>&#8592;</span></h5>
+					<a href="https://www.fekt.vut.cz/">
+						<h5>Fekt VUT</h5>
 						<p>Faculty Of Electrical Engineering And Communication</p>
 					</a>
 				</div>
 			</div>
 			<div class="col2">
 				<div class="card2">
-					<a href="https://github.com/forsenior/senior-os/"  style="text-decoration: none;">
-						<h5><span>&#8594;</span>OurProject<span>&#8592;</span></h5>
+					<a href="https://github.com/forsenior/senior-os/">
+						<h5>OurProject</h5>
 					</a>
 				</div>
 			</div>
