@@ -23,13 +23,13 @@
     "text": {
                 "sweb_en_menu1": "Menu 1",
                 "sweb_en_menu2": "Menu 2",
-                "sweb_en_menu2Address": "Page out of list",
+                "sweb_en_menu2Address": "My page",
                 "sweb_cz_menu1": "Menu 1",
                 "sweb_cz_menu2": "Menu 2",
-                "sweb_cz_menu2Address": "Stránka mimo seznam",
+                "sweb_cz_menu2Address": "Moje stránka",
                 "sweb_de_menu1": "Menü 1",
                 "sweb_de_menu2": "Menü 2",
-                "sweb_de_menu2Address": "Seite nicht aufgeführt"
+                "sweb_de_menu2Address": "Meine Seite"
             },
     "audio": {
                 "sweb_en_menu1": "../sconf/audio/SWEB_EN_MENU_1.mp3",

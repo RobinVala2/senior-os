@@ -9,7 +9,7 @@ class TestSendEmail(unittest.TestCase):
     subject = "Test Subject"
     content = "Test Content"
     login = "ts1bp2023@gmail.com"
-    password = "wuaxnflbzrdyysdy"
+    password = "password"
     smtp_server = "smtp.gmail.com"
     smtp_port = 587
 
@@ -24,7 +24,7 @@ class TestSendEmail(unittest.TestCase):
         mock_server.starttls.return_value = None
         mock_server.login.return_value = None
         mock_server.sendmail.return_value = None
-        result = send_email("241124@vutbr.cz", "Test Subject", "Test email content.", self.login, self.password, self.smtp_server, self.smtp_port)
+        result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
         mock_logger.error.assert_not_called()
         self.assertEqual(result, 1)
 

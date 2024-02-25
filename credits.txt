@@ -50,8 +50,8 @@ Source: https://informace.rozhlas.cz/novy-web-irozhlascz-nabizi-spolehlive-a-ryc
 License: Free for commercial use WITH ATTRIBUTION license
 ---
 Image: SWEB_WWW3.JPG
-Author: wanicon - freepik.com
-Source: https://www.freepik.com/icon/grandparents_4577148#fromView=keyword&term=Elderly&page=2&position=50
+Author: Tinti Nodarse- iconfinder.com
+Source: https://www.iconfinder.com/icons/7123025/logo_google_g_icon
 License: Free for commercial use WITH ATTRIBUTION license
 ---
 Image: SWEB_WWW4.PNG
