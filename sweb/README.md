@@ -46,6 +46,6 @@ python3 main.py
 ### Usage
 Upon launching the browser, you are greeted with an intuitive interface designed for ease of use. Enjoy a safer browsing experience.
 
-#### Contributing
+### Contributing
 FACULTY OF ELECTRICAL ENGINEERING AND COMMUNICATION
 ![SWEB_FEKT](https://github.com/forsenior/senior-os/blob/main/sconf/images/SWEB_FEKT_VUT_LOGO.jpg)
