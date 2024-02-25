@@ -199,6 +199,7 @@ class MailFrameWidgets:
         self.entry_widgets = {}
         self.submit_entry_btn = {}
         self.caregiver_warning = {}
+        self.url_link = {}
         # -----------------
         # calls:
         self.scree_size_check()
@@ -208,30 +209,28 @@ class MailFrameWidgets:
         # E N D of constructor
 
     def scree_size_check(self):
-        if not self.height_frame < self.master.winfo_height():
+        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
             self.height_frame = self.master.winfo_height()
-        else:
-            pass
-        if not self.width_frame < self.master.winfo_width():
             self.width_frame = self.master.winfo_width()
-        else:
-            pass
-        self.widget_height = self.height_frame * (1 / (len(self.label_names) + 1))
+        self.widget_height = self.height_frame * ((10 / 11) / len(self.label_names))
 
     def create_labels(self):
-        y_position = 0
+        y_position = 0.0
+        label_num = len(self.label_names)
         for label_name in self.label_names:
-            self.label_dict[label_name] = customtkinter.CTkLabel(self.master)
-            self.label_dict[label_name].configure(text=label_name,
-                                                  font=(self.font_name, self.label_size + 17, self.font_boldness),
-                                                  width=self.width_frame * (2 / 5),
-                                                  height=self.widget_height,
-                                                  fg_color=("#D3D3D3", "#171717"))
-            self.label_dict[label_name].place(relx=0, rely=y_position)
-            y_position += (1 / (len(self.label_names) + 1))
+            self.label_dict[label_name] = customtkinter.CTkLabel(self.master,
+                                                                 text=label_name,
+                                                                 font=(self.font_name, self.label_size + 20,
+                                                                       self.font_boldness),
+                                                                 width=self.width_frame * (2 / 5),
+                                                                 height=self.widget_height,
+                                                                 fg_color=("#D3D3D3", "#171717")
+                                                                 )
+            self.label_dict[label_name].place(relx=0, rely=y_position * (10 / 11))
+            y_position += 1 / label_num
 
     def create_widgets(self):
-        rel_x = 1 * (2 / 5) + 0.0001
+        rel_x = 1 * (2 / 5)
         rel_y = 0
         rel_y_btns = 0
         rel_x_btns = rel_x
@@ -260,71 +259,81 @@ class MailFrameWidgets:
                                                        )
             if entry_number == 3:
                 rel_y_btns = rel_y
-                rel_y += (1 / (len(self.label_names) + 1))
+                rel_y += (1 / (len(self.label_names)))
                 # still need to show entry label
-                self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y)
+                self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x += (2 / 5)
-                self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y)
+                self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x -= (2 / 5)
-                rel_y += (1 / (len(self.label_names) + 1))
+                rel_y += (1 / (len(self.label_names)))
             else:
-                self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y)
+                self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x += (2 / 5)
-                self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y)
+                self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x -= (2 / 5)
-                rel_y += (1 / (len(self.label_names) + 1))
+                rel_y += (1 / (len(self.label_names)))
 
         number_options = ["Enable", "Disable"]
         for value_name in number_options:
-            self.caregiver_warning[value_name] = customtkinter.CTkButton(self.master)
-            self.caregiver_warning[value_name].configure(
-                font=(self.font_name, self.label_size + 17, self.font_boldness),
-                width=self.width_frame * (1 / 5) - 2.5,
-                height=self.widget_height - 2.5,
-                border_width=0,
-                corner_radius=0,
-                fg_color=("#636363", "#222222"),
-                hover_color=("#757474", "#3b3b3b"),
-                text=value_name
-            )
-            self.caregiver_warning[value_name].place(relx=rel_x_btns, rely=rel_y_btns)
+            self.caregiver_warning[value_name] = customtkinter.CTkButton(self.master,
+                                                                         font=(self.font_name, self.label_size + 17,
+                                                                               self.font_boldness),
+                                                                         width=self.width_frame * (1 / 5) - 2.5,
+                                                                         height=self.widget_height - 2.5,
+                                                                         border_width=0,
+                                                                         corner_radius=0,
+                                                                         fg_color=("#636363", "#222222"),
+                                                                         hover_color=("#757474", "#3b3b3b"),
+                                                                         text=value_name
+                                                                         )
+            self.url_link[value_name] = customtkinter.CTkButton(self.master,
+                                                                font=(self.font_name, self.label_size + 17,
+                                                                      self.font_boldness),
+                                                                width=self.width_frame * (1 / 5) - 2.5,
+                                                                height=self.widget_height - 2.5,
+                                                                border_width=0,
+                                                                corner_radius=0,
+                                                                fg_color=("#636363", "#222222"),
+                                                                hover_color=("#757474", "#3b3b3b"),
+                                                                text=value_name
+                                                                )
+            self.caregiver_warning[value_name].place(relx=rel_x_btns, rely=rel_y_btns * (10 / 11))
             rel_x_btns += (1 / 5) + 0.00015
+            self.url_link[value_name].place(relx=rel_x, rely=rel_y * (10 / 11))
+            rel_x += (1 / 5)
 
     def on_resize(self):
         self.height_frame = self.master.winfo_height()
         self.width_frame = self.master.winfo_width()
 
         width_new = self.width_frame * (2 / 5)
-        height_new = self.height_frame * (1 / (len(self.label_names) + 1))
+        height_new = self.height_frame * ((10 / 11) / len(self.label_names))
         width_btn = self.master.winfo_width() * (1 / 5)
 
-        # recalculate sizes for all buttons that are 2/5 of the size:
+        # recalculate sizes for restore and refresh buttons:
         for btn in [self.restore_configurations, self.refresh_frame]:
-            btn.configure(height=self.height_frame * 1 / 11, width=width_new, anchor=customtkinter.CENTER)
+            btn.configure(height=self.height_frame * (1 / 11), width=width_new, anchor=customtkinter.CENTER)
 
+        # label widgets
         for label in self.label_dict.values():
             label.configure(width=width_new, height=height_new)
 
-        for entry_widget in self.entry_widgets.values():
+        # entry widgets
+        for entry_widget in list(self.entry_widgets.values()):
             entry_widget.configure(width=width_new - 2.5, height=height_new - 2.5)
 
-        for entry_button in self.submit_entry_btn.values():
-            entry_button.configure(width=width_btn - 2.5, height=height_new - 2.5)
-
-        for button in self.caregiver_warning.values():
+        # connecting all buttons lists together:
+        for button in list(self.caregiver_warning.values()) + list(self.url_link.values()) + list(self.submit_entry_btn.values()):
             button.configure(width=width_btn - 2.5, height=height_new - 2.5)
 
 
 class GlobalFrameWidgets:
     def __init__(self, frame_root, width, height_frame, restore, refresh):
-        logger.info("Creating and showing frame for Global configuration.")
+        logger.info("Initiated widgets creation for Global frame.")
         self.master = frame_root
         self.height_frame = height_frame
         self.width_frame = width
         self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
-        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
-        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         self.restore_configurations = restore
         self.refresh_frame = refresh
@@ -339,7 +348,6 @@ class GlobalFrameWidgets:
         self.entry_dict = {}
         self.entry_buttons_dict = {}
         self.font_size = {}
-        # ---------
         # for showing each buttons at one function and resize calculations ↓ ↓ ↓ ↓ ↓
         self.array_coranteng = [self.screen_num, self.language_dict, self.language_alert_dict, self.colorscheme_dict,
                                 self.entry_dict, self.font_size]
@@ -347,20 +355,14 @@ class GlobalFrameWidgets:
         self.screen_size_check()
         self.create_labels()  # creating labels for each lane
         self.buttons()  # creating objects for buttons
-        self.show_buttons()  # logic for showing buttons
         self.highlight_configured_widgets()  # set default options
         self.master.bind("<Configure>", lambda _: self.on_resize())
         # E N D of constructor
 
     def screen_size_check(self):
-        if not self.height_frame < self.master.winfo_height():
-            self.height_frame = self.master.winfo_height()
-        else:
-            return
-        if not self.width_frame < self.master.winfo_width():
+        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
             self.width_frame = self.master.winfo_width()
-        else:
-            return
+            self.height_frame = self.master.winfo_height()
 
     def show_entry_error(self, button_object, entry_object, label_id):
         window_height = self.master.winfo_height()
@@ -559,11 +561,17 @@ class GlobalFrameWidgets:
                                                  "fontThickness", picked_value,
                                                  picked_value, self.font_size))
 
+        # logic for showing buttons
+        self.show_buttons()
+
     def show_buttons(self):
         """
         This very scary looking function does multiple things, it sets repetitive parameters for widgets and its place on frame
         """
+        height_num = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
+        width_num = self.width_frame * (1 / 5) - 2.5
         y_position = 0.001
+
         for widget_dictionary in self.array_coranteng:
             # place entry widgets to frame
             if widget_dictionary is self.entry_dict:
@@ -575,10 +583,8 @@ class GlobalFrameWidgets:
                                                                              corner_radius=0,
                                                                              fg_color=("#636363", "#222222"),
                                                                              hover_color=("#757474", "#3b3b3b"),
-                                                                             width=self.width_frame *
-                                                                                   (1 / 5) - 2.5,
-                                                                             height=self.height_frame * (1 / (
-                                                                                     len(self.label_names) + 1)) - 2.5)
+                                                                             width=width_num,
+                                                                             height=height_num)
                     self.entry_buttons_dict[entry_buttons_counter].place(relx=x_button_poss, rely=y_position)
                     entry_object.place(relx=x_position, rely=y_position)
                     y_position += 1 * (1 / (len(self.label_names) + 1))
@@ -592,22 +598,30 @@ class GlobalFrameWidgets:
                                      corner_radius=0,
                                      fg_color=("#636363", "#222222"),
                                      hover_color=("#757474", "#3b3b3b"),
-                                     width=self.width_frame * (1 / 5) - 2.5,
-                                     height=self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5, )
+                                     width=width_num,
+                                     height=height_num)
                     button.place(relx=x_position, rely=y_position)
                     x_position += 1 * (1 / 5)  # Standard size for other dictionaries
             y_position += 1 * (1 / (len(self.label_names) + 1))
-            logger.info("Created buttons and entry widgets for global frame")
+        logger.info("Created buttons and entry widgets for GLOBAL frame")
 
     def create_labels(self):
         y_position = 0
+
+        font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
+        font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        # in here, so it doesn't need to be calculated each for loop run (at least I hope)
+        label_width = self.width_frame * (2 / 5)
+        label_height = self.height_frame * (1 / (len(self.label_names) + 1))
+
         for label_name in self.label_names:
-            label = customtkinter.CTkLabel(self.master)
-            label.configure(text=label_name,
-                            width=self.width_frame * (2 / 5),
-                            height=self.height_frame * (1 / (len(self.label_names) + 1)),
-                            font=(self.font_name, self.label_size + 17, self.font_boldness),
-                            fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
+            label = customtkinter.CTkLabel(self.master,
+                                           text=label_name,
+                                           width=label_width,
+                                           height=label_height,
+                                           font=(font_name, label_size + 17, font_boldness),
+                                           fg_color=("#D3D3D3", "#171717"))  # whiteMode DarkMode
             label.place(relx=0, rely=y_position)
             self.label_dict[label_name] = label
             y_position += (1 / (len(self.label_names) + 1))
@@ -831,7 +845,7 @@ class Toolbar:
             self.button_dictionary[id_num].configure(fg_color=("white", "#1a1a1a"),
                                                      hover_color=(self.hover_alert_color, self.hover_alert_color),
                                                      text_color=("black", "white"))
-            # here lambda works, because its inside of a for loop, so it gets correct id of a number
+            # here lambda works, because it's inside a for loop, so it gets correct id of a number
             self.button_dictionary[id_num].configure(command=lambda: self.master.destroy())
         # The rest of buttons
         else:
