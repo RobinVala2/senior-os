@@ -1,13 +1,17 @@
 from tkinter import *
-import guiTemplate as temp
-import configActions as act
-
 import tkinter
-from tkinter import *
-import sgive.src.gui_template.configActions as JS
 from screeninfo import get_monitors
 
-from sgive.src.guiTemplateCustomTkinter import guiTempCTK
+import FrontEnd_CTK as temp
+import FrontEnd_CTK as guiTempCTK
+import configActions as act
+import sgive.src.gui_template.configActions as JS
+
+# from sgive.src.guiTemplateCustomTkinter import guiTempCTK
+
+"""
+NEEDS FIXING, LIKE AUTO GENRATING OLDconfig.json if there isnt any and i dont know if i did the migration of cutomstiknter correctly
+"""
 
 
 def deprecated_tkinter(old_root):
@@ -68,4 +72,6 @@ def app():
 
 
 if __name__ == '__main__':
+    path = JS.temporaryGetPath()
+    JS._jsonWrite(path)
     app()

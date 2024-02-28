@@ -113,17 +113,20 @@ def main_config_default(path):
                          "Activate caregiver warning",
                          "Caregiver email:", "URL links in email body:"]
     EntryOptions = ["alertColor", "hoverColor", "soundDelay", "fontSize", "labelFontSize"]
+
+    # I removed from GlobalConfiguration these two:
+    # "light_color": "white",
+    # "dark_color": "gray",
+
     dictionary = {
         'pathToConfig': {
             "path": path
         },
         'GlobalConfiguration': {
             "numOfScreen": 0,
-            "language": "English",
-            "alertSoundLanguage": "English",
+            "language": "EN",
+            "alertSoundLanguage": "EN",
             "colorMode": "Light",
-            "light_color": "white",
-            "dark_color": "gray",
             "alertColor": "#8B0000",
             "hoverColor": "#4b5946",
             "hoverColorLighten": "#7c8e76",
