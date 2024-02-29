@@ -21,6 +21,14 @@ def load_json_file(file_path):
         logging.error(f"An unexpected error occurred while loading data from {file_path}", exc_info=True)
         return -1
 
+def load_button_colors(path):
+    data = load_json_file(path)
+    default_color = data["colors_info"]["buttons_unselected"]
+    select_color = data["colors_info"]["buttons_selected"]
+    return default_color, select_color
+
+
+
 
 def load_credentials(path):
 
