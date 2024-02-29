@@ -225,8 +225,10 @@ class one_frame(tk.Frame):
 
         self.inbox_list.listbox.bind("<Enter>", self.activate_show_email)
 
+
         # Audio configuration
         self.audio_configure(self.inbox_list, "inbox")
+        self.audio_configure(self.inbox_label, "inbox")
 
         # Widget placement
         self.inbox_label.grid(
@@ -293,8 +295,11 @@ class one_frame(tk.Frame):
 
         # Audio configuration
         self.audio_configure(self.recipient_entry, "recipient")
+        self.audio_configure(self.recipient_label, "recipient")
         self.audio_configure(self.subject_entry, "subject")
+        self.audio_configure(self.subject_label, "subject")
         self.audio_configure(self.content_entry, "write_message")
+        self.audio_configure(self.content_label, "write_message")
 
         # Widget placement
         self.recipient_label.grid(
@@ -354,6 +359,7 @@ class one_frame(tk.Frame):
 
         # Audio configuration
         self.audio_configure(self.message_area, "read_message")
+        self.audio_configure(self.message_label, "read_message")
 
         # Widget placement
         self.message_label.grid(
