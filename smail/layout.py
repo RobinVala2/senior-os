@@ -458,6 +458,7 @@ class one_frame(tk.Frame):
         self.mark_important_data()
         self.mark_email()
         self.message_area.configure(state="disabled")
+        self.button_state = None
 
     def mark_important_data(self):
 
@@ -623,6 +624,10 @@ class one_frame(tk.Frame):
         # Switching frame
         self.r_frame = self.right_write_frame()
 
+        self.content_entry.configure(background="white")
+        self.subject_entry.configure(background="white")
+        self.recipient_entry.configure(background="white")
+
         self.r_frame.grid(
             column=1, row=0
         )
@@ -650,9 +655,19 @@ class one_frame(tk.Frame):
 
         # Disable showing email in text area
         self.allow_show_email = False
+        default_color, select_color = load_button_colors("../sconf/config_old.json")
 
         if self.r_frame == self.rr_frame:
             self.r_frame = self.right_write_frame()
+
+        if id == self.button_state:
+            if not self.recipient_entry.get():
+                self.alert_missing_text(self.recipient_entry, "white", select_color)
+            if not self.subject_entry.get():
+                self.alert_missing_text(self.subject_entry, "white", select_color)
+            if not self.content_entry.get("1.0", tk.END).strip():
+                self.alert_missing_text(self.content_entry, "white", select_color)
+
         # If every Entry obtains text, message will be sent
         # when pressing Person[id] button for the second time.
         if (self.recipient_entry.get() and self.subject_entry.get() and
@@ -660,11 +675,18 @@ class one_frame(tk.Frame):
                 id == self.button_state):
             self.send_email_status()
 
-        # If another Person[id] button is pressed:
-        # entries will be deleted,
-        # new recipient entry will be filled in.
-        elif (self.subject_entry.get() or
-              self.content_entry.get("1.0", tk.END).strip()):
+        # handle actions with button 0
+        if id == 0 and id != self.button_state:
+            # If Send To button is pressed, frame is switched and
+            # recipient entry is deleted.
+            print("Send To button pressed")
+            recipient = self.switch_to_write_mail()
+            recipient.delete(0, tk.END)
+        #handle actions with Person buttons
+        else:
+            # If another Person[id] button is pressed:
+            # entries will be deleted,
+            # new recipient entry will be filled in.
             if id != self.button_state:
                 print("No content to send.")
                 email = search_mail(id)
@@ -673,36 +695,17 @@ class one_frame(tk.Frame):
                 recipient.insert(0, email)
                 recipient.configure(state="disabled")
 
-            # If Person[id] button is pressed for the second time,
-            # but one of the entry is not filled in, nothing will happen
-            else:
-                print("one of the entries is not filled in.")
-
-        else:
-            # If Send To button is pressed, frame is switched and
-            # recipient entry is deleted.
-            if id == 0:
-                print("Send To button pressed")
-                recipient = self.switch_to_write_mail()
-                recipient.delete(0, tk.END)
-            # If Person[id] button is pressed for the second time,
-            # but none of the entry is filled in.
-            else:
-                print("Button pressed for the second time,"
-                      " no entry is filled in.")
-                email = search_mail(id)
-                recipient = self.switch_to_write_mail()
-                recipient.delete(0, tk.END)
-                recipient.insert(0, email)
-                recipient.configure(state="disabled")
-
         self.button_state = id
-
-        default_color, select_color = load_button_colors("../sconf/config_old.json")
 
         for button in self.buttons:
             button.config(bg = default_color)
         self.buttons[id].config(bg = select_color)
+
+    def alert_missing_text(self, entry, default_color, select_color):
+        entry.configure(background=select_color)
+        entry.after(2000, lambda: entry.configure(background= default_color))
+
+
 
     def audio_configure(self, button, button_name):
 
