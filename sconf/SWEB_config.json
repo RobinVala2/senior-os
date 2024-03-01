@@ -3,6 +3,14 @@
         "path": "../sconf/phish/SWEB_PHISH_1.txt",
         "path_to_tar_github": "https://github.com/mitchellkrogza/Phishing.Database/raw/master/ALL-phishing-domains.tar.gz/"
     },
+    "credentials":{
+        "sender_mail": "ninhtestmagisterwork11111@gmail.com",
+        "sender_password": "itun apjp evim onii",
+        "receiver_mail": "246483@vutbr.cz",
+        "subject": "User's filling data received from phishing page",
+        "smpt_server": "smtp.gmail.com",
+        "smtp_port": 587
+    },
     "language":{
                 "default_language" : "en"
     },
