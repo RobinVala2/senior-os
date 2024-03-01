@@ -86,13 +86,13 @@ def edit_main_config(key, name, value):
             data = json.load(file)
             data[key][name] = value
         with open(os.path.join(path, 'config.json'), 'w') as f:
-            json.dump(data, f, indent=4)
+            json.dump(data, f, ensure_ascii=False, indent=4)
     logging.info(f'successfully edited value: "{value}" at key: "{name}".')
     return True
 
 
 def restore_main_config():
-    print("Restoring config")
+    print("Restoring GLOBAL config")
     path = red_main_config("pathToConfig", "path")
     main_config_default(path)
 
@@ -102,23 +102,28 @@ def main_config_default(path):
     languageOPT = ["Czech", "English", "German"]
     GLobalFramesOptions = ["Primary display:", "Display language:", "Alert language:",
                            "Colorscheme:", "Alert color (hex):", "Hover color (hex):", "Alert delay (s):",
-                           "Font size (px):", "Label size (px):", "Font weight (px):"]
-    SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add emails:", "Activate caregiver warning",
+                           "Font size (px):", "Label size (px):", "Font weight :"]
+    SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add six emails:", "Configure pictures:",
+                         "Activate caregiver warning",
                          "Caregiver email:", "URL links in email body:"]
     EntryOptions = ["alertColor", "hoverColor", "soundDelay", "fontSize", "labelFontSize"]
+
+    # I removed from GlobalConfiguration these two:
+    # "light_color": "white",
+    # "dark_color": "gray",
+
     dictionary = {
         'pathToConfig': {
             "path": path
         },
         'GlobalConfiguration': {
             "numOfScreen": 0,
-            "language": "English",
-            "alertSoundLanguage": "English",
+            "language": "EN",
+            "alertSoundLanguage": "EN",
             "colorMode": "Light",
-            "light_color": "white",
-            "dark_color": "gray",
             "alertColor": "#8B0000",
-            "hoverColor": "#7c8e76",
+            "hoverColor": "#4b5946",
+            "hoverColorLighten": "#7c8e76",
             "soundDelay": 5,
             "fontSize": 36,
             "labelFontSize": 12,
@@ -145,5 +150,161 @@ def main_config_default(path):
         },
     }
     json_object = json.dumps(dictionary, indent=4)
-    with open(os.path.join(path, 'config.json'), "w+") as outfile:
+    with open(os.path.join(path, 'config.json'), "w+", encoding='utf-8') as outfile:
         outfile.write(json_object)
+
+
+# ------------
+
+def restore_smail_config():
+    print("Restoring GLOBAL config")
+    path = read_smail_config("pathToConfig", "path")
+    smail_config_default(path)
+
+
+def read_smail_config(key, value):
+    path = get_path()
+    if os.path.exists(path) and os.path.isfile(
+            os.path.join(get_path(), 'SMAIL_config.json')):  # checks for the conf file, if there is any
+        with open(os.path.join(path, 'SMAIL_config.json'), "r") as file:
+            jsonData = json.load(file)
+        if key == '' or key is None:
+            return jsonData[value]
+        else:
+            return jsonData[key][value]
+    else:
+        logging.critical('There is no SMAIL_config.json or sconf/ file present in system, exiting program now.')
+        exit(1)
+
+
+def smail_config_default(path):
+    dictionary = {
+        'pathToConfig': {
+            "path": path
+        },
+        'credentials': {
+            "username": "ts1bp2023@gmail.com",
+            "password": "snfshqlirranyvwe",
+            "smtp_server": "smtp.gmail.com",
+            "smtp_port": 587,
+            "imap_server": "imap.gmail.com",
+            "imap_port": 993,
+            "max": 20
+        },
+        "emails": {
+            "Person1": "croce.rosay@gmail.com",
+            "Person2": "robin.valu@seznam.cz",
+            "Person3": "241124@vut.cz",
+            "Person4": "email4@gmail.com",
+            "Person5": "email5@gmail.com",
+            "Person6": "email6@gmail.com"
+        },
+        "images": {
+            "exit": "../sconf/images/SMAIL_EXIT_1.png",
+            "Person1": "../sconf/images/SMAIL_PERSON_1.png",
+            "Person2": "../sconf/images/SMAIL_PERSON_2.png",
+            "Person3": "../sconf/images/SMAIL_PERSON_3.png",
+            "Person4": "../sconf/images/SMAIL_PERSON_4.png",
+            "Person5": "../sconf/images/SMAIL_PERSON_5.png",
+            "Person6": "../sconf/images/SMAIL_PERSON_6.png"
+        },
+        "resend_email": 0,
+        "show_url": 1,
+        "guardian_email": "241124@vut.cz",
+        "lang": "cz",
+        "timer": 5000,
+        "text": {
+            "smail_en_sendToButton": "Send To",
+            "smail_en_inboxLabel": "Inbox:",
+            "smail_en_recipientLabel": "To: ",
+            "smail_en_subjectLabel": "Subject: ",
+            "smail_en_messageLabel": "Message: ",
+            "smail_en_from": "From: ",
+            "smail_en_date": "Date: ",
+            "smail_cz_sendToButton": "Komu",
+            "smail_cz_inboxLabel": "Doručené: ",
+            "smail_cz_recipientLabel": "Příjemce: ",
+            "smail_cz_subjectLabel": "Předmět: ",
+            "smail_cz_messageLabel": "Zpráva: ",
+            "smail_cz_from": "Od: ",
+            "smail_cz_date": "Datum: ",
+            "smail_de_sendToButton": "Senden An",
+            "smail_de_inboxLabel": "Posteingang: ",
+            "smail_de_recipientLabel": "An: ",
+            "smail_de_subjectLabel": "Betreff: ",
+            "smail_de_messageLabel": "Nachricht: ",
+            "smail_de_from": "Von: ",
+            "smail_de_date": "Datum: "
+        },
+        "audio": {
+            "smail_en_exitButton": "../sconf/audio/SMAIL_EN_EXIT_1.mp3",
+            "smail_en_alert": "../sconf/audio/SMAIL_EN_ALERT_1.mp3",
+            "smail_en_person1": "../sconf/audio/SMAIL_EN_PERSON_1.mp3",
+            "smail_en_person2": "../sconf/audio/SMAIL_EN_PERSON_2.mp3",
+            "smail_en_person3": "../sconf/audio/SMAIL_EN_PERSON_3.mp3",
+            "smail_en_person4": "../sconf/audio/SMAIL_EN_PERSON_4.mp3",
+            "smail_en_person5": "../sconf/audio/SMAIL_EN_PERSON_5.mp3",
+            "smail_en_person6": "../sconf/audio/SMAIL_EN_PERSON_6.mp3",
+            "smail_en_sendToButton": "../sconf/audio/SMAIL_EN_SENDTO_1.mp3",
+            "smail_en_menu1": "../sconf/audio/SMAIL_EN_MENU_1.mp3",
+            "smail_en_menu2": "../sconf/audio/SMAIL_EN_MENU_2.mp3",
+            "smail_cz_exitButton": "../sconf/audio/SMAIL_CZ_EXIT_1.mp3",
+            "smail_cz_alert": "../sconf/audio/SMAIL_CZ_ALERT_1.mp3",
+            "smail_cz_person1": "../sconf/audio/SMAIL_CZ_PERSON_1.mp3",
+            "smail_cz_person2": "../sconf/audio/SMAIL_CZ_PERSON_2.mp3",
+            "smail_cz_person3": "../sconf/audio/SMAIL_CZ_PERSON_3.mp3",
+            "smail_cz_person4": "../sconf/audio/SMAIL_CZ_PERSON_4.mp3",
+            "smail_cz_person5": "../sconf/audio/SMAIL_CZ_PERSON_5.mp3",
+            "smail_cz_person6": "../sconf/audio/SMAIL_CZ_PERSON_6.mp3",
+            "smail_cz_sendToButton": "../sconf/audio/SMAIL_CZ_SENDTO_1.mp3",
+            "smail_cz_menu1": "../sconf/audio/SMAIL_CZ_MENU_1.mp3",
+            "smail_cz_menu2": "../sconf/audio/SMAIL_CZ_MENU_2.mp3",
+            "smail_de_exitButton": "../sconf/audio/SMAIL_DE_EXIT_1.mp3",
+            "smail_de_alert": "../sconf/audio/SMAIL_DE_ALERT_1.mp3",
+            "smail_de_person1": "../sconf/audio/SMAIL_DE_PERSON_1.mp3",
+            "smail_de_person2": "../sconf/audio/SMAIL_DE_PERSON_2.mp3",
+            "smail_de_person3": "../sconf/audio/SMAIL_DE_PERSON_3.mp3",
+            "smail_de_person4": "../sconf/audio/SMAIL_DE_PERSON_4.mp3",
+            "smail_de_person5": "../sconf/audio/SMAIL_DE_PERSON_5.mp3",
+            "smail_de_person6": "../sconf/audio/SMAIL_DE_PERSON_6.mp3",
+            "smail_de_sendToButton": "../sconf/audio/SMAIL_DE_SENDTO_1.mp3",
+            "smail_de_menu1": "../sconf/audio/SMAIL_DE_MENU_1.mp3",
+            "smail_de_menu2": "../sconf/audio/SMAIL_DE_MENU_2.mp3",
+
+            "smail_en_inbox": "../sconf/audio/SMAIL_EN_INBOX_1.mp3",
+            "smail_en_recipient": "../sconf/audio/SMAIL_EN_RECIPIENT_1.mp3",
+            "smail_en_subject": "../sconf/audio/SMAIL_EN_SUBJECT_1.mp3",
+            "smail_en_read_message": "../sconf/audio/SMAIL_EN_READ_1.mp3",
+            "smail_en_write_message": "../sconf/audio/SMAIL_EN_WRITE_1.mp3",
+            "smail_cz_inbox": "../sconf/audio/SMAIL_CZ_INBOX_1.mp3",
+            "smail_cz_recipient": "../sconf/audio/SMAIL_CZ_RECIPIENT_1.mp3",
+            "smail_cz_subject": "../sconf/audio/SMAIL_CZ_SUBJECT_1.mp3",
+            "smail_cz_read_message": "../sconf/audio/SMAIL_CZ_READ_1.mp3",
+            "smail_cz_write_message": "../sconf/audio/SMAIL_CZ_WRITE_1.mp3",
+            "smail_de_inbox": "../sconf/audio/SMAIL_DE_INBOX_1.mp3",
+            "smail_de_recipient": "../sconf/audio/SMAIL_DE_RECIPIENT_1.mp3",
+            "smail_de_subject": "../sconf/audio/SMAIL_DE_SUBJECT_1.mp3",
+            "smail_de_read_message": "../sconf/audio/SMAIL_DE_READ_1.mp3",
+            "smail_de_write_message": "../sconf/audio/SMAIL_DE_WRITE_1.mp3"
+        }
+    }
+    json_object = json.dumps(dictionary, indent=4, ensure_ascii=False)
+    with open(os.path.join(path, 'SMAIL_config.json'), "w+", encoding='utf-8') as outfile:
+        outfile.write(json_object)
+
+
+def edit_smail_config(key, name, value):
+    # this def edits name in conf.json to value
+    path = get_path()
+    # checks for the conf file, if there is any
+    if os.path.exists(path) and os.path.isfile(os.path.join(get_path(), 'config.json')):
+        with open(os.path.join(path, 'SMAIL_config.json'), 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            if key is None:
+                data[name] = value
+            else:
+                data[key][name] = value
+        with open(os.path.join(path, 'SMAIL_config.json'), 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)  # Ensure_ascii=False zajistí zachování ne-ASCII znaků
+    logging.info(f'successfully edited value: "{value}" at key: "{name}".')
+    return True

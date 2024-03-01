@@ -7,7 +7,6 @@ import re  # regex
 
 #  from functools import lru_cache
 
-
 """
 Author: RYUseless
 Github: https://github.com/RYUseless
@@ -51,7 +50,7 @@ class LogsFrameWidgets:
         self.log_file_choice = None
         self.log_files_names = []
         self.toolbar_buttons = {}
-        self.textbox = customtkinter.CTkTextbox(self.master)
+        self.textbox = None
 
         self.find_log_files()
         self.options_toolbar()
@@ -69,9 +68,13 @@ class LogsFrameWidgets:
             self.toolbar_buttons[widget_object].configure(height=new_height * 0.10,
                                                           width=new_width * (1 / 5))
 
+        self.textbox.configure(height=self.height - (self.height * 0.10),
+                               width=self.width)
+
     def refresh(self):
         for widget in self.options_toolbar_frame.winfo_children():  # for toolbar widgets
             widget.pack_forget()
+            widget.place_forget()
         for frame in self.master.winfo_children():  # for log text widget
             frame.place_forget()
         self.options_toolbar()
@@ -118,6 +121,7 @@ class LogsFrameWidgets:
             else:
                 self.toolbar_buttons[widget] = customtkinter.CTkButton(master=self.options_toolbar_frame,
                                                                        height=self.height * 0.10,
+                                                                       corner_radius=0,
                                                                        width=self.width * (1 / 5),
                                                                        text="Refresh",
                                                                        command=lambda: self.refresh()
@@ -135,21 +139,21 @@ class LogsFrameWidgets:
                                           command=self.option_filter_call)
 
     def log_textbox(self, choice):
-        textbox = customtkinter.CTkTextbox(self.master)
-        textbox.configure(height=self.master.winfo_height() - (self.master.winfo_height() * 0.10),
-                          width=self.master.winfo_width(),
-                          fg_color=("#D3D3D3", "#171717"),
-                          scrollbar_button_color=("black", "white"),
-                          scrollbar_button_hover_color=("#3b3b3b", "#636363"),
-                          )
-        textbox.place(relx=0, rely=1 * 0.10)
+        self.textbox = customtkinter.CTkTextbox(self.master)
+        self.textbox.configure(height=self.master.winfo_height() - (self.master.winfo_height() * 0.10),
+                               width=self.master.winfo_width(),
+                               fg_color=("#D3D3D3", "#171717"),
+                               scrollbar_button_color=("black", "white"),
+                               scrollbar_button_hover_color=("#3b3b3b", "#636363"),
+                               )
+        self.textbox.place(relx=0, rely=1 * 0.10)
         file = ryuConf.read_log(self.log_filter, choice)
         if file is None:
-            textbox.insert(customtkinter.END, "No log file was selected, nothing to show ...")
+            self.textbox.insert(customtkinter.END, "No log file was selected, nothing to show ...")
         else:
             for f in file:
-                textbox.insert(customtkinter.END, f)
-        textbox.configure(state="disabled")  # disable editing
+                self.textbox.insert(customtkinter.END, f)
+        self.textbox.configure(state="disabled")  # disable editing
 
 
 class WebFrameWidgets:
@@ -180,6 +184,10 @@ class WebFrameWidgets:
 
 
 class MailFrameWidgets:
+    """
+    This class creates widgets, that are visible in SMAIL configuration frame
+    The frame itself isn't created here, it's created in Frames class, as other frames are
+    """
     def __init__(self, frame_root, width, height_frame, restore, refresh):
         logger.info("Creating and showing frame for Mail configuration.")
         self.master = frame_root
@@ -193,6 +201,7 @@ class MailFrameWidgets:
         self.restore_configurations = restore
         self.refresh_frame = refresh
         # ------
+        self.person_counter = 1  # counter for person name key
         self.widget_height = None
         self.label_dict = {}
         self.button_height_fract = 11
@@ -202,40 +211,110 @@ class MailFrameWidgets:
         self.url_link = {}
         # -----------------
         # calls:
-        self.scree_size_check()
+        self.screen_size_check()
         self.create_labels()
         self.create_widgets()
+        self.load_defaults()
         self.master.bind("<Configure>", lambda _: self.on_resize())
-        # E N D of constructor
+        # -----------------
 
-    def scree_size_check(self):
-        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
-            self.height_frame = self.master.winfo_height()
-            self.width_frame = self.master.winfo_width()
-        self.widget_height = self.height_frame * ((10 / 11) / len(self.label_names))
+    def load_defaults(self):
+        value_mapping = {1: "Enable", 0: "Disable"}
+        load_hover = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        hover_color = (load_hover, load_hover)
+        load_lighten = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        hover_color_lighten = (load_lighten, load_lighten)
 
-    def create_labels(self):
-        y_position = 0.0
-        label_num = len(self.label_names)
-        for label_name in self.label_names:
-            self.label_dict[label_name] = customtkinter.CTkLabel(self.master,
-                                                                 text=label_name,
-                                                                 font=(self.font_name, self.label_size + 20,
-                                                                       self.font_boldness),
-                                                                 width=self.width_frame * (2 / 5),
-                                                                 height=self.widget_height,
-                                                                 fg_color=("#D3D3D3", "#171717")
-                                                                 )
-            self.label_dict[label_name].place(relx=0, rely=y_position * (10 / 11))
-            y_position += 1 / label_num
+        resend_email = ryuConf.read_smail_config(None, "resend_email")
+        resend_email = value_mapping.get(resend_email, resend_email)
+        self.caregiver_warning[resend_email].configure(fg_color=hover_color, hover_color=hover_color_lighten)
+
+        show_url = ryuConf.read_smail_config(None, "show_url")
+        show_url = value_mapping.get(show_url, show_url)
+        self.url_link[show_url].configure(fg_color=hover_color, hover_color=hover_color_lighten)
+
+    @staticmethod
+    def update_buttons_widget(key, name, value, button_id, button_list):
+        # I refuse to do two if statements here, so this is where we land at
+        # Mapping for "Enable" and "Disable" to 1 and 0 respectively
+        value_mapping = {"Enable": 1, "Disable": 0}
+        value = value_mapping.get(value, value)
+
+        # return all buttons to their default color
+        for all_widgets in button_list.values():
+            all_widgets.configure(fg_color=("#636363", "#222222"),
+                                  hover_color=("#757474", "#3b3b3b"))
+
+        hover_color = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        hover_color_lighter = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+
+        return_value = ryuConf.edit_smail_config(key, name, value)
+        if return_value:
+            button_list[button_id].configure(fg_color=(hover_color, hover_color),
+                                             hover_color=(hover_color_lighter, hover_color_lighter))
+            print(f"Updated smail config: {name}, changed value is: {value}")
+        else:
+            print("Some error occurred.")
+            button_list[button_id].configure(fg_color=(alert_color, alert_color),
+                                             hover_color=(alert_color, alert_color))
+
+
+    def update_entry_widgets(self, email_val, entry_type, button_id):
+        # in progres rn.
+        entry_value_mapping = {0: "username",
+                               1: "password",
+                               2: "Person",
+                               3: "guardian_email"}
+
+        # reset back submit button color, if its red or green
+        self.submit_entry_btn[button_id].configure(fg_color=("#636363", "#222222"),
+                                                   hover_color=("#757474", "#3b3b3b"),)
+
+        if not entry_type == 1:
+            match = re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', email_val)
+
+            if match and not entry_type == 2:
+                entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
+                self.submit_entry_btn[button_id].configure(fg_color=("green", "green"), hover_color=("green", "green"))
+                ryuConf.edit_smail_config("credentials", entry_type, email_val)
+
+            elif match and entry_type == 2:
+                if self.person_counter < 6:
+                    entry_type = entry_value_mapping.get(entry_type, entry_type)
+                    ryuConf.edit_smail_config("emails", f"{entry_type}{self.person_counter}", email_val)
+                    self.person_counter += 1
+                    self.submit_entry_btn[button_id].configure(text=f"Add person{self.person_counter}")
+                elif self.person_counter == 6:
+                    entry_type = entry_value_mapping.get(entry_type, entry_type)
+                    ryuConf.edit_smail_config("emails", f"{entry_type}{self.person_counter}", email_val)
+                    self.person_counter = 1
+                    self.submit_entry_btn[button_id].configure(text=f"Add person{self.person_counter}")
+
+                self.entry_widgets[button_id].delete(0, customtkinter.END)
+                self.entry_widgets[button_id].configure(placeholder_text=f"added: {email_val}, Add next email:",
+                                                        font=("Helvetica", 20, "bold"))
+                self.entry_widgets[1].focus_set()
+            else:
+                self.submit_entry_btn[button_id].configure(fg_color=("red", "red"),
+                                                           hover_color=("red", "red"), )
+
+        else:
+            print("placeholder")
+
+
 
     def create_widgets(self):
+        global value_name
         rel_x = 1 * (2 / 5)
         rel_y = 0
         rel_y_btns = 0
         rel_x_btns = rel_x
-        # - 1, because one widget is basic pick option and not user input
-        for entry_number in range(len(self.label_names) - 2):
+        """
+        ↓ ↓ ↓ this value represents, how many non entry widgets there are on the frame
+        """
+        number_of_non_entry_widgets = 3
+        for entry_number in range(len(self.label_names) - number_of_non_entry_widgets):
             self.submit_entry_btn[entry_number] = customtkinter.CTkButton(self.master)
             self.submit_entry_btn[entry_number].configure(
                 font=(self.font_name, self.label_size + 17, self.font_boldness),
@@ -246,18 +325,24 @@ class MailFrameWidgets:
                 fg_color=("#636363", "#222222"),
                 hover_color=("#757474", "#3b3b3b"),
                 text="submit",
-                command=lambda entry_id=entry_number: print(f"získaná hodnota z tlačítka {entry_id} je:",
-                                                            self.entry_widgets[entry_id].get())
+                command=lambda entry_id=entry_number: self.update_entry_widgets(self.entry_widgets[entry_id].get(), entry_id, entry_id)
             )
             self.entry_widgets[entry_number] = customtkinter.CTkEntry(self.master)
             self.entry_widgets[entry_number].configure(font=(self.font_name, self.label_size + 17, self.font_boldness),
                                                        width=self.width_frame * (2 / 5) - 2.5,
                                                        height=self.widget_height - 2.5,
-                                                       placeholder_text=f"Please, add something here",
+                                                       placeholder_text="PLACEHOLDER",
                                                        border_width=0,
                                                        corner_radius=0,
                                                        )
-            if entry_number == 3:
+            if entry_number == 2:
+                self.submit_entry_btn[entry_number].configure(text=f"Add person{self.person_counter}")
+                self.entry_widgets[entry_number].configure(placeholder_text="Use: <name>@<domain.name>",
+                                                           font=("Helvetica", 30, "bold"))
+            if entry_number == 3:  # 3rd row
+                rel_y += (1 / (len(self.label_names)))
+                # spawn pictures
+                # dropdown menu a uživatel 1, uživatel 2...
                 rel_y_btns = rel_y
                 rel_y += (1 / (len(self.label_names)))
                 # still need to show entry label
@@ -284,8 +369,13 @@ class MailFrameWidgets:
                                                                          corner_radius=0,
                                                                          fg_color=("#636363", "#222222"),
                                                                          hover_color=("#757474", "#3b3b3b"),
-                                                                         text=value_name
-                                                                         )
+                                                                         text=value_name,
+                                                                         command=lambda value_id=value_name:
+                                                                         self.update_buttons_widget(None,
+                                                                                                    "resend_email",
+                                                                                                    value_id, value_id,
+                                                                                                    self.caregiver_warning))
+
             self.url_link[value_name] = customtkinter.CTkButton(self.master,
                                                                 font=(self.font_name, self.label_size + 17,
                                                                       self.font_boldness),
@@ -295,12 +385,30 @@ class MailFrameWidgets:
                                                                 corner_radius=0,
                                                                 fg_color=("#636363", "#222222"),
                                                                 hover_color=("#757474", "#3b3b3b"),
-                                                                text=value_name
+                                                                text=value_name,
+                                                                command=lambda value_id=value_name:
+                                                                self.update_buttons_widget(None, "show_url", value_id,
+                                                                                           value_id, self.url_link)
                                                                 )
             self.caregiver_warning[value_name].place(relx=rel_x_btns, rely=rel_y_btns * (10 / 11))
             rel_x_btns += (1 / 5) + 0.00015
             self.url_link[value_name].place(relx=rel_x, rely=rel_y * (10 / 11))
             rel_x += (1 / 5)
+
+    def create_labels(self):
+        y_position = 0.0
+        label_num = len(self.label_names)
+        for label_name in self.label_names:
+            self.label_dict[label_name] = customtkinter.CTkLabel(self.master,
+                                                                 text=label_name,
+                                                                 font=(self.font_name, self.label_size + 20,
+                                                                       self.font_boldness),
+                                                                 width=self.width_frame * (2 / 5),
+                                                                 height=self.widget_height,
+                                                                 fg_color=("#D3D3D3", "#171717")
+                                                                 )
+            self.label_dict[label_name].place(relx=0, rely=y_position * (10 / 11))
+            y_position += 1 / label_num
 
     def on_resize(self):
         self.height_frame = self.master.winfo_height()
@@ -323,8 +431,15 @@ class MailFrameWidgets:
             entry_widget.configure(width=width_new - 2.5, height=height_new - 2.5)
 
         # connecting all buttons lists together:
-        for button in list(self.caregiver_warning.values()) + list(self.url_link.values()) + list(self.submit_entry_btn.values()):
+        for button in list(self.caregiver_warning.values()) + list(self.url_link.values()) + list(
+                self.submit_entry_btn.values()):
             button.configure(width=width_btn - 2.5, height=height_new - 2.5)
+
+    def screen_size_check(self):
+        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
+            self.height_frame = self.master.winfo_height()
+            self.width_frame = self.master.winfo_width()
+        self.widget_height = self.height_frame * ((10 / 11) / len(self.label_names))
 
 
 class GlobalFrameWidgets:
@@ -359,10 +474,46 @@ class GlobalFrameWidgets:
         self.master.bind("<Configure>", lambda _: self.on_resize())
         # E N D of constructor
 
-    def screen_size_check(self):
-        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
-            self.width_frame = self.master.winfo_width()
-            self.height_frame = self.master.winfo_height()
+    def highlight_configured_widgets(self):
+        fg_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        fg_color_values = (fg_col, fg_col)
+        hov_co = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        hover_color_values = (hov_co, hov_co)
+
+        language = ryuConf.red_main_config("GlobalConfiguration", "alertSoundLanguage")
+        language_alert = ryuConf.red_main_config("GlobalConfiguration", "alertSoundLanguage")
+
+        language_mapping = {
+            "CZ": "Czech",
+            "EN": "English",
+            "DE": "German"
+        }
+        language = language_mapping.get(language, language)
+        language_alert = language_mapping.get(language_alert, language_alert)
+
+        self.colorscheme_dict[ryuConf.red_main_config("GlobalConfiguration", "colorMode")].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+        self.language_alert_dict[language_alert].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+        self.language_dict[language].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+        self.screen_num[ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+        self.font_size[ryuConf.red_main_config("GlobalConfiguration", "fontThickness")].configure(
+            fg_color=fg_color_values, hover_color=hover_color_values)
+
+        for name in self.entry_dict:
+            if name == "alertColor" or name == "hoverColor":
+                self.entry_dict[name].configure(
+                    placeholder_text=f'Select value. (default is: {ryuConf.red_main_config("GlobalConfiguration", name)})')
+            elif name == "soundDelay":
+                self.entry_dict[name].configure(
+                    placeholder_text=f'Select value. (default is: {ryuConf.red_main_config("GlobalConfiguration", name)} s)')
+            else:
+                self.entry_dict[name].configure(
+                    placeholder_text=f'Select value. (default is: {ryuConf.red_main_config("GlobalConfiguration", name)} px)')
+
+        logger.info("Highlighted correct values that are in config file.")
 
     def show_entry_error(self, button_object, entry_object, label_id):
         window_height = self.master.winfo_height()
@@ -401,23 +552,52 @@ class GlobalFrameWidgets:
         label_id_btn.place(relx=rel_button_x, rely=rel_button_y)
         self.error_label_arr.append(label_id_btn)
 
-    def check_value(self, key, name, input_value, button_object, entry_object):
-        # hex color regex section
+    @staticmethod
+    def calculate_lighter_hover_color(input_value):
+        hex_color = input_value.strip("#")
+        # hex -> R G B
+        red = int(hex_color[0:2], 16)
+        green = int(hex_color[2:4], 16)
+        blue = int(hex_color[4:6], 16)
+        # lighten
+        red = min(255, int(red * (1 + 30 / 100)))
+        green = min(255, int(green * (1 + 30 / 100)))
+        blue = min(255, int(blue * (1 + 30 / 100)))
+        # back to hex
+        new_hex_color = "#{:02x}{:02x}{:02x}".format(red, green, blue)
+        print("new hex:", new_hex_color)
+        # edit
+        ryuConf.edit_main_config("GlobalConfiguration", "hoverColorLighten", new_hex_color)
+
+    def update_config_entry(self, key, name, input_value, button_object, entry_object):
+        # firstly read hover color settings, so it doesn't get mismatched when changing
+        selected_button = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        sel_btn_hover = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+
         if name == "alertColor" or name == "hoverColor":
             match = re.search(r'^#(?:[0-9a-fA-F]{1,2}){3}$', input_value)
-            if match:
-                button_object.configure(fg_color=("#4b5946", "#4b5946"), hover_color=("#7c8e76", "#7c8e76"))
+            if match and name == "hoverColor":  # only for hoverColor
+                self.calculate_lighter_hover_color(input_value)  # calculate lighter hover color
+                button_object.configure(fg_color=(selected_button, selected_button),
+                                        hover_color=(sel_btn_hover, sel_btn_hover))
                 ryuConf.edit_main_config(key, name, input_value)
                 return
-            else:
+            elif match:  # for alertColor
+                button_object.configure(fg_color=(selected_button, selected_button),
+                                        hover_color=(sel_btn_hover, sel_btn_hover))
+                ryuConf.edit_main_config(key, name, input_value)
+                return
+            else:  # else catch, when incorect type is given
                 self.show_entry_error(button_object, entry_object, name)
                 logger.error(f"Changed integer value was not in HEX format, user input was: '{input_value}'")
                 return
+
         # number input regex section
         else:
             match = re.search(r'^\d+$', input_value)
             if match:
-                button_object.configure(fg_color=("#4b5946", "#4b5946"), hover_color=("#7c8e76", "#7c8e76"))
+                button_object.configure(fg_color=(selected_button, selected_button),
+                                        hover_color=(sel_btn_hover, sel_btn_hover))
                 ryuConf.edit_main_config(key, name, int(input_value))
                 return
             else:
@@ -427,43 +607,33 @@ class GlobalFrameWidgets:
 
     @staticmethod
     def update_config(key, name, value, button_id, button_list):
-        # ------------
         # pokud se zadaří a nikde nebude value a button_id rozdílné, tak pak tyto proměnné sloučit
-        # ------------
+        print("name", name)
+        print("value", value)
+
+        language_mapping = {
+            "Czech": "CZ",
+            "English": "EN",
+            "German": "DE"
+        }
+        value = language_mapping.get(value, value)
+
+        # read json configs for hover color settings
+        fg_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        selected_button = (fg_col, fg_col)
+        hov_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        sel_btn_hover = (hov_col, hov_col)
+
+        # trying to update with visual notifications
         return_value = ryuConf.edit_main_config(key, name, value)
         for all_buttons in button_list:  # aka restore all buttons in that row to its original color
             button_list[all_buttons].configure(fg_color=("#636363", "#222222"), hover_color=("#757474", "#3b3b3b"))
         if return_value is True:
-            button_list[button_id].configure(fg_color=("#4b5946", "#4b5946"), hover_color=("#7c8e76", "#7c8e76"))
+            button_list[button_id].configure(fg_color=selected_button, hover_color=sel_btn_hover)
         else:
             logger.error("There was an error while updating the value.")
             button_list[button_id].configure(fg_color=("red", "red"), hover_color=("#8B0000", "#8B0000"))
 
-    def highlight_configured_widgets(self):
-        fg_color_values = ("#4b5946", "#4b5946")
-        hover_color_values = ("#7c8e76", "#7c8e76")
-
-        self.colorscheme_dict[ryuConf.red_main_config("GlobalConfiguration", "colorMode")].configure(
-            fg_color=fg_color_values, hover_color=hover_color_values)
-        self.language_alert_dict[ryuConf.red_main_config("GlobalConfiguration", "alertSoundLanguage")].configure(
-            fg_color=fg_color_values, hover_color=hover_color_values)
-        self.language_dict[ryuConf.red_main_config("GlobalConfiguration", "language")].configure(
-            fg_color=fg_color_values, hover_color=hover_color_values)
-        self.screen_num[ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")].configure(
-            fg_color=fg_color_values, hover_color=hover_color_values)
-        self.font_size[ryuConf.red_main_config("GlobalConfiguration", "fontThickness")].configure(
-            fg_color=fg_color_values, hover_color=hover_color_values)
-
-        time_unit = "s"
-        for name in self.entry_dict:
-            if name == "alertColor" or name == "hoverColor":
-                self.entry_dict[name].configure(
-                    placeholder_text=f'Select value. (default is: {ryuConf.red_main_config("GlobalConfiguration", name)})')
-            else:
-                self.entry_dict[name].configure(
-                    placeholder_text=f'Select value. (default is: {ryuConf.red_main_config("GlobalConfiguration", name)}'
-                                     f' {time_unit})')
-        logger.info("Highlighted correct values that are in config file.")
 
     def buttons(self):
         # First config row:
@@ -539,12 +709,13 @@ class GlobalFrameWidgets:
                                                                                     button_id=entry_buttons_counter,
                                                                                     entry_object=self.entry_dict[
                                                                                         entry_name]:
-                                                                     self.check_value("GlobalConfiguration",
-                                                                                      stored_name,
-                                                                                      self.entry_dict[
-                                                                                          stored_name].get(),
-                                                                                      self.entry_buttons_dict[
-                                                                                          button_id], entry_object)
+                                                                     self.update_config_entry("GlobalConfiguration",
+                                                                                              stored_name,
+                                                                                              self.entry_dict[
+                                                                                                  stored_name].get(),
+                                                                                              self.entry_buttons_dict[
+                                                                                                  button_id],
+                                                                                              entry_object)
                                                                      )
 
         # Sixth config row:
@@ -664,10 +835,19 @@ class GlobalFrameWidgets:
                                      height=new_height - 2.5)
         logger.info("Calculating logic for frame widget to fit to new sized window.")
 
+    def screen_size_check(self):
+        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
+            self.width_frame = self.master.winfo_width()
+            self.height_frame = self.master.winfo_height()
+
 
 class Frames:
+    """
+    This class creates all the needed frames for configuration buttons.
+    It also handles two "restore" and "Refresh" buttons.
+    and lastly, it handles switching the frames.
+    """
     def __init__(self, master, width, height, divisor, number_of_buttons, name_of_buttons):
-        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         # -------------
         self.master = master
         self.width = width
@@ -694,7 +874,13 @@ class Frames:
         self.choose_frame(button_id, True)
 
     def restore_config(self, button_id):
-        ryuConf.restore_main_config()
+        # choose, which restore action is needed:
+        if self.alive_frame == 1:
+            ryuConf.restore_main_config()
+        elif self.alive_frame == 2:
+            ryuConf.restore_smail_config()
+
+        # get new values, aka read json config again:
         self.get_new_values_for_refresh(button_id)
 
     def refresh_restore_buttons(self, button_id):
@@ -718,8 +904,9 @@ class Frames:
         label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
         font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
 
+        hovor_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         for widget in [self.restore_configurations, self.refresh_frame]:
-            widget.configure(hover_color=(self.hover_alert_color, self.hover_alert_color),
+            widget.configure(hover_color=(hovor_color, hovor_color),
                              font=(
                                  font_name, label_size + 17,
                                  font_boldness),
@@ -908,7 +1095,3 @@ class Core(customtkinter.CTk):
 def main():
     app = Core()
     app.mainloop()
-
-
-if __name__ == '__main__':
-    main()
