@@ -12,7 +12,7 @@ from smail.connection.style import (font_config, search_mail,
                                     get_language, button_hover, button_leave,
                                     images, image_config, app_color,
                                     height_config, play_sound, load_json_file, get_email_sender, load_credentials,
-                                    load_show_url)
+                                    load_show_url, load_button_colors)
 from smail.connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from smail.template import guiTemplate as temp
@@ -184,6 +184,11 @@ class one_frame(tk.Frame):
                 text=self.text[f"smail_{self.language}_sendToButton"],
                 width=self.button_width
             )
+
+            self.buttons = (self.send_mail_to, self.send_mail_person1, self.send_mail_person2,
+                            self.send_mail_person3, self.send_mail_person4, self.send_mail_person5,
+                            self.send_mail_person6)
+
             logger.info("Buttons successfully redefined.")
         except AttributeError:
             logger.error("AttributeError:", exc_info=True)
@@ -220,8 +225,10 @@ class one_frame(tk.Frame):
 
         self.inbox_list.listbox.bind("<Enter>", self.activate_show_email)
 
+
         # Audio configuration
         self.audio_configure(self.inbox_list, "inbox")
+        self.audio_configure(self.inbox_label, "inbox")
 
         # Widget placement
         self.inbox_label.grid(
@@ -288,8 +295,11 @@ class one_frame(tk.Frame):
 
         # Audio configuration
         self.audio_configure(self.recipient_entry, "recipient")
+        self.audio_configure(self.recipient_label, "recipient")
         self.audio_configure(self.subject_entry, "subject")
+        self.audio_configure(self.subject_label, "subject")
         self.audio_configure(self.content_entry, "write_message")
+        self.audio_configure(self.content_label, "write_message")
 
         # Widget placement
         self.recipient_label.grid(
@@ -349,6 +359,7 @@ class one_frame(tk.Frame):
 
         # Audio configuration
         self.audio_configure(self.message_area, "read_message")
+        self.audio_configure(self.message_label, "read_message")
 
         # Widget placement
         self.message_label.grid(
@@ -534,38 +545,37 @@ class one_frame(tk.Frame):
     def stop_alert(self):
 
         # Switching the background color of each button back to default value.
-        data = load_json_file("../sconf/config_old.json")
-        background_color = data["colors_info"]["buttons_unselected"]
+        default_color, selected_color = load_button_colors("../sconf/config_old.json")
 
         self.exit_button.config(
-            bg=background_color
+            bg=default_color
         )
         self.send_mail_person1.config(
-            bg=background_color
+            bg=default_color
         )
         self.send_mail_person2.config(
-            bg=background_color
+            bg=default_color
         )
         self.send_mail_person3.config(
-            bg=background_color
+            bg=default_color
         )
         self.send_mail_person4.config(
-            bg=background_color
+            bg=default_color
         )
         self.send_mail_person5.config(
-            bg=background_color
+            bg=default_color
         )
         self.send_mail_person6.config(
-            bg=background_color
+            bg=default_color
         )
         self.send_mail_to.config(
-            bg=background_color
+            bg=default_color
         )
         self.menu_button_1.config(
-            bg=background_color
+            bg=default_color
         )
         self.menu_button_2.config(
-            bg=background_color
+            bg=default_color
         )
 
     def switch_to_reading_mail(self):
@@ -656,6 +666,12 @@ class one_frame(tk.Frame):
                 recipient.configure(state="disabled")
 
         self.button_state = id
+
+        default_color, select_color = load_button_colors("../sconf/config_old.json")
+
+        for button in self.buttons:
+            button.config(bg = default_color)
+        self.buttons[id].config(bg = select_color)
 
     def audio_configure(self, button, button_name):
 
