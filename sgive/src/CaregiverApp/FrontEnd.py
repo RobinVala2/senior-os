@@ -21,6 +21,8 @@ customtkinter.set_appearance_mode(_colorScheme)  # Modes: system (default), ligh
 customtkinter.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
 
 
+
+
 class DefaultFrameWidgets:
     def __init__(self, frame_root):
         self.master = frame_root
@@ -217,6 +219,7 @@ class MailFrameWidgets:
         self.load_defaults()
         self.master.bind("<Configure>", lambda _: self.on_resize())
         # -----------------
+        #  self.custom_entry = CustomEntry()
 
     def load_defaults(self):
         value_mapping = {1: "Enable", 0: "Disable"}
@@ -232,6 +235,20 @@ class MailFrameWidgets:
         show_url = ryuConf.read_smail_config(None, "show_url")
         show_url = value_mapping.get(show_url, show_url)
         self.url_link[show_url].configure(fg_color=hover_color, hover_color=hover_color_lighten)
+
+        email_entry = ryuConf.read_smail_config("credentials", "username")
+        caregiver_entry = ryuConf.read_smail_config(None, "guardian_email")
+
+        entry_placeholderText_values = [f"Enter here (current: {email_entry})",
+                                        "Please, gimme your juicy password",
+                                        "Use: <name>@<domain.name>",
+                                        f"Enter here (current: {caregiver_entry})"]
+
+
+        for index, value in enumerate(entry_placeholderText_values):
+            self.entry_widgets[index].configure(placeholder_text=value,
+                                                font=("Helvetica", 22, "bold"))
+
 
     @staticmethod
     def update_buttons_widget(key, name, value, button_id, button_list):
@@ -271,14 +288,17 @@ class MailFrameWidgets:
         self.submit_entry_btn[button_id].configure(fg_color=("#636363", "#222222"),
                                                    hover_color=("#757474", "#3b3b3b"),)
 
-        if not entry_type == 1:
-            match = re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', email_val)
+        if not entry_type == 1:  # regex check for all email inputs
+            print("email val:", email_val)
+            match = re.fullmatch(r'\b[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-zščřžýáíéúůďťňóŠČŘŽÝÁÍÉÚŮĎŤŇÓ]{2,7}\b', email_val)
 
+            # email inputs for seniors email and caregiver email
             if match and not entry_type == 2:
                 entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
                 self.submit_entry_btn[button_id].configure(fg_color=("green", "green"), hover_color=("green", "green"))
                 ryuConf.edit_smail_config("credentials", entry_type, email_val)
 
+            # add six emails:
             elif match and entry_type == 2:
                 if self.person_counter < 6:
                     entry_type = entry_value_mapping.get(entry_type, entry_type)
@@ -298,8 +318,11 @@ class MailFrameWidgets:
             else:
                 self.submit_entry_btn[button_id].configure(fg_color=("red", "red"),
                                                            hover_color=("red", "red"), )
-
+        # password
         else:
+            entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
+            ryuConf.edit_smail_config("credentials", entry_type, email_val)
+            self.submit_entry_btn[button_id].configure(fg_color=("green", "green"), hover_color=("green", "green"))
             print("placeholder")
 
 
@@ -331,14 +354,10 @@ class MailFrameWidgets:
             self.entry_widgets[entry_number].configure(font=(self.font_name, self.label_size + 17, self.font_boldness),
                                                        width=self.width_frame * (2 / 5) - 2.5,
                                                        height=self.widget_height - 2.5,
-                                                       placeholder_text="PLACEHOLDER",
                                                        border_width=0,
                                                        corner_radius=0,
                                                        )
-            if entry_number == 2:
-                self.submit_entry_btn[entry_number].configure(text=f"Add person{self.person_counter}")
-                self.entry_widgets[entry_number].configure(placeholder_text="Use: <name>@<domain.name>",
-                                                           font=("Helvetica", 30, "bold"))
+
             if entry_number == 3:  # 3rd row
                 rel_y += (1 / (len(self.label_names)))
                 # spawn pictures
@@ -357,6 +376,10 @@ class MailFrameWidgets:
                 self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x -= (2 / 5)
                 rel_y += (1 / (len(self.label_names)))
+
+        self.entry_widgets[1].configure(show='*')  # for password label
+        self.submit_entry_btn[2].configure(text="Add Person1")  # for first button
+
 
         number_options = ["Enable", "Disable"]
         for value_name in number_options:
