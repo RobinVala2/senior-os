@@ -1,5 +1,6 @@
-tk
-screeninfo
-pygame
-pillow
-chardet
+chardet==5.2.0
+Pillow==10.2.0
+pygame==2.5.2
+screeninfo==0.8.1
+smail==0.1.8
+ttkwidgets==0.13.0
