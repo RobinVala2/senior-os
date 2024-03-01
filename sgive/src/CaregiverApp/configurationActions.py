@@ -97,19 +97,13 @@ def restore_main_config():
     main_config_default(path)
 
 
-def restore_smail_config():
-    print("Restoring GLOBAL config")
-    path = red_main_config("pathToConfig", "path")
-    smail_config_default(path)
-
-
 def main_config_default(path):
     options = ["Global", "Mail", "Web", "Logs"]
     languageOPT = ["Czech", "English", "German"]
     GLobalFramesOptions = ["Primary display:", "Display language:", "Alert language:",
                            "Colorscheme:", "Alert color (hex):", "Hover color (hex):", "Alert delay (s):",
                            "Font size (px):", "Label size (px):", "Font weight :"]
-    SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add emails:", "Add pictures:",
+    SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add six emails:", "Configure pictures:",
                          "Activate caregiver warning",
                          "Caregiver email:", "URL links in email body:"]
     EntryOptions = ["alertColor", "hoverColor", "soundDelay", "fontSize", "labelFontSize"]
@@ -162,6 +156,27 @@ def main_config_default(path):
 
 # ------------
 
+def restore_smail_config():
+    print("Restoring GLOBAL config")
+    path = read_smail_config("pathToConfig", "path")
+    smail_config_default(path)
+
+
+def read_smail_config(key, value):
+    path = get_path()
+    if os.path.exists(path) and os.path.isfile(
+            os.path.join(get_path(), 'SMAIL_config.json')):  # checks for the conf file, if there is any
+        with open(os.path.join(path, 'SMAIL_config.json'), "r") as file:
+            jsonData = json.load(file)
+        if key == '' or key is None:
+            return jsonData[value]
+        else:
+            return jsonData[key][value]
+    else:
+        logging.critical('There is no SMAIL_config.json or sconf/ file present in system, exiting program now.')
+        exit(1)
+
+
 def smail_config_default(path):
     dictionary = {
         'pathToConfig': {
@@ -177,21 +192,21 @@ def smail_config_default(path):
             "max": 20
         },
         "emails": {
-            "Osoba1": "croce.rosay@gmail.com",
-            "Osoba2": "robin.valu@seznam.cz",
-            "Osoba3": "241124@vut.cz",
-            "Osoba4": "email4@gmail.com",
-            "Osoba5": "email5@gmail.com",
-            "Osoba6": "email6@gmail.com"
+            "Person1": "croce.rosay@gmail.com",
+            "Person2": "robin.valu@seznam.cz",
+            "Person3": "241124@vut.cz",
+            "Person4": "email4@gmail.com",
+            "Person5": "email5@gmail.com",
+            "Person6": "email6@gmail.com"
         },
         "images": {
             "exit": "../sconf/images/SMAIL_EXIT_1.png",
-            "Osoba1": "../sconf/images/SMAIL_PERSON_1.png",
-            "Osoba2": "../sconf/images/SMAIL_PERSON_2.png",
-            "Osoba3": "../sconf/images/SMAIL_PERSON_3.png",
-            "Osoba4": "../sconf/images/SMAIL_PERSON_4.png",
-            "Osoba5": "../sconf/images/SMAIL_PERSON_5.png",
-            "Osoba6": "../sconf/images/SMAIL_PERSON_6.png"
+            "Person1": "../sconf/images/SMAIL_PERSON_1.png",
+            "Person2": "../sconf/images/SMAIL_PERSON_2.png",
+            "Person3": "../sconf/images/SMAIL_PERSON_3.png",
+            "Person4": "../sconf/images/SMAIL_PERSON_4.png",
+            "Person5": "../sconf/images/SMAIL_PERSON_5.png",
+            "Person6": "../sconf/images/SMAIL_PERSON_6.png"
         },
         "resend_email": 0,
         "show_url": 1,

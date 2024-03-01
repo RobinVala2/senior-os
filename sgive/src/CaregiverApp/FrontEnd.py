@@ -201,6 +201,7 @@ class MailFrameWidgets:
         self.restore_configurations = restore
         self.refresh_frame = refresh
         # ------
+        self.person_counter = 1  # counter for person name key
         self.widget_height = None
         self.label_dict = {}
         self.button_height_fract = 11
@@ -213,8 +214,24 @@ class MailFrameWidgets:
         self.screen_size_check()
         self.create_labels()
         self.create_widgets()
+        self.load_defaults()
         self.master.bind("<Configure>", lambda _: self.on_resize())
         # -----------------
+
+    def load_defaults(self):
+        value_mapping = {1: "Enable", 0: "Disable"}
+        load_hover = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        hover_color = (load_hover, load_hover)
+        load_lighten = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        hover_color_lighten = (load_lighten, load_lighten)
+
+        resend_email = ryuConf.read_smail_config(None, "resend_email")
+        resend_email = value_mapping.get(resend_email, resend_email)
+        self.caregiver_warning[resend_email].configure(fg_color=hover_color, hover_color=hover_color_lighten)
+
+        show_url = ryuConf.read_smail_config(None, "show_url")
+        show_url = value_mapping.get(show_url, show_url)
+        self.url_link[show_url].configure(fg_color=hover_color, hover_color=hover_color_lighten)
 
     @staticmethod
     def update_buttons_widget(key, name, value, button_id, button_list):
@@ -242,16 +259,50 @@ class MailFrameWidgets:
             button_list[button_id].configure(fg_color=(alert_color, alert_color),
                                              hover_color=(alert_color, alert_color))
 
-    @staticmethod
-    def update_entry_widgets(email_val, entry_type):
+
+    def update_entry_widgets(self, email_val, entry_type, button_id):
         # in progres rn.
+        entry_value_mapping = {0: "username",
+                               1: "password",
+                               2: "Person",
+                               3: "guardian_email"}
+
+        # reset back submit button color, if its red or green
+        self.submit_entry_btn[button_id].configure(fg_color=("#636363", "#222222"),
+                                                   hover_color=("#757474", "#3b3b3b"),)
 
         if not entry_type == 1:
             match = re.fullmatch(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b', email_val)
-            if match:
-                print("lessgo, lefgit bullshit:", email_val)
+
+            if match and not entry_type == 2:
+                entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
+                self.submit_entry_btn[button_id].configure(fg_color=("green", "green"), hover_color=("green", "green"))
+                ryuConf.edit_smail_config("credentials", entry_type, email_val)
+
+            elif match and entry_type == 2:
+                if self.person_counter < 6:
+                    entry_type = entry_value_mapping.get(entry_type, entry_type)
+                    ryuConf.edit_smail_config("emails", f"{entry_type}{self.person_counter}", email_val)
+                    self.person_counter += 1
+                    self.submit_entry_btn[button_id].configure(text=f"Add person{self.person_counter}")
+                elif self.person_counter == 6:
+                    entry_type = entry_value_mapping.get(entry_type, entry_type)
+                    ryuConf.edit_smail_config("emails", f"{entry_type}{self.person_counter}", email_val)
+                    self.person_counter = 1
+                    self.submit_entry_btn[button_id].configure(text=f"Add person{self.person_counter}")
+
+                self.entry_widgets[button_id].delete(0, customtkinter.END)
+                self.entry_widgets[button_id].configure(placeholder_text=f"added: {email_val}, Add next email:",
+                                                        font=("Helvetica", 20, "bold"))
+                self.entry_widgets[1].focus_set()
             else:
-                print("incorect email")
+                self.submit_entry_btn[button_id].configure(fg_color=("red", "red"),
+                                                           hover_color=("red", "red"), )
+
+        else:
+            print("placeholder")
+
+
 
     def create_widgets(self):
         global value_name
@@ -274,18 +325,20 @@ class MailFrameWidgets:
                 fg_color=("#636363", "#222222"),
                 hover_color=("#757474", "#3b3b3b"),
                 text="submit",
-                command=lambda entry_id=entry_number: [print(f"získaná hodnota z tlačítka {entry_id} je:",
-                                                            self.entry_widgets[entry_id].get()),
-                                                       self.update_entry_widgets(self.entry_widgets[entry_id].get(), entry_id)]
+                command=lambda entry_id=entry_number: self.update_entry_widgets(self.entry_widgets[entry_id].get(), entry_id, entry_id)
             )
             self.entry_widgets[entry_number] = customtkinter.CTkEntry(self.master)
             self.entry_widgets[entry_number].configure(font=(self.font_name, self.label_size + 17, self.font_boldness),
                                                        width=self.width_frame * (2 / 5) - 2.5,
                                                        height=self.widget_height - 2.5,
-                                                       placeholder_text=f"Please, add something here",
+                                                       placeholder_text="PLACEHOLDER",
                                                        border_width=0,
                                                        corner_radius=0,
                                                        )
+            if entry_number == 2:
+                self.submit_entry_btn[entry_number].configure(text=f"Add person{self.person_counter}")
+                self.entry_widgets[entry_number].configure(placeholder_text="Use: <name>@<domain.name>",
+                                                           font=("Helvetica", 30, "bold"))
             if entry_number == 3:  # 3rd row
                 rel_y += (1 / (len(self.label_names)))
                 # spawn pictures
@@ -553,7 +606,7 @@ class GlobalFrameWidgets:
                 return
 
     @staticmethod
-    def update_config(key, name, value, button_id, button_list):        # ------------
+    def update_config(key, name, value, button_id, button_list):
         # pokud se zadaří a nikde nebude value a button_id rozdílné, tak pak tyto proměnné sloučit
         print("name", name)
         print("value", value)
