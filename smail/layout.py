@@ -3,6 +3,8 @@ import os
 import subprocess
 import threading
 import tkinter as tk
+
+import pygame
 from ttkwidgets import ScrolledListbox
 import webbrowser
 from tkinter import scrolledtext
@@ -410,10 +412,9 @@ class one_frame(tk.Frame):
             for email_content, index, safe in self.all_emails:
                 name = get_email_sender(email_content.split("\n")[1])
                 sub = email_content.split("\n")[0].split(":", 1)[1]
-                email_type = "Safe" if index in [i[1] for i in self.safe_emails] else "Phish"
                 self.inbox_list.listbox.insert(tk.END, f"{name} - {sub}")
-            # Binding listbox to text area to view email
 
+            # Binding listbox to text area to view email
             self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
 
     def show_email(self, event):
@@ -449,21 +450,45 @@ class one_frame(tk.Frame):
         self.last_selected_index = selected_index
         self.last_selected_email = selected_email[0]
 
-
-
     def configure_message_area(self, email):
-
         # Inserting email into text area
         self.message_area.configure(state="normal")
         self.message_area.delete("1.0", tk.END)
-        self.display_email(email)
+        self.message_area.insert(tk.END, email)
+        self.mark_important_data()
+        self.mark_email()
         self.message_area.configure(state="disabled")
 
-    def display_email(self, email):
+    def mark_important_data(self):
 
-        # Display the entire email content in the text area
-        self.message_area.insert(tk.END, email)
-        self.mark_email()
+        default_color, selected_color = load_button_colors("../sconf/config_old.json")
+        lines = self.message_area.get("1.0", "end-1c").split("\n")
+        words_before_colon = [lines[0][:lines[0].find(":")].strip(),
+                              lines[1][:lines[1].find(":")].strip()]
+
+        try:
+            for i, word in enumerate(words_before_colon, start=1):
+                start_index = "1.0"
+                line_number = i
+                while True:
+                    line_start = self.message_area.search(word, start_index, stopindex=f"{line_number}.end",
+                                                          nocase=True)
+                    if not line_start:
+                        break
+                    colon_index = int(line_start.split('.')[1]) + len(word)
+                    text_after_colon = self.message_area.get(f"{line_number}.{colon_index + 2}",
+                                                             f"{line_number}.end")
+                    self.message_area.delete(f"{line_number}.{colon_index + 2}",
+                                             f"{line_number}.end")
+                    self.message_area.insert(f"{line_number}.{colon_index + 2}",
+                                             text_after_colon, "color")
+
+                    start_index = f"{line_number + 1}.0"
+            self.message_area.tag_configure("color", background=selected_color)
+
+        except Exception as e:
+            print("lag")
+            logger.error("Error occurred when marking important data: " + str(e))
 
     def mark_email(self):
 
@@ -546,6 +571,12 @@ class one_frame(tk.Frame):
 
         # Switching the background color of each button back to default value.
         default_color, selected_color = load_button_colors("../sconf/config_old.json")
+
+        # Stopping audio
+        try:
+            pygame.mixer.music.stop()
+        except:
+            pass
 
         self.exit_button.config(
             bg=default_color
