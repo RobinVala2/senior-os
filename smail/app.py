@@ -1,12 +1,14 @@
 import logging
+import os
 import tkinter
-from smail.template import configActions as act
-from smail.layout import one_frame
-from smail.antiphishing.get_DB import get_DB
+from template import configActions as act
+from layout import one_frame
+from antiphishing.get_DB import get_DB
+
 
 logging.basicConfig(
      level=logging.INFO,
-     filename="../sconf/SMAILlog.log",
+     filename=os.path.join(os.getcwd().split("smail")[0], "sconf/logs/SMAILlog.log"),
      filemode="w",
      format="%(asctime)s:SMAIL-%(levelname)s-%(funcName)s: %(message)s",
      datefmt="%b %d %H:%M:%S",

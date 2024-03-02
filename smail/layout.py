@@ -10,15 +10,15 @@ import webbrowser
 from tkinter import scrolledtext
 import re
 
-from smail.connection.style import (font_config, search_mail,
-                                    get_language, button_hover, button_leave,
-                                    images, image_config, app_color,
-                                    height_config, play_sound, load_json_file, get_email_sender, load_credentials,
-                                    load_show_url, load_button_colors)
-from smail.connection.mail_connection import (send_email, read_mail,
+from style import (font_config, search_mail,
+                         get_language, button_hover, button_leave,
+                         images, image_config, app_color,
+                         height_config, play_sound, get_email_sender, load_credentials,
+                         load_show_url, load_button_colors)
+from connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
-from smail.template import guiTemplate as temp
-from smail.template import configActions as act
+from template import guiTemplate as temp
+from template import configActions as act
 
 logger = logging.getLogger(__file__)
 
@@ -382,7 +382,10 @@ class one_frame(tk.Frame):
         previous_emails = getattr(self, "reversed_list", [])
 
         # Get information from configuration file
-        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        (login, password, smtp_server,
+         smtp_port, imap_server, imap_port) = (
+            load_credentials(os.path.join(os.getcwd().split("smail")[0],
+                                            "sconf/SMAIL_config.json")))
         language, text = get_language()
 
         # Getting emails from inbox
@@ -462,7 +465,10 @@ class one_frame(tk.Frame):
 
     def mark_important_data(self):
 
-        default_color, selected_color = load_button_colors("../sconf/config_old.json")
+        default_color, selected_color = (
+            load_button_colors(os.path.join(os.getcwd().split("smail")[0],
+                                            "sconf/config_old.json")))
+
         lines = self.message_area.get("1.0", "end-1c").split("\n")
         words_before_colon = [lines[0][:lines[0].find(":")].strip(),
                               lines[1][:lines[1].find(":")].strip()]
@@ -493,7 +499,8 @@ class one_frame(tk.Frame):
 
     def mark_email(self):
 
-        show = load_show_url("../sconf/SMAIL_config.json")
+        show = load_show_url(os.path.join(os.getcwd().split("smail")[0],
+                                          "sconf/SMAIL_config.json"))
 
         if show == 1:
             # Find all URLs in email and tag them
@@ -526,7 +533,7 @@ class one_frame(tk.Frame):
     def open_browser(self, event, url):
         # Open web browser when clicking on a URL.
         try:
-            subprocess.run(["python3", "../sweb/main.py", url])
+            subprocess.run(["python3", os.path.join(os.getcwd().split("smail")[0], "sweb/main.py"), url])
             self.exit_app()
         except Exception as e:
             webbrowser.open_new(url)
@@ -571,7 +578,9 @@ class one_frame(tk.Frame):
     def stop_alert(self):
 
         # Switching the background color of each button back to default value.
-        default_color, selected_color = load_button_colors("../sconf/config_old.json")
+        default_color, selected_color = (
+            load_button_colors(os.path.join(os.getcwd().split("smail")[0],
+                                            "sconf/config_old.json")))
 
         # Stopping audio
         try:
@@ -637,7 +646,9 @@ class one_frame(tk.Frame):
     def send_email_status(self):
 
         # Getting information from configuration file
-        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        (login, password, smtp_server,
+         smtp_port, imap_server, imap_port) = (
+            load_credentials(os.path.join(os.getcwd().split("smail")[0], "sconf/SMAIL_config.json")))
 
         # Sending email
         status = send_email(
@@ -655,7 +666,8 @@ class one_frame(tk.Frame):
 
         # Disable showing email in text area
         self.allow_show_email = False
-        default_color, select_color = load_button_colors("../sconf/config_old.json")
+        default_color, select_color = (
+            load_button_colors(os.path.join(os.getcwd().split("smail")[0], "sconf/config_old.json")))
 
         if self.r_frame == self.rr_frame:
             self.r_frame = self.right_write_frame()

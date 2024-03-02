@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import os
 import smtplib
 import ssl
 import sys
@@ -24,7 +25,8 @@ def config(path):
 
 def send_email(recipient, content):
 
-    login, password, smtp_server, smtp_port = config("../../sconf/SMAIL_config.json")
+    login, password, smtp_server, smtp_port = config(os.path.join(os.getcwd().split("smail")[0],
+                                       "sconf/SMAIL_config.json"))
 
     date = datetime.datetime.now().strftime("%Y-%m-%d")
     msg = MIMEText(content)
