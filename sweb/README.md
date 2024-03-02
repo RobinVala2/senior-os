@@ -50,6 +50,9 @@ Follow these steps to set up Web Browser in WINDOWS operating system:
 # Clone the project repository
 git clone https://github.com/forsenior/senior-os
 
+# Navigate to the project directory
+cd sweb
+
 # Install required Python packages in command prompt
 pip install PyQt5
 pip install PyQtWebEngine
