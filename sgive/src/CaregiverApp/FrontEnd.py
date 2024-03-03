@@ -1,4 +1,5 @@
 import customtkinter
+from customtkinter import filedialog
 from screeninfo import get_monitors
 import sgive.src.CaregiverApp.configurationActions as ryuConf
 import logging
@@ -19,8 +20,6 @@ logger.info("initiated logging")
 _colorScheme = ryuConf.red_main_config("GlobalConfiguration", "colorMode")
 customtkinter.set_appearance_mode(_colorScheme)  # Modes: system (default), light, dark
 customtkinter.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
-
-
 
 
 class DefaultFrameWidgets:
@@ -190,6 +189,7 @@ class MailFrameWidgets:
     This class creates widgets, that are visible in SMAIL configuration frame
     The frame itself isn't created here, it's created in Frames class, as other frames are
     """
+
     def __init__(self, frame_root, width, height_frame, restore, refresh):
         logger.info("Creating and showing frame for Mail configuration.")
         self.master = frame_root
@@ -204,6 +204,7 @@ class MailFrameWidgets:
         self.refresh_frame = refresh
         # ------
         self.person_counter = 1  # counter for person name key
+        self.filedialog_counter = 1
         self.widget_height = None
         self.label_dict = {}
         self.button_height_fract = 11
@@ -211,6 +212,10 @@ class MailFrameWidgets:
         self.submit_entry_btn = {}
         self.caregiver_warning = {}
         self.url_link = {}
+        self.choose_pictures = {}
+        self.filename_picture = None
+        self.combo_x = 0
+        self.combo_y = 0
         # -----------------
         # calls:
         self.screen_size_check()
@@ -218,8 +223,8 @@ class MailFrameWidgets:
         self.create_widgets()
         self.load_defaults()
         self.master.bind("<Configure>", lambda _: self.on_resize())
+
         # -----------------
-        #  self.custom_entry = CustomEntry()
 
     def load_defaults(self):
         value_mapping = {1: "Enable", 0: "Disable"}
@@ -240,15 +245,13 @@ class MailFrameWidgets:
         caregiver_entry = ryuConf.read_smail_config(None, "guardian_email")
 
         entry_placeholderText_values = [f"Enter here (current: {email_entry})",
-                                        "Please, gimme your juicy password",
+                                        "Add senior's password here",
                                         "Use: <name>@<domain.name>",
                                         f"Enter here (current: {caregiver_entry})"]
-
 
         for index, value in enumerate(entry_placeholderText_values):
             self.entry_widgets[index].configure(placeholder_text=value,
                                                 font=("Helvetica", 22, "bold"))
-
 
     @staticmethod
     def update_buttons_widget(key, name, value, button_id, button_list):
@@ -276,8 +279,11 @@ class MailFrameWidgets:
             button_list[button_id].configure(fg_color=(alert_color, alert_color),
                                              hover_color=(alert_color, alert_color))
 
-
     def update_entry_widgets(self, email_val, entry_type, button_id):
+        hv_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        hv_col_light = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        hover_color = (hv_col, hv_col)
+        hover_col_lighter = (hv_col_light, hv_col_light)
         # in progres rn.
         entry_value_mapping = {0: "username",
                                1: "password",
@@ -286,20 +292,30 @@ class MailFrameWidgets:
 
         # reset back submit button color, if its red or green
         self.submit_entry_btn[button_id].configure(fg_color=("#636363", "#222222"),
-                                                   hover_color=("#757474", "#3b3b3b"),)
+                                                   hover_color=("#757474", "#3b3b3b"))
+
+        if email_val is None:
+            print("bro")
+            self.submit_entry_btn[button_id].configure(fg_color=("red", "red"),
+                                                       hover_color=("red", "red"), )
+            return
 
         if not entry_type == 1:  # regex check for all email inputs
-            print("email val:", email_val)
-            match = re.fullmatch(r'\b[\w.%+-]+@[A-Za-z0-9.-]+\.[A-Za-zščřžýáíéúůďťňóŠČŘŽÝÁÍÉÚŮĎŤŇÓ]{2,7}\b', email_val)
+            match = re.fullmatch(r'\b[\w.%+-]+(?<!\s)@[A-Za-z0-9.-]+\.[A-Za-zščřžýáíéúůďťňóŠČŘŽÝÁÍÉÚŮĎŤŇÓ]{2,7}\b', email_val)
 
             # email inputs for seniors email and caregiver email
-            if match and not entry_type == 2:
+            if match and not entry_type == 2 and not entry_type == 3:
                 entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
-                self.submit_entry_btn[button_id].configure(fg_color=("green", "green"), hover_color=("green", "green"))
+                self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
                 ryuConf.edit_smail_config("credentials", entry_type, email_val)
 
+            elif match and entry_type == 3 and not entry_type == 2:
+                entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
+                self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
+                ryuConf.edit_smail_config(None, entry_type, email_val)
+
             # add six emails:
-            elif match and entry_type == 2:
+            elif match and entry_type == 2 and not entry_type == 3:
                 if self.person_counter < 6:
                     entry_type = entry_value_mapping.get(entry_type, entry_type)
                     ryuConf.edit_smail_config("emails", f"{entry_type}{self.person_counter}", email_val)
@@ -322,9 +338,40 @@ class MailFrameWidgets:
         else:
             entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
             ryuConf.edit_smail_config("credentials", entry_type, email_val)
-            self.submit_entry_btn[button_id].configure(fg_color=("green", "green"), hover_color=("green", "green"))
+            self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
             print("placeholder")
 
+    def create_labels(self):
+        y_position = 0.0
+        label_num = len(self.label_names)
+        for label_name in self.label_names:
+            self.label_dict[label_name] = customtkinter.CTkLabel(self.master,
+                                                                 text=label_name,
+                                                                 font=(self.font_name, self.label_size + 20,
+                                                                       self.font_boldness),
+                                                                 width=self.width_frame * (2 / 5),
+                                                                 height=self.widget_height,
+                                                                 fg_color=("#D3D3D3", "#171717")
+                                                                 )
+            self.label_dict[label_name].place(relx=0, rely=y_position * (10 / 11))
+            y_position += 1 / label_num
+
+    def file_dialog(self):
+        home_dir = os.path.expanduser("~")
+        self.filename_picture = filedialog.askopenfilename(initialdir=home_dir)
+        self.choose_pictures[0].configure(text=self.filename_picture, font=("Helvetica", 15, "bold"))
+
+    def submit_filedialog(self):
+        if self.filename_picture is None:
+            return
+        if self.filedialog_counter < 6:
+            ryuConf.edit_smail_config("images", f"Person{self.filedialog_counter}", self.filename_picture)
+            self.filedialog_counter += 1
+            self.choose_pictures[1].configure(text=f"Add person{self.filedialog_counter}")
+        elif self.filedialog_counter == 6:
+            ryuConf.edit_smail_config("images", f"Person{self.filedialog_counter}", self.filename_picture)
+            self.filedialog_counter = 1
+            self.choose_pictures[1].configure(text=f"Add person{self.filedialog_counter}")
 
 
     def create_widgets(self):
@@ -333,55 +380,85 @@ class MailFrameWidgets:
         rel_y = 0
         rel_y_btns = 0
         rel_x_btns = rel_x
-        """
-        ↓ ↓ ↓ this value represents, how many non entry widgets there are on the frame
-        """
+
+        # Define the number of non-entry widgets
         number_of_non_entry_widgets = 3
+
+        # Iterate over the label names to create entry widgets and submit buttons
         for entry_number in range(len(self.label_names) - number_of_non_entry_widgets):
-            self.submit_entry_btn[entry_number] = customtkinter.CTkButton(self.master)
-            self.submit_entry_btn[entry_number].configure(
-                font=(self.font_name, self.label_size + 17, self.font_boldness),
-                width=self.width_frame * (1 / 5) - 2.5,
-                height=self.widget_height - 2.5,
-                border_width=0,
-                corner_radius=0,
-                fg_color=("#636363", "#222222"),
-                hover_color=("#757474", "#3b3b3b"),
-                text="submit",
-                command=lambda entry_id=entry_number: self.update_entry_widgets(self.entry_widgets[entry_id].get(), entry_id, entry_id)
-            )
-            self.entry_widgets[entry_number] = customtkinter.CTkEntry(self.master)
-            self.entry_widgets[entry_number].configure(font=(self.font_name, self.label_size + 17, self.font_boldness),
-                                                       width=self.width_frame * (2 / 5) - 2.5,
-                                                       height=self.widget_height - 2.5,
-                                                       border_width=0,
-                                                       corner_radius=0,
-                                                       )
+            self.submit_entry_btn[entry_number] = customtkinter.CTkButton(self.master,
+                                                                          font=(self.font_name, self.label_size + 17,
+                                                                                self.font_boldness),
+                                                                          width=self.width_frame * (1 / 5) - 2.5,
+                                                                          height=self.widget_height - 2.5,
+                                                                          border_width=0,
+                                                                          corner_radius=0,
+                                                                          fg_color=("#636363", "#222222"),
+                                                                          hover_color=("#757474", "#3b3b3b"),
+                                                                          text="submit",
+                                                                          command=lambda
+                                                                              entry_id=entry_number: self.update_entry_widgets(
+                                                                              self.entry_widgets[entry_id].get(),
+                                                                              entry_id, entry_id)
+                                                                          )
+            self.entry_widgets[entry_number] = customtkinter.CTkEntry(self.master,
+                                                                      font=(self.font_name, self.label_size + 17,
+                                                                            self.font_boldness),
+                                                                      width=self.width_frame * (2 / 5) - 2.5,
+                                                                      height=self.widget_height - 2.5,
+                                                                      border_width=0,
+                                                                      corner_radius=0
+                                                                      )
 
             if entry_number == 3:  # 3rd row
-                rel_y += (1 / (len(self.label_names)))
-                # spawn pictures
-                # dropdown menu a uživatel 1, uživatel 2...
+                self.combo_x = rel_x
+                self.combo_y = rel_y
+                rel_y += (1 / len(self.label_names))
                 rel_y_btns = rel_y
-                rel_y += (1 / (len(self.label_names)))
-                # still need to show entry label
+                rel_y += (1 / len(self.label_names))
+                # Place entry widget and submit button
                 self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x += (2 / 5)
                 self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x -= (2 / 5)
-                rel_y += (1 / (len(self.label_names)))
+                rel_y += (1 / len(self.label_names))
             else:
                 self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x += (2 / 5)
                 self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x -= (2 / 5)
-                rel_y += (1 / (len(self.label_names)))
+                rel_y += (1 / len(self.label_names))
 
-        self.entry_widgets[1].configure(show='*')  # for password label
-        self.submit_entry_btn[2].configure(text="Add Person1")  # for first button
+        # Configure entry widget for password
+        self.entry_widgets[1].configure(show='*')
 
+        # Configure text for the first button
+        self.submit_entry_btn[2].configure(text="Add Person1")
 
+        for widget in range(2):
+            self.choose_pictures[widget] = customtkinter.CTkButton(master=self.master,
+                                                                   height=self.widget_height - 2.5,
+                                                                   corner_radius=0,
+                                                                   fg_color=("#636363", "#222222"),
+                                                                   hover_color=("#757474", "#3b3b3b"),
+                                                                   font=(self.font_name, self.label_size + 17,
+                                                                         self.font_boldness),
+                                                                   )
+        self.choose_pictures[0].configure(text="Add picture for picked person →",
+                                          width=self.width_frame * (2 / 5) - 2.5,
+                                          command=lambda: self.file_dialog())
+
+        self.choose_pictures[1].configure(text=f"Add person{self.filedialog_counter}",
+                                          width=self.width_frame * (1 / 5) - 2.5,
+                                          command=lambda: self.submit_filedialog())
+
+        self.choose_pictures[0].place(relx=self.combo_x, rely=self.combo_y * (10 / 11))
+        self.combo_x += (2 / 5)
+        self.choose_pictures[1].place(relx=self.combo_x, rely=self.combo_y * (10 / 11))
+
+        # Define a list of options
         number_options = ["Enable", "Disable"]
+        # Iterate over options to create buttons
         for value_name in number_options:
             self.caregiver_warning[value_name] = customtkinter.CTkButton(self.master,
                                                                          font=(self.font_name, self.label_size + 17,
@@ -413,47 +490,39 @@ class MailFrameWidgets:
                                                                 self.update_buttons_widget(None, "show_url", value_id,
                                                                                            value_id, self.url_link)
                                                                 )
+            # Place buttons
             self.caregiver_warning[value_name].place(relx=rel_x_btns, rely=rel_y_btns * (10 / 11))
             rel_x_btns += (1 / 5) + 0.00015
             self.url_link[value_name].place(relx=rel_x, rely=rel_y * (10 / 11))
             rel_x += (1 / 5)
 
-    def create_labels(self):
-        y_position = 0.0
-        label_num = len(self.label_names)
-        for label_name in self.label_names:
-            self.label_dict[label_name] = customtkinter.CTkLabel(self.master,
-                                                                 text=label_name,
-                                                                 font=(self.font_name, self.label_size + 20,
-                                                                       self.font_boldness),
-                                                                 width=self.width_frame * (2 / 5),
-                                                                 height=self.widget_height,
-                                                                 fg_color=("#D3D3D3", "#171717")
-                                                                 )
-            self.label_dict[label_name].place(relx=0, rely=y_position * (10 / 11))
-            y_position += 1 / label_num
-
     def on_resize(self):
+        # Get new dimensions
         self.height_frame = self.master.winfo_height()
         self.width_frame = self.master.winfo_width()
 
+        # Calculate new sizes for widgets
         width_new = self.width_frame * (2 / 5)
         height_new = self.height_frame * ((10 / 11) / len(self.label_names))
         width_btn = self.master.winfo_width() * (1 / 5)
 
-        # recalculate sizes for restore and refresh buttons:
+        # Resize restore and refresh buttons
         for btn in [self.restore_configurations, self.refresh_frame]:
             btn.configure(height=self.height_frame * (1 / 11), width=width_new, anchor=customtkinter.CENTER)
 
-        # label widgets
+        # choose pictures things
+        self.choose_pictures[0].configure(width=width_new - 2.5, height=height_new - 2.5)
+        self.choose_pictures[1].configure(width=width_btn - 2.5, height=height_new - 2.5)
+
+        # Resize label widgets
         for label in self.label_dict.values():
             label.configure(width=width_new, height=height_new)
 
-        # entry widgets
+        # Resize entry widgets
         for entry_widget in list(self.entry_widgets.values()):
             entry_widget.configure(width=width_new - 2.5, height=height_new - 2.5)
 
-        # connecting all buttons lists together:
+        # Resize all buttons
         for button in list(self.caregiver_warning.values()) + list(self.url_link.values()) + list(
                 self.submit_entry_btn.values()):
             button.configure(width=width_btn - 2.5, height=height_new - 2.5)
@@ -656,7 +725,6 @@ class GlobalFrameWidgets:
         else:
             logger.error("There was an error while updating the value.")
             button_list[button_id].configure(fg_color=("red", "red"), hover_color=("#8B0000", "#8B0000"))
-
 
     def buttons(self):
         # First config row:
@@ -870,6 +938,7 @@ class Frames:
     It also handles two "restore" and "Refresh" buttons.
     and lastly, it handles switching the frames.
     """
+
     def __init__(self, master, width, height, divisor, number_of_buttons, name_of_buttons):
         # -------------
         self.master = master
