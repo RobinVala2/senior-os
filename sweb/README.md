@@ -24,7 +24,8 @@ Here's the design concept for web browser:
 - Activity Logging: Logs browsing activity to a text file for security purposes.
 
 ### Installation
-Ensure you have Python3 or pip installed on your system. Follow these steps to set up Web Browser:
+!!!Ensure you have Python3 or pip installed on your system.
+Follow these steps to set up Web Browser in FEDORA operating system:
 ```bash
 # Clone the project repository
 git clone https://github.com/forsenior/senior-os
@@ -38,9 +39,31 @@ sudo dnf install python3-qt5
 sudo dnf install python3-qt5-webengine
 sudo dnf install python3-pygame
 pip3 install screeninfo
+pip3 install yagmail
 
 # Run the browser
 python3 main.py
+```
+
+Follow these steps to set up Web Browser in WINDOWS operating system:
+```bash
+# Clone the project repository
+git clone https://github.com/forsenior/senior-os
+
+# Navigate to the project directory
+cd sweb
+
+# Install required Python packages in command prompt
+pip install PyQt5
+pip install PyQtWebEngine
+pip install screeninfo
+pip install PyQt5Designer
+pip install pygame
+pip install requests
+pip install yagmail
+
+# Run the browser from terminal
+python main.py [Your visited website]
 ```
 
 ### Usage

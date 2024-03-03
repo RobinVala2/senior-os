@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 import logging
 import imaplib
@@ -6,10 +7,9 @@ from email.mime.text import MIMEText
 import email
 import ssl
 import re
-from urllib.parse import urlparse
 
 import chardet
-from smail.connection.style import get_guardian_email, resend_active, load_credentials
+from smail.style import get_guardian_email, resend_active, load_credentials
 
 logger = logging.getLogger(__file__)
 
@@ -194,13 +194,17 @@ def resend_mail_to_guardian(emails):
         for e in emails:
             email_content += e
 
-        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        (login, password, smtp_server,
+         smtp_port, imap_server, imap_port) = (
+            load_credentials(os.path.join(os.getcwd().split("smail")[0], "sconf/SMAIL_config.json")))
+
         send_email(gmail, email_subject, email_content, login, password, smtp_server, smtp_port)
 
 
 def check_content_of_email(content, sender, subject):
 
-    with open("../sconf/phish/SMAIL_PHISH_1.txt") as f:
+    with open(os.path.join(os.getcwd().split("smail")[0],
+                           "sconf/phish/SMAIL_PHISH_1.txt")) as f:
         phish_urls = f.readlines()
     f.close()
 

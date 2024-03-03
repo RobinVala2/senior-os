@@ -2,8 +2,10 @@
 from PyQt5.QtWidgets import QMainWindow, QApplication, QStyle, QLabel, QVBoxLayout
 from PyQt5.QtWidgets import QLineEdit, QPushButton, QToolBar, QWidget
 from PyQt5.QtWebEngineWidgets import QWebEnginePage, QWebEngineView, QWebEngineProfile
-from PyQt5.QtCore import QEvent, QUrl, Qt, QTimer, QSize, pyqtSignal
+from PyQt5.QtCore import QEvent, QUrl, Qt, QTimer, QSize, pyqtSignal, QObject, pyqtSlot
 from PyQt5.QtGui import QIcon
+# Library for creating channel for monitoring input keyboard
+from PyQt5.QtWebChannel import QWebChannel
 # Library for parsing URL value
 from urllib.parse import urlparse
 # Library for getting information about user's monitor
@@ -16,14 +18,85 @@ from loadConfig import *
 # Own class for translating
 from languge_Translator import Translator
 import pygame, math
-import sys, os
+import sys, os, json, getpass, socket
+from datetime import datetime
+# Library for sending mail to authorized people
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import ssl
 
+# This class is used for notification to authorized people
+# Whenever user ignore warning from connection to phishing web page
+# And fill their information in
+class NotificationFillTextToPhishing(QObject):
+    @pyqtSlot(str)
+    def receiveData(self, received_data):
+        # Parse received JSON data to invidial data
+        parsing_data = json.loads(received_data)
+        input_text = parsing_data.get('value')
+        connected_phishing_url = parsing_data.get('url')
+        computer_username = getpass.getuser()
+        computer_devicename = socket.gethostname()
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        # Customize result 
+        send_data = f'''*****Data received from sWEB when users fill text in phishing website*****
+        - Device name: {computer_devicename}
+        - User name: {computer_username}
+        - Website: {connected_phishing_url}
+        - Time: {current_time}
+        - Filled text: {input_text}
+        '''
+        # Send received data to authorized people
+        self.send_email(send_data)
+        
+    def send_email(self, message_to_receiver):
+        # Load needed configuration from sweb_config in sconf for sending notification to authorized people
+        sender_mail = sweb_config["credentials"]["sender_mail"]
+        sender_password = sweb_config["credentials"]["sender_password"]
+        receiver_mail = sweb_config["credentials"]["receiver_mail"]
+        subject = sweb_config["credentials"]["subject"]
+        smtp_server = sweb_config["credentials"]["smpt_server"]
+        smtp_port = sweb_config["credentials"]["smtp_port"]
+        
+        # Convert information to block with multi parts
+        message_block = MIMEMultipart()
+        message_block['From'] = sender_mail
+        message_block['To'] = receiver_mail
+        message_block['Subject'] = subject
+        message_block.attach(MIMEText(message_to_receiver, 'plain'))
+
+        ssl_context = ssl.create_default_context()
+        try:
+            # Definition smtp server
+            smtp_server = smtplib.SMTP(smtp_server, smtp_port)
+            smtp_server.ehlo()
+            # Starting connection to smtp server using name and port
+            smtp_server.starttls(context=ssl_context)
+            smtp_server.ehlo() 
+            # Log in to mail server using username and password (Password is not login password, it is created from 2-Oauth gmail for third party)
+            smtp_server.login(sender_mail, sender_password)
+            text = message_block.as_string()
+            # Send message to the smtp server
+            smtp_server.sendmail(sender_mail, receiver_mail, text)
+            # Close smtp connection
+            smtp_server.quit()
+            print("Email sent successfully!!!")
+        except Exception as excep:
+            url_logger = URLLogger()
+            # Log with level 2 - CRITICAL
+            url_logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Not success to sending user filling text from phishing webpage to Authorized people')
+    
+# This class is used for customizing page on main browser
 class MyWebEnginePage(QWebEnginePage):
     # Define a signal that will carry a URL as its argument
     urlChangedSignal = pyqtSignal(QUrl)
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        # Create a channel for recording filling text when user fill text in phishing page
+        self.channel = QWebChannel(self)
+        self.setWebChannel(self.channel)
         
     def acceptNavigationRequest(self, url, _type, isMainFrame):
         # Ensure only modifying behavior for clicked links
@@ -45,6 +118,7 @@ class MyWebEnginePage(QWebEnginePage):
     def setUserAgent(self, user_agent):
         self.profile().setHttpUserAgent(user_agent)
     
+# This class is used for detecting and calculating user monitor
 class GetMonitorHeightAndWidth:
     def __init__(self):
         template_config = load_template_config_json()
@@ -93,10 +167,14 @@ class MyBrowser(QMainWindow):
         if input_url_from_terminal.startswith("https") or input_url_from_terminal.startswith("http"):
             self.main_browser.setUrl(QUrl(input_url_from_terminal))
         else:
-            self.main_browser.setUrl(QUrl("http://" + input_url_from_terminal)) 
+            self.main_browser.setUrl(QUrl("http://" + input_url_from_terminal))
+        # Parameter for changging language on application
         self.language_translator = Translator()
+        # Parameter for getting monitor heigght ad width
         self.get_monitor_height_and_width = GetMonitorHeightAndWidth()
-
+        # Create notification when connection and input text to phishing page
+        self.notification_fill_text = NotificationFillTextToPhishing()
+        self.my_custom_page.channel.registerObject("notification_fill_text",self.notification_fill_text)
         # Load URL blocker and logger
         path_to_phishing_database = my_config_data["phishing_database"]["path"]
         self.url_blocker = URLBlocker(path_to_phishing_database)
@@ -213,7 +291,8 @@ class MyBrowser(QMainWindow):
         # Initially make URL toolbar visible
         # This method is used for Address option -> hide and show url bar
         self.url_toolbar.setVisible(False)
-        
+        # Parameter for toggle phishing
+        self.toggle_phishing_webpage = False
         # Configure audio and for hovering buttons, menus and options
         # Run this methods for the set Current language in Translator
         self.update_ui_text()
@@ -477,6 +556,7 @@ class MyBrowser(QMainWindow):
     def finished_load_web_page(self):
         # Get url value from browser
         url_in_browser_value = self.main_browser.url().toString()
+        
         # Get permitted websites list from sgive
         permitted_website_list = load_permitted_website_from_sgive()
         # Check if it is permitted website
@@ -486,10 +566,38 @@ class MyBrowser(QMainWindow):
                 self.main_browser.setZoomFactor(1.5)
                 # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
                 QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
+        elif self.toggle_phishing_webpage:
+            self.main_browser.setZoomFactor(1.5)
+            # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
+            QTimer.singleShot(1000, lambda: self.html_injection_to_phishing_web_content())
         else:
             self.main_browser.setZoomFactor(1.5)
             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
             QTimer.singleShot(1000, lambda: self.html_injection_to_web_content_strict())
+            
+    # This method is applied for connection to phishing web page
+    def html_injection_to_phishing_web_content(self):
+        injection_javasript = """
+        var script = document.createElement('script');
+        <!-- Define and call script qtwebchannel-->
+        script.src = 'qrc:///qtwebchannel/qwebchannel.js';
+        script.onload = function() {
+            new QWebChannel(qt.webChannelTransport, function(channel) {
+                window.notification_fill_text = channel.objects.notification_fill_text;
+                <!-- Elements for capturing text are defined HERE!!!-->
+                document.querySelectorAll('input[type="text"], input[type="email"], input[type="search"], input[type="password"], input[type="tel"], input[type="url"],input[enterkeyhint="search"], textarea').forEach(function(element) {
+                    element.addEventListener('change', function() {
+                        <!-- Define data with two parameter: one for saved text, one for url-->
+                        var data = {value: element.value, url: window.location.href};
+                        <!-- Parse text to channel in type of JSON text-->
+                        window.notification_fill_text.receiveData(JSON.stringify(data));
+                    });
+                });
+            });
+        };
+        document.head.appendChild(script);
+        """
+        self.main_browser.page().runJavaScript(injection_javasript)
     
     # This method is used for changing font in HTML content
     def html_injection_to_web_content(self):
@@ -671,6 +779,7 @@ class MyBrowser(QMainWindow):
         url_in_browser_value = qurl.toString()
         if url_in_browser_value.endswith('/'):
             if self.url_blocker.is_url_blocked(url_in_browser_value):
+                self.toggle_phishing_webpage = True
                 self.play_sound_for_button(self.path_to_alert_phishing_music)
                  # Log with level 5 when connected to phishing
                 self.url_logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Connection to Phishing server {url_in_browser_value}')
@@ -681,6 +790,7 @@ class MyBrowser(QMainWindow):
                 # Connect to URL after entering
                 self.main_browser.setUrl(QUrl(url_in_browser_value))
             else:
+                self.toggle_phishing_webpage = False
                 # Set default style for toolbar
                 self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
                 self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
@@ -690,30 +800,33 @@ class MyBrowser(QMainWindow):
                 self.main_browser.setUrl(QUrl(url_in_browser_value))
         elif not url_in_browser_value.endswith('/'):
             if "about:blank" in url_in_browser_value:
+                self.toggle_phishing_webpage = False
                 return
             elif "google.com" in url_in_browser_value:
-                    self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
-                    self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
-                    # Log with level 6 INFORMATIONAL
-                    self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
-                    # Connect to URL after entering
-                    self.main_browser.setUrl(QUrl(url_in_browser_value))
+                self.toggle_phishing_webpage = False
+                self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
+                self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
+                # Log with level 6 INFORMATIONAL
+                self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
+                # Connect to URL after entering
+                self.main_browser.setUrl(QUrl(url_in_browser_value))
             elif self.url_blocker.is_url_blocked(url_in_browser_value):
+                self.toggle_phishing_webpage = True
                 self.play_sound_for_button(self.path_to_alert_phishing_music)
                 # Log with level 5 when connected to phishing
                 self.url_logger.log_blocked_url('WEBBROWSER', 5, 'main <security>', f'Connection to Phishing server {url_in_browser_value}')
-                    
                 # Set red colour for connect to phishing
                 self.menu_1_toolbar.setStyleSheet(self.phishing_style_toolbar())
                 self.menu_2_toolbar.setStyleSheet(self.phishing_style_toolbar())
                 # Connect to URL after entering
                 self.main_browser.setUrl(QUrl(url_in_browser_value))
             else:
+                self.toggle_phishing_webpage = False
                 self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
                 self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
                 # Log with LEVEL 6 INFORMATIONAL
                 self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
-        self.finished_load_web_page()
+        self.main_browser.loadFinished.connect(self.finished_load_web_page)
         
     # Method for connect to the second www2 ct24.ceskatelevize.cz
     def navigate_www1(self):

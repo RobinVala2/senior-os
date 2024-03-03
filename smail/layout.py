@@ -3,20 +3,22 @@ import os
 import subprocess
 import threading
 import tkinter as tk
+
+import pygame
 from ttkwidgets import ScrolledListbox
 import webbrowser
 from tkinter import scrolledtext
 import re
 
-from smail.connection.style import (font_config, search_mail,
-                                    get_language, button_hover, button_leave,
-                                    images, image_config, app_color,
-                                    height_config, play_sound, load_json_file, get_email_sender, load_credentials,
-                                    load_show_url, load_button_colors)
-from smail.connection.mail_connection import (send_email, read_mail,
+from style import (font_config, search_mail,
+                         get_language, button_hover, button_leave,
+                         images, image_config, app_color,
+                         height_config, play_sound, get_email_sender, load_credentials,
+                         load_show_url, load_button_colors)
+from connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
-from smail.template import guiTemplate as temp
-from smail.template import configActions as act
+from template import guiTemplate as temp
+from template import configActions as act
 
 logger = logging.getLogger(__file__)
 
@@ -380,7 +382,10 @@ class one_frame(tk.Frame):
         previous_emails = getattr(self, "reversed_list", [])
 
         # Get information from configuration file
-        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        (login, password, smtp_server,
+         smtp_port, imap_server, imap_port) = (
+            load_credentials(os.path.join(os.getcwd().split("smail")[0],
+                                            "sconf/SMAIL_config.json")))
         language, text = get_language()
 
         # Getting emails from inbox
@@ -410,10 +415,9 @@ class one_frame(tk.Frame):
             for email_content, index, safe in self.all_emails:
                 name = get_email_sender(email_content.split("\n")[1])
                 sub = email_content.split("\n")[0].split(":", 1)[1]
-                email_type = "Safe" if index in [i[1] for i in self.safe_emails] else "Phish"
                 self.inbox_list.listbox.insert(tk.END, f"{name} - {sub}")
-            # Binding listbox to text area to view email
 
+            # Binding listbox to text area to view email
             self.inbox_list.listbox.bind("<<ListboxSelect>>", self.show_email)
 
     def show_email(self, event):
@@ -449,25 +453,54 @@ class one_frame(tk.Frame):
         self.last_selected_index = selected_index
         self.last_selected_email = selected_email[0]
 
-
-
     def configure_message_area(self, email):
-
         # Inserting email into text area
         self.message_area.configure(state="normal")
         self.message_area.delete("1.0", tk.END)
-        self.display_email(email)
-        self.message_area.configure(state="disabled")
-
-    def display_email(self, email):
-
-        # Display the entire email content in the text area
         self.message_area.insert(tk.END, email)
+        self.mark_important_data()
         self.mark_email()
+        self.message_area.configure(state="disabled")
+        self.button_state = None
+
+    def mark_important_data(self):
+
+        default_color, selected_color = (
+            load_button_colors(os.path.join(os.getcwd().split("smail")[0],
+                                            "sconf/config_old.json")))
+
+        lines = self.message_area.get("1.0", "end-1c").split("\n")
+        words_before_colon = [lines[0][:lines[0].find(":")].strip(),
+                              lines[1][:lines[1].find(":")].strip()]
+
+        try:
+            for i, word in enumerate(words_before_colon, start=1):
+                start_index = "1.0"
+                line_number = i
+                while True:
+                    line_start = self.message_area.search(word, start_index, stopindex=f"{line_number}.end",
+                                                          nocase=True)
+                    if not line_start:
+                        break
+                    colon_index = int(line_start.split('.')[1]) + len(word)
+                    text_after_colon = self.message_area.get(f"{line_number}.{colon_index + 2}",
+                                                             f"{line_number}.end")
+                    self.message_area.delete(f"{line_number}.{colon_index + 2}",
+                                             f"{line_number}.end")
+                    self.message_area.insert(f"{line_number}.{colon_index + 2}",
+                                             text_after_colon, "color")
+
+                    start_index = f"{line_number + 1}.0"
+            self.message_area.tag_configure("color", background=selected_color)
+
+        except Exception as e:
+            print("lag")
+            logger.error("Error occurred when marking important data: " + str(e))
 
     def mark_email(self):
 
-        show = load_show_url("../sconf/SMAIL_config.json")
+        show = load_show_url(os.path.join(os.getcwd().split("smail")[0],
+                                          "sconf/SMAIL_config.json"))
 
         if show == 1:
             # Find all URLs in email and tag them
@@ -500,7 +533,7 @@ class one_frame(tk.Frame):
     def open_browser(self, event, url):
         # Open web browser when clicking on a URL.
         try:
-            subprocess.run(["python3", "../sweb/main.py", url])
+            subprocess.run(["python3", os.path.join(os.getcwd().split("smail")[0], "sweb/main.py"), url])
             self.exit_app()
         except Exception as e:
             webbrowser.open_new(url)
@@ -545,7 +578,15 @@ class one_frame(tk.Frame):
     def stop_alert(self):
 
         # Switching the background color of each button back to default value.
-        default_color, selected_color = load_button_colors("../sconf/config_old.json")
+        default_color, selected_color = (
+            load_button_colors(os.path.join(os.getcwd().split("smail")[0],
+                                            "sconf/config_old.json")))
+
+        # Stopping audio
+        try:
+            pygame.mixer.music.stop()
+        except:
+            pass
 
         self.exit_button.config(
             bg=default_color
@@ -592,6 +633,10 @@ class one_frame(tk.Frame):
         # Switching frame
         self.r_frame = self.right_write_frame()
 
+        self.content_entry.configure(background="white")
+        self.subject_entry.configure(background="white")
+        self.recipient_entry.configure(background="white")
+
         self.r_frame.grid(
             column=1, row=0
         )
@@ -601,7 +646,9 @@ class one_frame(tk.Frame):
     def send_email_status(self):
 
         # Getting information from configuration file
-        login, password, smtp_server, smtp_port, imap_server, imap_port = load_credentials("../sconf/SMAIL_config.json")
+        (login, password, smtp_server,
+         smtp_port, imap_server, imap_port) = (
+            load_credentials(os.path.join(os.getcwd().split("smail")[0], "sconf/SMAIL_config.json")))
 
         # Sending email
         status = send_email(
@@ -619,9 +666,20 @@ class one_frame(tk.Frame):
 
         # Disable showing email in text area
         self.allow_show_email = False
+        default_color, select_color = (
+            load_button_colors(os.path.join(os.getcwd().split("smail")[0], "sconf/config_old.json")))
 
         if self.r_frame == self.rr_frame:
             self.r_frame = self.right_write_frame()
+
+        if id == self.button_state:
+            if not self.recipient_entry.get():
+                self.alert_missing_text(self.recipient_entry, "white", select_color)
+            if not self.subject_entry.get():
+                self.alert_missing_text(self.subject_entry, "white", select_color)
+            if not self.content_entry.get("1.0", tk.END).strip():
+                self.alert_missing_text(self.content_entry, "white", select_color)
+
         # If every Entry obtains text, message will be sent
         # when pressing Person[id] button for the second time.
         if (self.recipient_entry.get() and self.subject_entry.get() and
@@ -629,11 +687,18 @@ class one_frame(tk.Frame):
                 id == self.button_state):
             self.send_email_status()
 
-        # If another Person[id] button is pressed:
-        # entries will be deleted,
-        # new recipient entry will be filled in.
-        elif (self.subject_entry.get() or
-              self.content_entry.get("1.0", tk.END).strip()):
+        # handle actions with button 0
+        if id == 0 and id != self.button_state:
+            # If Send To button is pressed, frame is switched and
+            # recipient entry is deleted.
+            print("Send To button pressed")
+            recipient = self.switch_to_write_mail()
+            recipient.delete(0, tk.END)
+        #handle actions with Person buttons
+        else:
+            # If another Person[id] button is pressed:
+            # entries will be deleted,
+            # new recipient entry will be filled in.
             if id != self.button_state:
                 print("No content to send.")
                 email = search_mail(id)
@@ -642,36 +707,17 @@ class one_frame(tk.Frame):
                 recipient.insert(0, email)
                 recipient.configure(state="disabled")
 
-            # If Person[id] button is pressed for the second time,
-            # but one of the entry is not filled in, nothing will happen
-            else:
-                print("one of the entries is not filled in.")
-
-        else:
-            # If Send To button is pressed, frame is switched and
-            # recipient entry is deleted.
-            if id == 0:
-                print("Send To button pressed")
-                recipient = self.switch_to_write_mail()
-                recipient.delete(0, tk.END)
-            # If Person[id] button is pressed for the second time,
-            # but none of the entry is filled in.
-            else:
-                print("Button pressed for the second time,"
-                      " no entry is filled in.")
-                email = search_mail(id)
-                recipient = self.switch_to_write_mail()
-                recipient.delete(0, tk.END)
-                recipient.insert(0, email)
-                recipient.configure(state="disabled")
-
         self.button_state = id
-
-        default_color, select_color = load_button_colors("../sconf/config_old.json")
 
         for button in self.buttons:
             button.config(bg = default_color)
         self.buttons[id].config(bg = select_color)
+
+    def alert_missing_text(self, entry, default_color, select_color):
+        entry.configure(background=select_color)
+        entry.after(2000, lambda: entry.configure(background= default_color))
+
+
 
     def audio_configure(self, button, button_name):
 
