@@ -359,10 +359,14 @@ class MailFrameWidgets:
     def file_dialog(self):
         home_dir = os.path.expanduser("~")
         self.filename_picture = filedialog.askopenfilename(initialdir=home_dir)
+        if not self.filename_picture:  # check, if tuple is empty, if yes, return
+            return
         self.choose_pictures[0].configure(text=self.filename_picture, font=("Helvetica", 15, "bold"))
 
     def submit_filedialog(self):
-        if self.filename_picture is None:
+        # todo: path check
+        if not self.filename_picture:
+            print("filename error <placeholder>")
             return
         if self.filedialog_counter < 6:
             ryuConf.edit_smail_config("images", f"Person{self.filedialog_counter}", self.filename_picture)
