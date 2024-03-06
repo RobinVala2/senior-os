@@ -1,14 +1,19 @@
 import logging
 import json
 import os
-
 import pygame
 import PIL
 from PIL import Image, ImageTk
-from template.guiTemplate import resolutionMath
+from smail.template.guiTemplate import resolutionMath
 
 logger = logging.getLogger(__file__)
 
+def get_path(folder, file):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(current_dir)
+    file_path = os.path.join(root_dir, folder, file)
+
+    return file_path
 
 def load_json_file(file_path):
 
@@ -54,24 +59,22 @@ def load_show_url(path):
 def font_config():
 
     # Reading font configuration
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/config_old.json"))
+    data = load_json_file(get_path("sconf", "config_old.json"))
+
     font_info = data["font_info"]["font"]
     return font_info
 
 def app_color():
 
     # Reading background color configuration
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/config_old.json"))
+    data = load_json_file(get_path("sconf", "config_old.json"))
     bg = data["colors_info"]["app_frame"]
     return bg
 
 def images():
 
     # Reading image configuration
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/SMAIL_config.json"))
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
     images = data["images"]
     return images
 
@@ -91,8 +94,7 @@ def image_config(name, btn_height):
 def search_mail(id):
 
     # Searching email address of a person
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                                    "sconf/SMAIL_config.json"))
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
     emails = data["emails"]
     email = emails[f"Person{id}"]
     return email
@@ -101,8 +103,7 @@ def search_mail(id):
 def get_language():
 
     # Checks selected language
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/SMAIL_config.json"))
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
     language = data["lang"]
     text = data["text"]
     return language, text
@@ -112,8 +113,7 @@ def get_language():
 def get_audio():
 
     # Reads configuration from json file
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/SMAIL_config.json"))
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
     language = data["lang"]
     audio = data["audio"]
     timer = data["timer"]
@@ -206,26 +206,16 @@ def get_email_sender(email_string):
 
 
 def get_guardian_email():
-
     # Reading configuration
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/SMAIL_config.json"))
-    mail = data["guardian_email"]
-    return mail
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
+    email = data["guardian_email"]
+    return email
 
 def resend_active():
 
     # Reading configuration
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/SMAIL_config.json"))
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
     active = data["resend_email"]
     smail = data["credentials"]["username"]
     gmail = data["guardian_email"]
     return active ==1, smail, gmail
-
-def get_guardian_email():
-
-    data = load_json_file(os.path.join(os.getcwd().split("smail")[0],
-                                       "sconf/SMAIL_config.json"))
-    gmail = data["guardian_email"]
-    return gmail

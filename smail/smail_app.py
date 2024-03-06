@@ -25,4 +25,4 @@ if __name__ == '__main__':
         app = one_frame(root)
         root.mainloop()
     else:
-        logging.critical("Could not start smail app.")
+        logging.critical("Could not start SMAIL app.")

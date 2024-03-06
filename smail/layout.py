@@ -14,7 +14,7 @@ from style import (font_config, search_mail,
                          get_language, button_hover, button_leave,
                          images, image_config, app_color,
                          height_config, play_sound, get_email_sender, load_credentials,
-                         load_show_url, load_button_colors)
+                         load_show_url, load_button_colors, get_path)
 from connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from template import guiTemplate as temp
@@ -384,8 +384,7 @@ class one_frame(tk.Frame):
         # Get information from configuration file
         (login, password, smtp_server,
          smtp_port, imap_server, imap_port) = (
-            load_credentials(os.path.join(os.getcwd().split("smail")[0],
-                                            "sconf/SMAIL_config.json")))
+            load_credentials(get_path("sconf", "SMAIL_config.json")))
         language, text = get_language()
 
         # Getting emails from inbox
@@ -466,8 +465,7 @@ class one_frame(tk.Frame):
     def mark_important_data(self):
 
         default_color, selected_color = (
-            load_button_colors(os.path.join(os.getcwd().split("smail")[0],
-                                            "sconf/config_old.json")))
+            load_button_colors(get_path("sconf", "config_old.json")))
 
         lines = self.message_area.get("1.0", "end-1c").split("\n")
         words_before_colon = [lines[0][:lines[0].find(":")].strip(),
@@ -499,8 +497,7 @@ class one_frame(tk.Frame):
 
     def mark_email(self):
 
-        show = load_show_url(os.path.join(os.getcwd().split("smail")[0],
-                                          "sconf/SMAIL_config.json"))
+        show = load_show_url(get_path("sconf", "SMAIL_config.json"))
 
         if show == 1:
             # Find all URLs in email and tag them
@@ -533,7 +530,7 @@ class one_frame(tk.Frame):
     def open_browser(self, event, url):
         # Open web browser when clicking on a URL.
         try:
-            subprocess.run(["python3", os.path.join(os.getcwd().split("smail")[0], "sweb/main.py"), url])
+            subprocess.run(["python3", get_path("sweb", "main.py"), url])
             self.exit_app()
         except Exception as e:
             webbrowser.open_new(url)
@@ -579,8 +576,7 @@ class one_frame(tk.Frame):
 
         # Switching the background color of each button back to default value.
         default_color, selected_color = (
-            load_button_colors(os.path.join(os.getcwd().split("smail")[0],
-                                            "sconf/config_old.json")))
+            load_button_colors(get_path("sconf", "config_old.json")))
 
         # Stopping audio
         try:
@@ -648,7 +644,7 @@ class one_frame(tk.Frame):
         # Getting information from configuration file
         (login, password, smtp_server,
          smtp_port, imap_server, imap_port) = (
-            load_credentials(os.path.join(os.getcwd().split("smail")[0], "sconf/SMAIL_config.json")))
+            load_credentials(get_path("sconf", "SMAIL_config.json")))
 
         # Sending email
         status = send_email(
@@ -667,7 +663,7 @@ class one_frame(tk.Frame):
         # Disable showing email in text area
         self.allow_show_email = False
         default_color, select_color = (
-            load_button_colors(os.path.join(os.getcwd().split("smail")[0], "sconf/config_old.json")))
+            load_button_colors(get_path("sconf", "config_old.json")))
 
         if self.r_frame == self.rr_frame:
             self.r_frame = self.right_write_frame()
