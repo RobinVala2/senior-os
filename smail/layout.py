@@ -138,53 +138,70 @@ class one_frame(tk.Frame):
             self.audio_configure(self.menu_button_1, "menu1")
             self.audio_configure(self.menu_button_2, "menu2")
 
+            bg, active = load_button_colors()
+
+            self.menu_button_1.config(
+                activebackground=active
+            )
+            self.menu_button_2.config(
+                activebackground=active
+            )
+
             self.exit_button.config(
                 command = self.exit_app,
                 image=self.exit_image,
                 text="",
-                width=self.button_width
+                width=self.button_width,
+                activebackground = active
 
             )
             self.send_mail_person1.config(
                 command=lambda: self.fill_recipient(1),
                 image=self.person1_image,
                 text="",
-                width=self.button_width
+                width=self.button_width,
+                activebackground = active
             )
             self.send_mail_person2.config(
                 command=lambda: self.fill_recipient(2),
                 image=self.person2_image,
                 text="",
-                width=self.button_width
+                width=self.button_width,
+                activebackground=active
             )
             self.send_mail_person3.config(
                 command=lambda: self.fill_recipient(3),
                 image=self.person3_image,
                 text="",
-                width=self.button_width
+                width=self.button_width,
+                activebackground=active
             )
             self.send_mail_person4.config(
                 command=lambda: self.fill_recipient(4),
                 image=self.person4_image,
                 text="",
-                width=self.button_width
+                width=self.button_width,
+                activebackground=active
             )
             self.send_mail_person5.config(
                 command=lambda: self.fill_recipient(5),
                 image=self.person5_image,
                 text="",
-                width=self.button_width
+                width=self.button_width,
+                activebackground=active
             )
             self.send_mail_person6.config(
                 command=lambda: self.fill_recipient(6),
                 image=self.person6_image,
                 text="",
-                width=self.button_width
+                width=self.button_width,
+                activebackground=active
             )
             self.send_mail_to.config(
                 command=lambda: self.fill_recipient(0),
                 text=self.text[f"smail_{self.language}_sendToButton"],
-                width=self.button_width
+                width=self.button_width,
+                activebackground=active
             )
 
             self.buttons = (self.send_mail_to, self.send_mail_person1, self.send_mail_person2,
@@ -465,7 +482,7 @@ class one_frame(tk.Frame):
     def mark_important_data(self):
 
         default_color, selected_color = (
-            load_button_colors(get_path("sconf", "config_old.json")))
+            load_button_colors())
 
         lines = self.message_area.get("1.0", "end-1c").split("\n")
         words_before_colon = [lines[0][:lines[0].find(":")].strip(),
@@ -576,7 +593,7 @@ class one_frame(tk.Frame):
 
         # Switching the background color of each button back to default value.
         default_color, selected_color = (
-            load_button_colors(get_path("sconf", "config_old.json")))
+            load_button_colors())
 
         # Stopping audio
         try:
@@ -663,7 +680,7 @@ class one_frame(tk.Frame):
         # Disable showing email in text area
         self.allow_show_email = False
         default_color, select_color = (
-            load_button_colors(get_path("sconf", "config_old.json")))
+            load_button_colors())
 
         if self.r_frame == self.rr_frame:
             self.r_frame = self.right_write_frame()

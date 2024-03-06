@@ -28,13 +28,14 @@ def load_json_file(file_path):
         logging.error(f"An unexpected error occurred while loading data from {file_path}", exc_info=True)
         return -1
 
-def load_button_colors(path):
-    data = load_json_file(path)
-    default_color = data["colors_info"]["buttons_unselected"]
-    select_color = data["colors_info"]["buttons_selected"]
+def load_button_colors():
+
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
+    default_color = data["colors_info"]["menu_frame"]
+
+    global_data = load_json_file(get_path("sconf", "config.json"))
+    select_color = global_data["GlobalConfiguration"]["hoverColor"]
     return default_color, select_color
-
-
 
 
 def load_credentials(path):
@@ -59,15 +60,19 @@ def load_show_url(path):
 def font_config():
 
     # Reading font configuration
-    data = load_json_file(get_path("sconf", "config_old.json"))
+    data = load_json_file(get_path("sconf", "config.json"))
 
-    font_info = data["font_info"]["font"]
+    font_family = data["GlobalConfiguration"]["fontFamily"]
+    font_size = data["GlobalConfiguration"]["fontSize"]
+    font_thickness = data["GlobalConfiguration"]["fontThickness"]
+
+    font_info = font_family + " " + str(font_size) + " "+ font_thickness
     return font_info
 
 def app_color():
 
     # Reading background color configuration
-    data = load_json_file(get_path("sconf", "config_old.json"))
+    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
     bg = data["colors_info"]["app_frame"]
     return bg
 
@@ -102,9 +107,10 @@ def search_mail(id):
 
 def get_language():
 
-    # Checks selected language
+    data = load_json_file(get_path("sconf", "config.json"))
+    language = data["GlobalConfiguration"]["language"].lower()
+
     data = load_json_file(get_path("sconf", "SMAIL_config.json"))
-    language = data["lang"]
     text = data["text"]
     return language, text
 
@@ -114,7 +120,7 @@ def get_audio():
 
     # Reads configuration from json file
     data = load_json_file(get_path("sconf", "SMAIL_config.json"))
-    language = data["lang"]
+    language, text = get_language()
     audio = data["audio"]
     timer = data["timer"]
     return language, audio, timer

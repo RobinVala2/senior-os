@@ -4,6 +4,7 @@ import tkinter
 from sgive.src.CaregiverApp.configurationActions import main_config_default, smail_config_default
 from layout import one_frame
 from antiphishing.get_DB import get_DB
+from template import configActions as act
 
 
 logging.basicConfig(
@@ -19,6 +20,9 @@ if __name__ == '__main__':
     config_path = os.path.join(os.getcwd().split("smail")[0], "sconf/")
 
     try:
+
+        # Generating old configuration file for template
+        config_old = act.configExistCheck("0")
 
         # Check if configuration files exist
         if not os.path.exists(os.path.join(config_path, "config.json")):
@@ -36,5 +40,5 @@ if __name__ == '__main__':
         root.configure(bg="#FFFFFF")
         app = one_frame(root)
         root.mainloop()
-    except:
-        logging.critical("Could not start SMAIL app, error loading configuration.")
+    except Exception as e:
+        logging.critical("Could not start SMAIL app, error loading configuration." + e)
