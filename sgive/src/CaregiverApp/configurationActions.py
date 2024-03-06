@@ -100,12 +100,23 @@ def restore_main_config():
 def main_config_default(path):
     options = ["Global", "Mail", "Web", "Logs"]
     languageOPT = ["Czech", "English", "German"]
-    GLobalFramesOptions = ["Primary display:", "Display language:", "Alert language:",
-                           "Colorscheme:", "Alert color (hex):", "Hover color (hex):", "Alert delay (s):",
-                           "Font size (px):", "Label size (px):", "Font weight :"]
-    SMailLabelOptions = ["Senior's email:", "Senior's password:", "Add six emails:", "Configure pictures:",
-                         "Activate caregiver warning",
-                         "Caregiver email:", "URL links in email body:"]
+    GLobalFramesOptions = ["Display",
+                           "Language",
+                           "Sound language",
+                           "Colorscheme",
+                           "Alert color (in hex)",
+                           "Highlight color (in hex)",
+                           "Sound delay (in s)",
+                           "Font size (in px)",
+                           "Label size (px)",
+                           "Font weight"]
+    SMailLabelOptions = ["Senior email",
+                         "Senior password",
+                         "Email contacts (six)",
+                         "Pictures (six)",
+                         "Caregiver warning",
+                         "Caregiver email",
+                         "URL links in email"]
     EntryOptions = ["alertColor", "hoverColor", "soundDelay", "fontSize", "labelFontSize"]
 
     # I removed from GlobalConfiguration these two:
