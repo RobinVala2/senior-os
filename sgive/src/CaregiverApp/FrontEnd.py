@@ -656,9 +656,9 @@ class GlobalFrameWidgets:
         green = int(hex_color[2:4], 16)
         blue = int(hex_color[4:6], 16)
         # lighten
-        red = min(255, int(red * (1 + 30 / 100)))
-        green = min(255, int(green * (1 + 30 / 100)))
-        blue = min(255, int(blue * (1 + 30 / 100)))
+        red = min(255, int(red * (1 + 35 / 100)))
+        green = min(255, int(green * (1 + 35 / 100)))
+        blue = min(255, int(blue * (1 + 35 / 100)))
         # back to hex
         new_hex_color = "#{:02x}{:02x}{:02x}".format(red, green, blue)
         print("new hex:", new_hex_color)

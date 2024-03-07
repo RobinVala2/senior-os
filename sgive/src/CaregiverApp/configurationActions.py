@@ -148,6 +148,10 @@ def main_config_default(path):
             "padx_value": 5,
             "height_divisor": 4.5,
             "width_divisor": 5,
+            "menu_frame": "#e5e5e5",
+            "app_frame": "#FFFFFF",
+            "buttons_unselected": "#e5e5e5",
+            "buttons_selected": "#00ff00",
         },
         'careConf': {
             "fg": 5,
