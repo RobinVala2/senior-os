@@ -56,12 +56,9 @@ def read_log(givenFilter, givenName):
 
 # CHECK FOR ML LEARNING ------------------------------------------------------------------------------------------------
 def MLcheck(URL):
-    print("Checking for /ML-SAVED dir...")
     path = os.path.join(os.getcwd(), "ML-saved")
-
     if os.path.exists(path):
         threatDetect.Main(URL)
-        print(os.listdir(path))
 
 
 # MAIN (GLOBAL) CONFIG ACTIONS: ----------------------------------------------------------------------------------------

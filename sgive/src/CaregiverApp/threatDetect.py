@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 import sgive.src.CaregiverApp.configurationActions as ryuconf
 import humanize as hm
+import re
 import os
 import pickle
 from datetime import datetime, date
@@ -103,6 +104,8 @@ class Main:
         num_of_lang = ryuconf.red_main_config("careConf", "LanguageOptions")
         return_array = []
         ML_file_counter = 0
+        pattern = r"\d{4}-\d{2}-\d{2}_\w{2}_.+"  # regex
+        pattern_bool = False
 
         if os.path.exists(path_to_dir):
             list_files = os.listdir(path_to_dir)
@@ -111,9 +114,11 @@ class Main:
             for objct in list_files:
                 file_path = os.path.join(path_to_dir, objct)
                 if objct.find(self.language) != -1 and os.path.exists(file_path):
+                    if not re.match(pattern, objct):
+                        pattern_bool = True
                     ML_file_counter += 1
 
-            if (not list_files or len(list_files) != len(num_of_lang) * 2) and not ML_file_counter == 2:
+            if not list_files or len(list_files) != len(num_of_lang) * 2 or ML_file_counter != 2 or pattern_bool:
                 logging.error("There is no Machine learning files or the files got corrupted, generating new ones.")
                 # yeet all the files to the eternal hell:
                 files = os.listdir(path_to_dir)
@@ -165,10 +170,10 @@ class Main:
             for language in language_num:
                 full_language_name = language_mapping.get(language, language)
                 self.ML.machineLearning(full_language_name)
-            get_names_reroll = self.validate_ml_files()  # loading again:
+            get_names_reroll_v2 = self.validate_ml_files()  # loading again:
             # get_names[0] → MODEL
             # get_names[1] → vectorizer
-            self.ML.predictURL(get_names_reroll[0], get_names_reroll[1], self.URLthing)
+            self.ML.predictURL(get_names_reroll_v2[0], get_names_reroll_v2[1], self.URLthing)
             return
         elif len(get_names) == 2:
             # get_names[0] → MODEL
