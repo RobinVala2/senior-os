@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, mock_open
-from smail.connection.style import load_json_file
+from smail.style import load_json_file
 
 class TestLoadJsonFile(unittest.TestCase):
 
