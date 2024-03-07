@@ -17,13 +17,13 @@ def getButtonConf():
 
 def resolutionMath():
      #TODO: do len(get_monitors()) when choosing which screen to get in caregiver app
-    _numOfScreen = JS.jsonRed('resolution_info', "numOfScreen")
+    _numOfScreen = JS.jsonRed_upd('GlobalConfiguration', "numOfScreen")
     # this is from screen_info imported get_monitors to get always the first screen
     _screenWidth = get_monitors()[_numOfScreen].width
     _screenHeight = get_monitors()[_numOfScreen].height
     # upper frame (MenuFrame)width and height
-    panelWidth = int(_screenWidth / JS.jsonRed('resolution_info', "width_divisor"))
-    panelHeight = int(_screenHeight / JS.jsonRed('resolution_info', "height_divisor"))
+    panelWidth = int(_screenWidth / JS.jsonRed_upd('GUI_template', "width_divisor"))
+    panelHeight = int(_screenHeight / JS.jsonRed_upd('GUI_template', "height_divisor"))
     # lower frame (ApplicationFrame) width and height
     app_width = _screenWidth - panelWidth
     app_height = _screenHeight - panelHeight
