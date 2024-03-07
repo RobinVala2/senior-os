@@ -13,9 +13,8 @@ logging.basicConfig(
 )
 
 if __name__ == '__main__':
-    url = ['https://www.google.com/', 'https://www.youtube.cum/']
+    url = ['https://xhamster.com/', 'https://www.seznamzpravy.cz/clanek/zahranicni-stredni-evropa-policek-pro-slovensko-vlada-rusi-spolecna-jednani-247254#dop_ab_variant=0&dop_source_zone_name=zpravy.sznhp.box&source=hp&seq_no=1&utm_campaign=abtest241_shrnuti_llm_varB&utm_medium=z-boxiku&utm_source=www.seznam.cz']
     ryuconf.MLcheck(url)
-
 
     whereTheFuckAmI = os.getcwd()
     split = whereTheFuckAmI.split("sgive")
