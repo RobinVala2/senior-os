@@ -120,10 +120,21 @@ def get_audio():
 
     # Reads configuration from json file
     data = load_json_file(get_path("sconf", "SMAIL_config.json"))
-    language, text = get_language()
     audio = data["audio"]
-    timer = data["timer"]
+
+    data = load_json_file(get_path("sconf", "config.json"))
+    language = data["GlobalConfiguration"]["language"].lower()
+    timer = data["GlobalConfiguration"]["soundDelay"]*1000
+
     return language, audio, timer
+
+def get_alert_color():
+
+    data = load_json_file(get_path("sconf", "config.json"))
+    color = data["GlobalConfiguration"]["alertColor"]
+
+    return color
+
 
 
 def play_sound(button_name):

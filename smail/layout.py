@@ -14,7 +14,7 @@ from style import (font_config, search_mail,
                          get_language, button_hover, button_leave,
                          images, image_config, app_color,
                          height_config, play_sound, get_email_sender, load_credentials,
-                         load_show_url, load_button_colors, get_path)
+                         load_show_url, load_button_colors, get_path, get_alert_color)
 from connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from template import guiTemplate as temp
@@ -555,37 +555,39 @@ class one_frame(tk.Frame):
 
     def alert_buttons(self):
 
+        alert_bg = get_alert_color()
+
         # Changing the color of all buttons to red,
         # playing warning sound.
         self.exit_button.config(
-            bg = "red"
+            bg = alert_bg
         )
         self.send_mail_person1.config(
-            bg = "red"
+            bg = alert_bg
         )
         self.send_mail_person2.config(
-            bg="red"
+            bg=alert_bg
         )
         self.send_mail_person3.config(
-            bg="red"
+            bg=alert_bg
         )
         self.send_mail_person4.config(
-            bg="red"
+            bg=alert_bg
         )
         self.send_mail_person5.config(
-            bg="red"
+            bg=alert_bg
         )
         self.send_mail_person6.config(
-            bg="red"
+            bg=alert_bg
         )
         self.send_mail_to.config(
-            bg="red"
+            bg=alert_bg
         )
         self.menu_button_1.config(
-            bg="red"
+            bg=alert_bg
         )
         self.menu_button_2.config(
-            bg="red"
+            bg=alert_bg
         )
         play_sound("alert")
 
