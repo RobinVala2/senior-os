@@ -30,8 +30,8 @@ def load_json_file(file_path):
 
 def load_button_colors():
 
-    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
-    default_color = data["colors_info"]["menu_frame"]
+    data = load_json_file(get_path("sconf", "config.json"))
+    default_color = data["GUI_template"]["buttons_unselected"]
 
     global_data = load_json_file(get_path("sconf", "config.json"))
     select_color = global_data["GlobalConfiguration"]["hoverColor"]
@@ -72,8 +72,8 @@ def font_config():
 def app_color():
 
     # Reading background color configuration
-    data = load_json_file(get_path("sconf", "SMAIL_config.json"))
-    bg = data["colors_info"]["app_frame"]
+    data = load_json_file(get_path("sconf", "config.json"))
+    bg = data["GUI_template"]["app_frame"]
     return bg
 
 def images():
