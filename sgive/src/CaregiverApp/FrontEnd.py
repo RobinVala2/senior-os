@@ -131,7 +131,8 @@ class LogsFrameWidgets:
                                                                            corner_radius=0,
                                                                            height=self.height * 0.10,
                                                                            width=self.width * (1 / 5),
-                                                                           font=font_value)
+                                                                           font=font_value,
+                                                                           dropdown_font=font_value)
                 self.toolbar_buttons[widget].pack(side=customtkinter.LEFT, fill=customtkinter.Y)
             else:
                 self.toolbar_buttons[widget] = customtkinter.CTkButton(master=self.options_toolbar_frame,
