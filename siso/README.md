@@ -26,21 +26,21 @@ The Live CD or Live System is described as a fully bootable computer installatio
 Both systems consists of a local PDF browser XPDF and a lightweight Web browser Palemoon. In the home folder of both users a directory `PDF/` contains the `OS_03_ArchB.pdf` file. The auto-login feature is used by both systems.
 
 #### Method live-build Package
-| **Distribution** | Debian 11 |
-| **Linux Kernel Release** | 5.10.0-28-amd64 |
-| **Linux Kernel Verison** | 5.10.209-2 |
-| **System Architecture** | x86_64 (64-bit) |
-| **Build Date** | 2024/01/31 |
-| **Build-in User** | user |
+- **Distribution:** Debian 11
+- **Linux Kernel Release:** 5.10.0-28-amd64
+- **Linux Kernel Version:** 5.10.209-2
+- **System Architecture:** x86_64 (64-bit)
+- **Build Date:** 2024/01/31
+- **Build-in User:** user
 
 
 #### Method From Scratch
-| **Distribution** | Debian 12 |
-| **Linux Kernel Release** | 6.0.0-18-amd64 |
-| **Linux Kernel Verison** | 6.1.76-1 |
-| **System Architecture** | x86_64 (64-bit) |
-| **Build Date** | 2024/02/01 |
-| **Build-in User** | root |
+- **Distribution:** Debian 12
+- **Linux Kernel Release:** 6.0.0-18-amd64
+- **Linux Kernel Version:** 6.1.76-1
+- **System Architecture:** x86_64 (64-bit)
+- **Build Date:** 2024/02/01
+- **Build-in User:** root
 
 ## Linux Installation
 Obtain the build ISO images through [Releases](https://github.com/forsenior/senior-os/releases) and [apply persistence setting](#apply-persistence-setting) or [build your own customized LiveCD](#build-your-own-customized-livecd) Debian distribution through the provided scripts. 
@@ -123,23 +123,23 @@ sudo ./SISO_895MB_From_Scratch.sh
 Although both systems are build differently their usage differs only slightly. Based on a stored BIOS on a device try one of the common keys **F2**, **F8**, **F12**, or others.
 
 #### Change a Boot Device 
-![BootDevice](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20From%20Scratch/Screens/SISO_1_Boot.png)
+![BootDevice](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20From%20Scratch/Screens/SISO_1_Boot.png | width=50%)
 
 #### Boot Menu startup
 Based on the started ISO image the title in a penguin bubble changes from **USB live-build** to **USB From Scratch**. Select the only option by pressing the **ENTER** key on the keyboard.
-![BootMenu](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20Package/Screens/SISO_2_Grub.png)
+![BootMenu](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20Package/Screens/SISO_2_Grub.png | width=50%)
 
 #### Unlock the Encrypted Persistence
 The corresponding cipher word has to be entered to enable persistence of the **/home** directory.
 
-- $${\color{green} Correct \space password \space entered }$$ - mount partition with stored data on a storage medium into the Live System filesystem,
-- $${\color{red} Incorrect \space password \space entered }$$ - prints the message about password re-entering, 
-- $${\color{black}No \space password \space entered}$$ - the Live System is booted without any parition mount. Customizations in the persistence folder `/home` are **NOT** stored.
+$${\color{green} Correct \space password \space entered }$$ - mount partition with stored data on a storage medium into the Live System filesystem,
+$${\color{red} Incorrect \space password \space entered }$$ - prints the message about password re-entering, 
+$${\color{black}No \space password \space entered}$$ - the Live System is booted without any parition mount. Customizations in the persistence folder `/home` are **NOT** stored.
 
-![EncryptedPersistence](https://github.com/forsenior/senior-os/blob/main/siso/VirtualBox/13_SISO_VB_Encrypted_Persistence.png)
+![EncryptedPersistence](https://github.com/forsenior/senior-os/blob/main/siso/VirtualBox/13_SISO_VB_Encrypted_Persistence.png | width=50%)
 
 #### Console Environment
-![PackageConsoleEnvironment](https://github.com/forsenior/senior-os/blob/main/siso/VirtualBox/14_SISO_VB_Conole.png)
+![PackageConsoleEnvironment](https://github.com/forsenior/senior-os/blob/main/siso/VirtualBox/14_SISO_VB_Conole.png | width=50%)
 
 #### Both Browsers Start
 Windows displayed by the Xorg server are automatically resized based on the screen resolution and the server’s default settings. Program windows are controlable through mouse control. To **Exit** the program window *Right Click* anywhere on a displayed program window and select *Exit* from the drop down menu or use key *q* on the keyboard.
@@ -149,6 +149,6 @@ Windows displayed by the Xorg server are automatically resized based on the scre
 - Local PDF browser start: `startx /usr/bin/xpdf PDF/OS_03_ArchB.pdf`
 - Palemoon Web browser start: `startx /usr/bin/palemoon`
 
-![PDFBrowser](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20Package/Screens/SISO_5_PDF_Browser.png)
+![PDFBrowser](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20Package/Screens/SISO_5_PDF_Browser.png | width=50%)
 
-![PalemoonBrowser](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20Package/Screens/SISO_6_Palemoon_Web_Browser.png)
+![PalemoonBrowser](https://github.com/forsenior/senior-os/blob/main/siso/LiveCD%20Package/Screens/SISO_6_Palemoon_Web_Browser.png | width=50%)
