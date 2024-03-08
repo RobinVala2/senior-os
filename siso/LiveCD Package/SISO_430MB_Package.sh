@@ -3,19 +3,20 @@
 #  !!!  DISCLAIMER !!! 
     # 1. THIS SCRIPT MUST BE RUN AS A ROOT USER
 	# 2. THE CONNECTED USB DRIVE HAS TO BE EMPTY
+	# 3. ADD EXACUTABLE RIGHTS FOR THE SCRIPT
 
-# CURRENT SIZE - 430 MB 
+# LiveCD - PACKAGE - SIZE - 430 MB 
 
 #----------------------------------------VARIABLES------------------------------------>
-work_folder="LSDF"
+work_folder="LSDF"											# Live system work directory
 
-file_dir="/root/Documents"
+file_dir="/root/Documents"									# Storage directory for palemoon.tar.xz, PDF files, splash images
 	pdf="OS_*"
 	palemoon="palemoon-32.4.0.linux-x86_64-gtk2.tar.xz"
 
-disk_partition="/dev/sdd"                                   # removable storage medium name
-disk_write_speed="7M"                                       # removable storage medium speed
-disk_partition_password="storage"                           # password for removable storage medium
+disk_partition="/dev/sdd"                                   # Removable storage medium name
+disk_write_speed="7M"                                       # Removable storage medium speed
+disk_partition_password="storage"                           # Password for removable storage medium
 
 #----------------------------------------PACKAGES------------------------------------->
 apt-get install live-build
@@ -113,7 +114,7 @@ sudo chmod a+x "${HOME}/${work_folder}/config/includes.chroot/lib/live/config/09
 mkdir -p "${HOME}/${work_folder}/config/bootloaders"
 
 	# COPY TEMPLATEs OF BOOTLOADERS
-sudo cp -r "/usr/share/live/build/bootloaders/"{syslinux*	,isolinux,grub-pc} "${HOME}/${work_folder}/config/bootloaders" 
+sudo cp -r "/usr/share/live/build/bootloaders/"{syslinux*,isolinux,grub-pc} "${HOME}/${work_folder}/config/bootloaders" 
 
 #--------------------------------------BOOTLOADERS----------------------------------->
 	### SYSLINUX MENU

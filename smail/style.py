@@ -1,6 +1,8 @@
 import logging
 import json
 import os
+from tkinter import Label
+
 import pygame
 import PIL
 from PIL import Image, ImageTk
@@ -176,7 +178,15 @@ def height_config(parent):
     # Pt to pixels
     font = font_base.split(" ")
     font_size = int(font[1])
-    font_size_in_pixels = font_size / 0.75
+
+    if font_size >= 36:
+        scaling_factor = 0.75
+    elif font_size < 16:
+        scaling_factor = 0.65
+    else:
+        scaling_factor = 0.7
+
+    font_size_in_pixels = font_size / scaling_factor
 
     # Resolution info
     parent_height = parent.winfo_screenheight()

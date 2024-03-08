@@ -70,3 +70,13 @@ def jsonRed(key, value):
     else:
         print("LOG: there is no path to the configuration file")
         return
+
+def jsonRed_upd(key, value):
+    path = temporaryGetPath()
+    if os.path.exists(path):  # checks for the conf file, if there is any
+        with open(os.path.join(path, 'config.json'), "r") as file:
+            jsonData = json.load(file)
+        return jsonData[key][value]
+    else:
+        print("LOG: there is no path to the configuration file")
+        return

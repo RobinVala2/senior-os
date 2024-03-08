@@ -3,14 +3,15 @@
 #  !!!  DISCLAIMER !!! 
     # 1. THIS SCRIPT MUST BE RUN AS A ROOT USER
     # 2. THE CONNECTED USB DRIVE HAS TO BE EMPTY
+    # 3. ADD EXACUTABLE RIGHTS FOR THE SCRIPT
 
-# CURRENT SIZE - 895 MB || 1,2 GB with Nvidia proprietary drivers
+# CURRENT SIZE - 1,2 GB with Nvidia proprietary drivers
 
 #----------------------------------------VARIABLES------------------------------------>
 work_folder="SCRIPT"                                        # Live system work directory
 iso_name="iso-debian-from-scratch"                          # Live system iso name
 
-file_dir="/home/student/Documents"                          # storage for palemoon.tar.xz, PDF files, splash images
+file_dir="/home/student/Documents"                          # Storage directory for palemoon.tar.xz, PDF files, splash images
     palemoon="palemoon-32.4.0.linux-x86_64-gtk2.tar.xz"
     pdf="OS_*"
     splash="splash-FS-640-480.png"
@@ -18,9 +19,9 @@ file_dir="/home/student/Documents"                          # storage for palemo
 username_live="root"                                        # Live system username and password
 password_live="student"
 
-disk_partition="/dev/sdd"                                   # removable storage medium name
-disk_write_speed="7M"                                       # removable storage medium speed
-disk_partition_password="storage"                           # password for removable storage medium
+disk_partition="/dev/sdd"                                   # Removable storage medium name
+disk_write_speed="7M"                                       # Removable storage medium speed
+disk_partition_password="storage"                           # Password for removable storage medium
 
 root=$root
 

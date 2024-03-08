@@ -1,37 +1,53 @@
-![Senior os logo](https://github.com/forsenior/senior-os/blob/main/sconf/images/SENOS_LOGO_1.png)
+![Senior os logo](https://github.com/forsenior/senior-os/blob/main/sconf/images/SENOS_long-logo_mid.png)
 
-# SeniorOS - Operating system for late elderly users
+# Senior-OS
 
-The system is **under development** and is to be used by the students and academics at Brno University of Technology
+Working environment for late seniors and cognitive challenged users
 
-- We are developing an operating system suitable for individuals aged 90+ and those with cognitive challenges
-- These users encounter difficulties when using common desktop systems and require assistance from their caregivers
-- Late elderly and mentally impaired users are also easy targets for cyber criminals
+## Description
 
-We appreciate comments emailed [here](https://www.vut.cz/en/people/dan-komosny-3065)
+Late seniors and cognitive challenged users encounter difficulties when using common desktop systems and require assistance from their caregivers. They are also easy targets for cyber criminals. This project aims to provide a working environment suitable for such users and improve their security protection.
 
+This work is in progress.
 
-## Features
+## Key features
 
-Features in progress
+- Very simple layout for easy use
+- All actions linked to familiar person photos or large icons
+- Levels of security protection based on user mental ability
+- Caregiver notifications to solve problems quickly
+- Available as live ISO with persistent user data
+ 
+## Environment applications
 
-- Easy navigation via non-changing GUI
-- Email client and web browser designed for seniors
-- Dedicated application for senior caregiver
-- Available as live ISO for USB sticks
-- Caregiver warning of filled-in phishing forms
-- Fine motor skills log for medical evaluations
+- [Email client](https://github.com/forsenior/senior-os/tree/main/smail) for senior
+- [Web browser](https://github.com/forsenior/senior-os/tree/main/sweb) for senior
+- [Caregiver app](https://github.com/forsenior/senior-os/tree/main/sgive) for senior caregiver
 
+## User protection levels
 
-## Screenshots
+The working environment offers these protection levels based on user mental ability
 
-Applications in progress
+Very restricted
 
-- Email client for seniors [here](https://github.com/forsenior/senior-os/tree/main/smail/screens)
-- Web browser for seniors [here](https://github.com/forsenior/senior-os/tree/main/sweb/screens)
-- Senior caregiver application [here](https://github.com/forsenior/senior-os/tree/main/sgive/screenshots)
+1. Browsing limited to only whitelisted webpages
+2. URL links removed from emails
 
+Moderately restricted
 
-## Bachelor's and master's theses
+1. Disabled text input on webpages except whitelisted, e.g., search engines
+2. Red-alert for emails with phishing URLs
+3. Caregiver notification on reply to phishing email including text
 
-Topics are listed [here](https://github.com/forsenior/senior-os/tree/main/theses) (in Czech)
+Lossely restricted
+
+1. Red-alert for phishing websites
+2. Caregiver notification of filled-in form on phishing webpage including text
+3. Red-alert for emails with phishing URLs
+4. Caregiver notification on reply to phishing email including text
+
+## Student contribution
+
+Students can contribute to the development by their bachelor's and master's theses. 
+
+List of current topics is [here](https://github.com/forsenior/senior-os/tree/main/theses) (in Czech).
