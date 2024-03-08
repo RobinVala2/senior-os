@@ -114,7 +114,7 @@ def main_config_default(path):
                          "Caregiver warning",
                          "Caregiver email",
                          "URL links in email"]
-    EntryOptions = ["alertColor", "hoverColor", "soundDelay", "fontSize", "labelFontSize"]
+    EntryOptions = ["alertColor", "hoverColor", "soundDelay", "controlFontSize", "fontSize"]
 
     # I removed from GlobalConfiguration these two:
     # "light_color": "white",
@@ -133,8 +133,8 @@ def main_config_default(path):
             "hoverColor": "#4b5946",
             "hoverColorLighten": "#7c8e76",
             "soundDelay": 5,
-            "fontSize": 65,
-            "labelFontSize": 50,
+            "fontSize": 36,
+            "controlFontSize": 70,
             "fontThickness": "bold",
             "fontFamily": "Helvetica",
         },

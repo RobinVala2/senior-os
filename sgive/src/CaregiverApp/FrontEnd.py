@@ -36,7 +36,7 @@ class DefaultFrameWidgets:
                          "If you are senior yourself, you shouldn't be here.\n"
                          "\nTo leave, click \"EXIT\" in upper right corner.")
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.1,
+                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize") * 1.1,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         label = customtkinter.CTkLabel(master=frame_root, text=text_variable, font=font_value)
@@ -122,7 +122,7 @@ class LogsFrameWidgets:
 
     def options_toolbar(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.50,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 0.80,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         # pick log folder:
         for widget in range(3):
@@ -132,7 +132,9 @@ class LogsFrameWidgets:
                                                                            height=self.height * 0.10,
                                                                            width=self.width * (1 / 5),
                                                                            font=font_value,
-                                                                           dropdown_font=font_value)
+                                                                           dropdown_font=font_value,
+                                                                           anchor=customtkinter.CENTER
+                                                                           )
                 self.toolbar_buttons[widget].pack(side=customtkinter.LEFT, fill=customtkinter.Y)
             else:
                 self.toolbar_buttons[widget] = customtkinter.CTkButton(master=self.options_toolbar_frame,
@@ -157,7 +159,7 @@ class LogsFrameWidgets:
 
     def log_textbox(self, choice):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")*0.50)
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 0.80)
         self.textbox = customtkinter.CTkTextbox(self.master)
         self.textbox.configure(height=self.master.winfo_height() - (self.master.winfo_height() * 0.10),
                                width=self.master.winfo_width(),
@@ -184,10 +186,6 @@ class WebFrameWidgets:
         self.restore_btn = restore
         self.refresh_btn = refresh
         # self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
-        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
-        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
-        self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         # -----------------
         # Bind the resize event
         self.master.bind("<Configure>", self.on_resize)
@@ -215,9 +213,6 @@ class MailFrameWidgets:
         self.height_frame = height_frame
         self.width_frame = width
         self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
-        self.font_name = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.label_size = ryuConf.red_main_config("GlobalConfiguration", "labelFontSize")
-        self.font_boldness = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         self.restore_configurations = restore
         self.refresh_frame = refresh
@@ -269,7 +264,7 @@ class MailFrameWidgets:
                                         f"Enter here (current: {caregiver_entry})"]
 
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.60,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         for index, value in enumerate(entry_placeholderText_values):
             self.entry_widgets[index].configure(placeholder_text=value,
@@ -303,7 +298,7 @@ class MailFrameWidgets:
 
     def update_entry_widgets(self, email_val, entry_type, button_id):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.60,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         hv_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
         hv_col_light = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
@@ -326,7 +321,8 @@ class MailFrameWidgets:
             return
 
         if not entry_type == 1:  # regex check for all email inputs
-            match = re.fullmatch(r'\b[\w.%+-]+(?<!\s)@[A-Za-z0-9.-]+\.[A-Za-zščřžýáíéúůďťňóŠČŘŽÝÁÍÉÚŮĎŤŇÓ]{2,7}\b', email_val)
+            match = re.fullmatch(r'\b[\w.%+-]+(?<!\s)@[A-Za-z0-9.-]+\.[A-Za-zščřžýáíéúůďťňóŠČŘŽÝÁÍÉÚŮĎŤŇÓ]{2,7}\b',
+                                 email_val)
 
             # email inputs for seniors email and caregiver email
             if match and not entry_type == 2 and not entry_type == 3:
@@ -368,7 +364,7 @@ class MailFrameWidgets:
 
     def create_labels(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize"),
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.65,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         y_position = 0.0
         label_num = len(self.label_names)
@@ -385,7 +381,7 @@ class MailFrameWidgets:
 
     def file_dialog(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.60,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         home_dir = os.path.expanduser("~")
         self.filename_picture = filedialog.askopenfilename(initialdir=home_dir)
@@ -407,10 +403,9 @@ class MailFrameWidgets:
             self.filedialog_counter = 1
             self.choose_pictures[1].configure(text=f"Add person{self.filedialog_counter}")
 
-
     def create_widgets(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.60,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         global value_name
         rel_x = 1 * (2 / 5)
@@ -590,6 +585,8 @@ class GlobalFrameWidgets:
         # for showing each buttons at one function and resize calculations ↓ ↓ ↓ ↓ ↓
         self.array_coranteng = [self.screen_num, self.language_dict, self.language_alert_dict, self.colorscheme_dict,
                                 self.entry_dict, self.font_size]
+        # percentage ------------------
+        self.scale = 0.79
         # ---------- CALS --------------
         self.screen_size_check()
         self.create_labels()  # creating labels for each lane
@@ -644,7 +641,7 @@ class GlobalFrameWidgets:
         window_width = self.master.winfo_width()
 
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.50,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * self.scale,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         rel_entry_x = entry_object.winfo_x() / window_width
@@ -823,7 +820,7 @@ class GlobalFrameWidgets:
         width_size = self.width_frame * (2 / 5) - 2.5
         height_size = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.50,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * self.scale,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         entry_objects = ryuConf.red_main_config("careConf", "EntryOptions")
@@ -873,7 +870,7 @@ class GlobalFrameWidgets:
         This very scary looking function does multiple things, it sets repetitive parameters for widgets and its place on frame
         """
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize") * 0.50,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * self.scale,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         height_num = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
@@ -917,7 +914,7 @@ class GlobalFrameWidgets:
 
     def create_labels(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "labelFontSize"),
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.40,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         y_position = 0.001
@@ -1041,7 +1038,7 @@ class Frames:
         self.refresh_frame.place(relx=0.5 + 0.001, rely=0.91)
 
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
+                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         hovor_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
@@ -1165,7 +1162,7 @@ class Toolbar:
     def create_buttons(self, id_num):
         self.button_dictionary[id_num] = customtkinter.CTkButton(self.toolbar_frame)
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.10,
+                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize") * 1.20,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         # EXIT button
         if id_num == self.toolbar_buttons_count:  # aka, the last button is the exit button
