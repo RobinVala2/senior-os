@@ -9,12 +9,10 @@ import pickle
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import logging
-import configurationActions as ryuconf
-
+import sgive.src.CaregiverApp.configurationActions as ryuconf
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
-
 
 
 class MachineLearning:
@@ -76,8 +74,7 @@ class MachineLearning:
 
     @staticmethod
     def predictURL(model_file, vectorizer_file, URLarray):
-        print("-- detection --")
-        logging.info(f"Using mode: {model_file}")
+        logging.info(f"Using Machine Learning model: {model_file}")
         try:
             with open(f"ML-saved/{vectorizer_file}", 'rb') as vf:
                 vectorizer = pickle.load(vf)
@@ -105,7 +102,6 @@ class Main:
     def __init__(self, URL):
         self.return_array = []
         self.URLthing = URL
-        self.fullPathToCsv = os.path.join(os.path.dirname(os.getcwd()), "PhisingSiteURL/urldataset-EN.csv")
         self.ML = MachineLearning()
         self.language = ryuconf.red_main_config("GlobalConfiguration", "language")
         # calls:
@@ -193,5 +189,3 @@ class Main:
 if __name__ == '__main__':
     possibleThreatURLs = ['https://www.google.com/', 'https://www.youtube.com/']
     obj = Main(possibleThreatURLs)
-
-
