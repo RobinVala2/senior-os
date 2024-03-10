@@ -42,7 +42,7 @@ pip3 install screeninfo
 pip3 install yagmail
 
 # Run the browser
-python3 main.py
+python3 sweb.py
 ```
 
 Follow these steps to set up Web Browser in WINDOWS operating system:
@@ -63,7 +63,7 @@ pip install requests
 pip install yagmail
 
 # Run the browser from terminal
-python main.py [Your visited website]
+python sweb.py [Your visited website]
 ```
 
 ### Usage
