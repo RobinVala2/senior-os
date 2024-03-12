@@ -10,6 +10,9 @@
 - More background work is about generating, reading and correctly editing .json configuration files for each application (SGIVE, SWEB, SMAIL, GLOBAL)
 - Lastly, there is some implementation of Machine Learning, ML has three datasets. On first start, all three models and vectorizers gets trained, but for detection is used only that model, that corespond to current language in global config.
 
+## How to install:
+> TODO:
+
 ## Caregiver Application:
 - [Link to folder here](src/CaregiverApp/) <br>
 - Only for caregiver, not meant for senior
