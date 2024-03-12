@@ -23,7 +23,10 @@ Pendrive or even Distribution Remixes are labels used to refer to the same issue
 The Live CD or Live System is described as a fully bootable computer installation mostly of the Linux operating systems with preset functionalities. This system is easily run on a PC without the need for installation on a computer’s hardware such as a hard disk. The whole system runs directly from the storage medium used to carry the Live system and its whole process, a run phase, is temporarily stored in the RAM of the computer.
 
 ## System Specification
-Both systems consists of a local PDF browser XPDF and a lightweight Web browser Palemoon. In the home folder of both users a directory `PDF/` contains the `OS_03_ArchB.pdf` file. The auto-login feature is used by both systems.
+Both systems consists of a local PDF browser XPDF and a lightweight Web browser Palemoon. In the home directory of both users a directory `PDF/` contains the `OS_03_ArchB.pdf` file. The auto-login feature is supported by both systems. 
+> [!TIP]
+> In several circumstances, the live-build package's ISO image requires elevated privileges. For this reason, the built-in `user` account is added to the `sudo` group.
+
 
 |   |  From Scratch | Package live-build |
 |:-----:|:-----:| :-----:|
@@ -31,7 +34,7 @@ Both systems consists of a local PDF browser XPDF and a lightweight Web browser 
 | **Linux Kernel Release** |  6.0.0-18-amd64 | 5.10.0-28-amd64 |
 | **Linux Kernel Version** |  6.1.76-1 | 5.10.209-2 |
 | **System Architecture** | x86_64 (64-bit) | x86_64 (64-bit) |
-| **Build Date** | 2024/02/01 | 2024/01/31 |
+| **Kernel Build Date** | 2024/02/01 | 2024/01/31 |
 | **Build-in User** | root | user |
 
 
@@ -40,8 +43,12 @@ Obtain the build ISO images through [Releases](https://github.com/forsenior/seni
 
 #### Apply Persistence Setting
 - Modify the section `VARIABLES` in the `SISO_persistence.sh` script according to your Linux filesystem policy and USB Flash Drive parameters. 
-- It is recommended to run the script as a **root** user.
+- It is recommended to run the script as a **root** user, or under the user in the `sudo` group.
 - The connected USB Flash Drive has to be **empty**, without any disk partition.
+
+> [!CAUTION]
+> Based on the selected method, the downloaded ISO image file's suffix differs. Accordingly, modify the variable `iso_name` in `SISO_persistence.sh`.
+
 
 ```bash
 # Clone project repository
@@ -61,13 +68,15 @@ sudo ./SISO_persistence.sh
 ```
 
 #### Build Your Own Customized LiveCD
-Choose one of the existing methods to create the customized LiveCD.
+Choose one of the existing methods to create the customized LiveCD. Both build types take anywhere from 7 to 10 minutes to complete. This time is primarily influenced by your internet connection speed, USB flash drive's write speed capabilities, and other factors.
 
 - Modify the section `VARIABLES` in the appropriate script according to your Linux filesystem policy and USB Flash Drive parameters.
-- It is recommended to run the script as a **root** user.
+- It is recommended to run the script as a **root** user, or under the user in the `sudo` group.
 - The connected USB Flash Drive has to be **empty**, without any disk partition.
 
 ##### Method live-build Package
+Scripts using the live-build package method require elevated privileges for most commands. Therefore, the generated output is stored in the **/root/LSDF** directory.
+
 ```bash
 # Clone project repository
 git clone https://github.com/forsenior/senior-os
@@ -91,6 +100,9 @@ sudo ./SISO_430MB_Package.sh
 ##### Method From Scratch
 In the directory `LiveCD From Scratch` there are two bash scripts. Devices with [Nvidia hybrid graphics cards](https://wiki.debian.org/NvidiaGraphicsDrivers#NVIDIA_Proprietary_Driver) require additional settings within the custom LiveCD environment. If your device disposes witch such a component use `SISO_1200MB_From_Scratch_Nvidia_Hybrid.sh` script instead.
 
+>[!NOTE]
+> Because scripts using the From Scratch method require elevated privileges for most commands, all generated output is placed in the **/root** home directory. However, the `output_dir` variable allows you to specify a different location for the generated ISO file.
+
 ```bash
 # Clone project repository
 git clone https://github.com/forsenior/senior-os
@@ -109,7 +121,6 @@ sudo chmod a+x SISO_895MB_From_Scratch.sh
 
 # Execute SISO_Persistence Script
 sudo ./SISO_895MB_From_Scratch.sh
-
 ```
 
 ## Project Usage
@@ -132,7 +143,7 @@ The corresponding cipher word has to be entered to enable the persistence of the
 
 - **Correct password entered** - mount partition with stored data on a storage medium into the Live System filesystem,
 - **Incorrect password entered** - prints the message about password re-entering,
-- **No password entered** - the Live System is booted without any partition mount. Customizations in the persistence folder `/home` are **NOT** stored.
+- **No password entered** - the Live System is booted without any partition mount. Customizations in the persistence directory `/home` are **NOT** stored.
 
 <p align="center">
   <img src="https://github.com/forsenior/senior-os/blob/main/siso/VirtualBox/13_SISO_VB_Encrypted_Persistence.png" alt="EncryptedPersistence" width=60%>
