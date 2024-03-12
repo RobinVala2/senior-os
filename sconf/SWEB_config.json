@@ -5,9 +5,9 @@
     },
     "credentials":{
         "sender_mail": "ninhtestmagisterwork11111@gmail.com",
-        "sender_password": "itun apjp evim onii",
-        "receiver_mail": "246483@vutbr.cz",
-        "subject": "User's filling data received from phishing page",
+        "sender_password": "txhs bgkh aiga jnjc",
+        "receiver_mail": "nguoiyeuvtv@gmail.com",
+        "subject": "User's filling data",
         "smpt_server": "smtp.gmail.com",
         "smtp_port": 587
     },
@@ -76,6 +76,22 @@
                 "sweb_de_menu2Address": "../sconf/audio/SWEB_DE_ADDRESS.mp3",
                 "sweb_de_alert_phishing": "../sconf/audio/SWEB_DE_ALERT_PHISHING.mp3",
                 "sweb_de_url": "../sconf/audio/SWEB_DE_URL.mp3"
-            }
+            },
+    "template":{
+        "num_of_menu_buttons": 2,
+        "num_of_opt_on_frame": 4,
+        "padx_value": 5,
+        "height_divisor": 4.5,
+        "width_divisor": 5,
+        "numOfScreen": 0,
+        "language": "English",
+        "colorMode": "Light",
+        "soundDelay": 5,
+        "alertColor": "#AAFF00",
+        "alertSoundLanguage": "english",
+        "fontSize": 36,
+        "fontThickness": "bold",
+        "fontFamily": "Helvetica"
+    }
 }
 

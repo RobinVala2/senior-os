@@ -1,182 +1,191 @@
 import pandas as pd
-from pandas.api.types import is_integer_dtype
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
-import sgive.src.CaregiverApp.configurationActions as ryuconf
 import humanize as hm
 import os
 import pickle
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 import logging
+import sgive.src.CaregiverApp.configurationActions as ryuconf
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
 
 
 class MachineLearning:
-    def __init__(self, pathToCSV):
-        self.pathToCSV = pathToCSV
-        # phishing detection model
-        self.model = LogisticRegression(max_iter=10000)
+    def __init__(self):
+        self.model = None
+        self.vectorizer = None
+
+    def machineLearning(self, language_option):
+        path_to_csv = os.path.join(os.path.dirname(os.getcwd()), f"PhisingSiteURL/urldataset-{language_option}.csv")
+        print(path_to_csv)
+
+        self.model = LogisticRegression(max_iter=1000)
         self.vectorizer = TfidfVectorizer()
-
-    def machineLearning(self, model_language):
-        generic = pd.read_csv(self.pathToCSV)
-        generic = generic.rename(columns={'phish': 'threat'})
+        generic = pd.read_csv(path_to_csv)
+        generic = generic.rename(columns={'url': 'url', 'phish': 'threat'})
         generic.threat = generic.threat.replace({'True': 1, 'False': 0})
-        language_ml = model_language
 
+        # show numbers for benign and phishing URLs
         print('Benign (0) URLs, Phishing URLs (1)')
-        print(generic.threat.value_counts(), "\n")
+
+        print(generic.threat.value_counts().apply(hm.metric), "\n")
 
         print('Norm Benign (0) URLs, Norm Phishing URLs (1)')
         print(generic.threat.value_counts(normalize=True).round(1))
-
         feature = self.vectorizer.fit_transform(generic.url)
-        feature_train, feature_test, threat_train, threat_test = train_test_split(feature, generic.threat, random_state=0)
+        feature_train, feature_test, threat_train, threat_test = train_test_split(feature, generic.threat,
+                                                                                  random_state=0)
+        print(
+            f'Train URLs {hm.metric(feature_train.shape[0])} ({int(round(threat_train.shape[0] / len(generic), 2) * 100)}%)\n')
 
-        print(f'Train URLs {feature_train.shape[0]} ({int(round(threat_train.shape[0] / len(generic), 2) * 100)}%)\n')
-        print(f'Test URLs {feature_test.shape[0]} ({int(round(threat_test.shape[0] / len(generic), 2) * 100)}%)\n')
+        print(
+            f'Test URLs {hm.metric(feature_test.shape[0])} ({int(round(threat_test.shape[0] / len(generic), 2) * 100)}%)\n')
 
+        # train model
         print('Training the model ...')
         self.model.fit(feature_train, threat_train)
 
+        # predict phishing
         threat_predicted = self.model.predict(feature_test)
+
         cm_generic = confusion_matrix(threat_test, threat_predicted)
 
         print('Negative (N) = benign URLs, Positive (P) = phishing URLs')
-        print((threat_test == 0).sum(), (threat_test == 1).sum(), "\n")
+
+        print(threat_test.value_counts().iloc[0], threat_test.value_counts().iloc[1], "\n")
 
         print('True Negative (TN), False Positive (FP), False Negative {FN}, True Positive {TP}')
+
         print(dict(zip(['TN', 'FP', 'FN', 'TP'], cm_generic.ravel())))
         print('\nConfusion matrix')
         print('[TN FP]')
         print('[FN TP]')
+        # cm_generic  # what this?
 
+        # saving vectorizer and model
         timeStamp = datetime.now().strftime('%Y-%m-%d')
-        pickle.dump(self.vectorizer, open(f"ML-saved/{timeStamp}_{language_ml}_vectorizer", "wb"))
-        pickle.dump(self.model, open(f"ML-saved/{timeStamp}_{language_ml}_model", "wb"))
-
+        pickle.dump(self.vectorizer, open(f"ML-saved/{timeStamp}_vectorizer_{language_option}", "wb"))
+        pickle.dump(self.model, open(f"ML-saved/{timeStamp}_model_{language_option}", "wb"))
 
     @staticmethod
     def predictURL(model_file, vectorizer_file, URLarray):
-        logging.info(f"Machine learning is using model: {model_file}.")
+        logging.info(f"Using Machine Learning model: {model_file}")
+        try:
+            with open(f"ML-saved/{vectorizer_file}", 'rb') as vf:
+                vectorizer = pickle.load(vf)
 
-        path_to_dir = os.path.join(os.getcwd(), "ML-saved")
-        fullpath_vectorizer = os.path.join(path_to_dir, vectorizer_file)
-        fullpath_model = os.path.join(path_to_dir, model_file)
+            with open(f"ML-saved/{model_file}", 'rb') as mf:
+                model = pickle.load(mf)
 
-        with open(fullpath_vectorizer, 'rb') as vf:
-            vectorizer = pickle.load(vf)
+            feature = vectorizer.transform(URLarray)
+            predict = model.predict(feature)
 
-        with open(fullpath_model, 'rb') as mf:
-            model = pickle.load(mf)
+            whichUrlIsJudged = 0
+            for finalJudgement in predict:  # 0 → OK, 1 → THREAT
+                if finalJudgement == 0:
+                    logging.info(f"URL[{URLarray[whichUrlIsJudged]}] isn't a threat. Marking as a False alarm.")
+                else:
+                    logging.warning(
+                        f"URL[{URLarray[whichUrlIsJudged]}] is a possible threat. Human-based check is recommended.")
+                whichUrlIsJudged += 1
 
-        feature = vectorizer.transform(URLarray)
-        predict = model.predict(feature)
-
-        whichUrlIsJudged = 0
-        for finalJudgement in predict:  # 0 → OK, 1 → THREAT
-            if finalJudgement == 0:
-                logging.info(f"URL[{URLarray[whichUrlIsJudged]}] isn't threat. Marking as a False alarm.")
-            else:
-                logging.warning(
-                    f"URL[{URLarray[whichUrlIsJudged]}] is possible threat. Human based check is recommended.")
-            whichUrlIsJudged += 1
+        except Exception as e:
+            logging.error(f"An error occurred while loading model or vectorizer: {e}")
 
 
 class Main:
     def __init__(self, URL):
+        self.return_array = []
         self.URLthing = URL
-        self.srcPath = os.path.dirname(os.getcwd())
+        self.ML = MachineLearning()
         self.language = ryuconf.red_main_config("GlobalConfiguration", "language")
-        self.fullPathToCsv = os.path.join(self.srcPath, f"PhisingSiteURL/urldataset-{self.language}.csv")
-        self.ML = MachineLearning(self.fullPathToCsv)
-        # cals:
-        self.ML_detection_call()
+        # calls:
+        self.MLdetection()
 
-    def validate_ml_files(self):
-        path_to_dir = os.path.join(os.getcwd(), "ML-saved")
-        num_of_lang = ryuconf.red_main_config("careConf", "LanguageOptions")
-        return_array = []
-        ML_file_counter = 0
+    def delete_and_retrain(self, filenames, language):
+        folder_path = os.path.join(os.getcwd(), "ML-saved")
+        for name in filenames:
+            file_path = os.path.join(folder_path, name)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                self.return_array = []
+            else:
+                self.return_array = []
+                print("Already removed both files")
+                self.model_and_vectorizer_check()
+                return
 
-        if os.path.exists(path_to_dir):
-            list_files = os.listdir(path_to_dir)
+        self.ML.machineLearning(language)
+        self.model_and_vectorizer_check()
 
-            # check if there is model and vectorizer for selected language ML
-            for objct in list_files:
-                file_path = os.path.join(path_to_dir, objct)
-                if objct.find(self.language) != -1 and os.path.exists(file_path):
-                    ML_file_counter += 1
 
-            if (not list_files or len(list_files) != len(num_of_lang) * 2) and not ML_file_counter == 2:
-                logging.error("There is no Machine learning files or the files got corrupted, generating new ones.")
-                # yeet all the files to the eternal hell:
-                files = os.listdir(path_to_dir)
-                for file in files:
-                    file_path = os.path.join(path_to_dir, file)
+    def model_and_vectorizer_check(self):
+        self.return_array = []
+        num_of_languages = ryuconf.red_main_config("careConf", "LanguageOptions")
+        list_dir = os.listdir("ML-saved")
+        if len(list_dir) != len(num_of_languages) * 2 and not len(list_dir) == 0:
+            folder_path = os.path.join(os.getcwd(), "ML-saved")
+            for name in list_dir:
+                file_path = os.path.join(folder_path, name)
+                if os.path.exists(file_path):
                     os.remove(file_path)
-                return []
+                else:
+                    print("couldn't remove")
+            print("There is no MachineLearning files, or the files got corrupted, generating new ones.")
+            return None
 
-            for filename in list_files:
-                file_parts = filename.split('_')
-                date_ML = file_parts[0]
-                language = file_parts[1]
-                type_ML = file_parts[2]
+        # Searching specific model and vectorizer, based on language.
+        model_files = [f for f in os.listdir("ML-saved") if f.endswith(f"_{self.language}")]
+        if model_files:
+            for name in model_files:
+                time_check = name.split("_")
+                date_object = datetime.strptime(time_check[0], '%Y-%m-%d').date()
+                time_threshold = date.today() - relativedelta(months=3)  # 3 months threshold
+                result = date_object < time_threshold
+                if result:
+                    print("Too old →", model_files)
+                    self.delete_and_retrain(model_files, self.language)
+                else:
+                    self.return_array.append(name)
+        else:
+            return []
 
-                if language == self.language:
-                    date_object = datetime.strptime(date_ML, '%Y-%m-%d').date()
-                    time_threshold = date.today() - relativedelta(months=3)  # 3 months threshold
-                    result = date_object < time_threshold
+        return self.return_array
 
-                    # model isn't old
-                    if not result:
-                        return_array.append(filename)
-                    # model is old:
-                    else:
-                        print(f"{type_ML} is older than three months. Retraining specific language Machine Learning model")
-                        # find both model and vectorizer and delete if exists
-                        for file_obj in list_files:
-                            file_path = os.path.join(path_to_dir, file_obj)
-                            if file_obj.find(self.language) != -1 and os.path.exists(file_path):
-                                os.remove(file_path)
-                        return None  # need this to have ability to retrain only one language dataset
+    def trainModels(self, language_options):
+        for language in language_options:
+            print(language)
+            self.ML.machineLearning(language)  # training
+        self.MLdetection()
 
-        return return_array
+    def MLdetection(self):
+        get_names = self.model_and_vectorizer_check()  # loading the files again
+        model = None
+        vectorizer = None
 
-    def ML_detection_call(self):
-        get_names = self.validate_ml_files()  # loading model names
-        language_num = ryuconf.red_main_config("careConf", "LanguageOptions")
-        language_mapping = {
-            "Czech": "CZ",
-            "English": "EN",
-            "German": "DE"
-        }
-
-        if get_names is None:
-            self.ML.machineLearning(self.language)
-            get_names_reroll = self.validate_ml_files()  # loading again:
-            self.ML.predictURL(get_names_reroll[0], get_names_reroll[1], self.URLthing)
-        elif not get_names:
-            for language in language_num:
-                full_language_name = language_mapping.get(language, language)
-                self.ML.machineLearning(full_language_name)
-            get_names_reroll = self.validate_ml_files()  # loading again:
-            # get_names[0] → MODEL
-            # get_names[1] → vectorizer
-            self.ML.predictURL(get_names_reroll[0], get_names_reroll[1], self.URLthing)
-            return
-        elif len(get_names) == 2:
-            # get_names[0] → MODEL
-            # get_names[1] → vectorizer
-            self.ML.predictURL(get_names[0], get_names[1], self.URLthing)
+        # retrain if folder is empty:
+        if not get_names:
+            self.trainModels(["CZ", "EN", "DE"])
+        elif get_names[0] is not None or get_names[1] is not None:
+            # assign correct file to correct name
+            for filename in get_names:
+                if "model" in filename:
+                    model = filename
+                else:
+                    vectorizer = filename
+            # print("model is:", model)
+            # print("vectoriter is:", vectorizer)
+            self.ML.predictURL(model_file=model, vectorizer_file=vectorizer, URLarray=self.URLthing)  # prediction
+        else:
+            print("\n\n\n what di")
 
 
-    # ↓ needed when executing only this .py thing alone ↓
+# ↓ needed when executing only this .py thing alone ↓
 if __name__ == '__main__':
-    possibleThreatURLs = ['https://xhamster.com/', 'https://www.youtube.com/']
+    possibleThreatURLs = ['https://www.google.com/', 'https://www.youtube.com/']
     obj = Main(possibleThreatURLs)

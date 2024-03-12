@@ -8,7 +8,7 @@ logger = logging.getLogger(__file__)
 logger.info("initiated logging")
 
 
-def get_path():  # this is how i get to the sconf/ file, for now :)
+def get_path():
     whereTheFuckAmI = os.getcwd()
     split = whereTheFuckAmI.split("sgive")
     path = split[0]
@@ -56,12 +56,9 @@ def read_log(givenFilter, givenName):
 
 # CHECK FOR ML LEARNING ------------------------------------------------------------------------------------------------
 def MLcheck(URL):
-    print("Checking for /ML-SAVED dir...")
     path = os.path.join(os.getcwd(), "ML-saved")
-
     if os.path.exists(path):
         threatDetect.Main(URL)
-        print(os.listdir(path))
 
 
 # MAIN (GLOBAL) CONFIG ACTIONS: ----------------------------------------------------------------------------------------
@@ -107,8 +104,8 @@ def main_config_default(path):
                            "Alert color (in hex)",
                            "Highlight color (in hex)",
                            "Sound delay (in s)",
-                           "Font size (in px)",
-                           "Label size (px)",
+                           "Toolbar font (in px)",
+                           "Widget font (in px)",
                            "Font weight"]
     SMailLabelOptions = ["Senior email",
                          "Senior password",
@@ -117,7 +114,7 @@ def main_config_default(path):
                          "Caregiver warning",
                          "Caregiver email",
                          "URL links in email"]
-    EntryOptions = ["alertColor", "hoverColor", "soundDelay", "fontSize", "labelFontSize"]
+    EntryOptions = ["alertColor", "hoverColor", "soundDelay", "controlFontSize", "fontSize"]
 
     # I removed from GlobalConfiguration these two:
     # "light_color": "white",
@@ -137,7 +134,7 @@ def main_config_default(path):
             "hoverColorLighten": "#7c8e76",
             "soundDelay": 5,
             "fontSize": 36,
-            "labelFontSize": 12,
+            "controlFontSize": 70,
             "fontThickness": "bold",
             "fontFamily": "Helvetica",
         },
