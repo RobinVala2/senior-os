@@ -146,7 +146,7 @@ class GetMonitorHeightAndWidth:
 # My main browser contains all GUI in this class (Toolbar, Buttons, URLbar)
 class MyBrowser(QMainWindow):
     # Define the contructor for initialization 
-    def __init__(self,my_config_data):
+    def __init__(self,my_config_data, input_url):
         super(MyBrowser,self).__init__()
         # Set window flags to customize window behavior
         # Remove standard window controls
@@ -164,10 +164,10 @@ class MyBrowser(QMainWindow):
         self.setCentralWidget(self.main_browser)
         # Default page is configured as seznam.cz
         # Check if input URL is contained HTTP or HTTPS
-        if input_url_from_terminal.startswith("https") or input_url_from_terminal.startswith("http"):
-            self.main_browser.setUrl(QUrl(input_url_from_terminal))
+        if input_url.startswith("https") or input_url.startswith("http"):
+            self.main_browser.setUrl(QUrl(input_url))
         else:
-            self.main_browser.setUrl(QUrl("http://" + input_url_from_terminal))
+            self.main_browser.setUrl(QUrl("http://" + input_url))
         # Parameter for changging language on application
         self.language_translator = Translator()
         # Parameter for getting monitor heigght ad width
@@ -565,15 +565,15 @@ class MyBrowser(QMainWindow):
             if "homepage.html" not in url_in_browser_value:
                 self.main_browser.setZoomFactor(1.5)
                 # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-                QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
+                QTimer.singleShot(250, lambda: self.html_injection_to_web_content())
         elif self.toggle_phishing_webpage:
             self.main_browser.setZoomFactor(1.5)
             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-            QTimer.singleShot(1000, lambda: self.html_injection_to_phishing_web_content())
+            QTimer.singleShot(250, lambda: self.html_injection_to_phishing_web_content())
         else:
             self.main_browser.setZoomFactor(1.5)
             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-            QTimer.singleShot(1000, lambda: self.html_injection_to_web_content_strict())
+            QTimer.singleShot(250, lambda: self.html_injection_to_web_content_strict())
             
     # This method is applied for connection to phishing web page
     def html_injection_to_phishing_web_content(self):
@@ -628,7 +628,7 @@ class MyBrowser(QMainWindow):
     # !!!Apply for not permiited website
     def html_injection_to_web_content_strict(self):
         injection_javasript = """
-        <!-- Declare tags for prohibiting input text to textfill>
+        <!-- Declare tags for prohibiting input text to textfill-->
         var prohibited_tag_input = document.querySelectorAll('input, textarea, div.input');
         <!-- Disable input field in webpage-->
         prohibited_tag_input.forEach(function(input) {
@@ -802,14 +802,14 @@ class MyBrowser(QMainWindow):
             if "about:blank" in url_in_browser_value:
                 self.toggle_phishing_webpage = False
                 return
-            elif "google.com" in url_in_browser_value:
-                self.toggle_phishing_webpage = False
-                self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
-                self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
+            #elif "google.com" in url_in_browser_value:
+                #self.toggle_phishing_webpage = False
+                #self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
+                #self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
                 # Log with level 6 INFORMATIONAL
-                self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
+                #self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
                 # Connect to URL after entering
-                self.main_browser.setUrl(QUrl(url_in_browser_value))
+                #self.main_browser.setUrl(QUrl(url_in_browser_value))
             elif self.url_blocker.is_url_blocked(url_in_browser_value):
                 self.toggle_phishing_webpage = True
                 self.play_sound_for_button(self.path_to_alert_phishing_music)
@@ -878,7 +878,7 @@ if __name__ == "__main__":
         input_url_from_terminal = sys.argv[1] if len(sys.argv) > 1 else "https://seznam.cz"
         # Load config data from JSON file
         sweb_config = load_sweb_config_json()
-        main_window = MyBrowser(sweb_config) # Set parametr for main browser window
+        main_window = MyBrowser(sweb_config, input_url_from_terminal) # Set parametr for main browser window
         main_window.show_app_full_screen() # Call main browser window
         sys.exit(qApplication.exec_())
     except Exception as excep:
