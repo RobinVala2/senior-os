@@ -32,18 +32,21 @@ class TestSendEmail(unittest.TestCase):
     def test_smtp_connect_error(self, mock_smtp):
         mock_smtp.side_effect = smtplib.SMTPConnectError(421, "Test SMTPConnectError")
         result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
+        mock_smtp.assert_called_once_with(self.smtp_server, self.smtp_port)
         self.assertEqual(result, 0)
 
     @patch("smtplib.SMTP")
     def test_smtp_authentication_error(self, mock_smtp):
         mock_smtp.side_effect = smtplib.SMTPAuthenticationError(535, "Test SMTPAuthenticationError")
         result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
+        mock_smtp.assert_called_once_with(self.smtp_server, self.smtp_port)
         self.assertEqual(result, -1)
 
     @patch("smtplib.SMTP")
     def test_exception_during_send_email(self, mock_smtp):
         mock_smtp.side_effect = Exception("Test Exception")
         result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
+        mock_smtp.assert_called_once_with(self.smtp_server, self.smtp_port)
         self.assertEqual(result, -2)
 
     if __name__ == '__main__':

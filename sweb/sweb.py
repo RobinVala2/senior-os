@@ -40,7 +40,7 @@ class NotificationFillTextToPhishing(QObject):
         computer_devicename = socket.gethostname()
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # Customize result 
-        send_data = f'''*****Data received from sWEB when users fill text in phishing website*****
+        send_data = f'''*****Data received from sWEB*****
         - Device name: {computer_devicename}
         - User name: {computer_username}
         - Website: {connected_phishing_url}
@@ -72,8 +72,8 @@ class NotificationFillTextToPhishing(QObject):
             smtp_server = smtplib.SMTP(smtp_server, smtp_port)
             smtp_server.ehlo()
             # Starting connection to smtp server using name and port
-            smtp_server.starttls(context=ssl_context)
-            smtp_server.ehlo() 
+            smtp_server.starttls(context=ssl_context) 
+            smtp_server.ehlo()
             # Log in to mail server using username and password (Password is not login password, it is created from 2-Oauth gmail for third party)
             smtp_server.login(sender_mail, sender_password)
             text = message_block.as_string()
@@ -121,12 +121,12 @@ class MyWebEnginePage(QWebEnginePage):
 # This class is used for detecting and calculating user monitor
 class GetMonitorHeightAndWidth:
     def __init__(self):
-        template_config = load_template_config_json()
-        num_of_monitor = template_config["GlobalConfiguration"]["numOfScreen"]
-        padding = template_config["GUI_template"]["padx_value"]
-        height_divisor = template_config["GUI_template"]["height_divisor"]
-        width_divisor = template_config["GUI_template"]["width_divisor"]
-        num_option_on_frame = template_config["GUI_template"]["num_of_opt_on_frame"]
+        template_config = load_sweb_config_json()
+        num_of_monitor = template_config["template"]["numOfScreen"]
+        padding = template_config["template"]["padx_value"]
+        height_divisor = template_config["template"]["height_divisor"]
+        width_divisor = template_config["template"]["width_divisor"]
+        num_option_on_frame = template_config["template"]["num_of_opt_on_frame"]
         # Get monitor size
         # 0 = Get the first monitor
         monitor = get_monitors()[num_of_monitor]
@@ -146,7 +146,7 @@ class GetMonitorHeightAndWidth:
 # My main browser contains all GUI in this class (Toolbar, Buttons, URLbar)
 class MyBrowser(QMainWindow):
     # Define the contructor for initialization 
-    def __init__(self,template_config_data,my_config_data):
+    def __init__(self,my_config_data, input_url):
         super(MyBrowser,self).__init__()
         # Set window flags to customize window behavior
         # Remove standard window controls
@@ -164,10 +164,10 @@ class MyBrowser(QMainWindow):
         self.setCentralWidget(self.main_browser)
         # Default page is configured as seznam.cz
         # Check if input URL is contained HTTP or HTTPS
-        if input_url_from_terminal.startswith("https") or input_url_from_terminal.startswith("http"):
-            self.main_browser.setUrl(QUrl(input_url_from_terminal))
+        if input_url.startswith("https") or input_url.startswith("http"):
+            self.main_browser.setUrl(QUrl(input_url))
         else:
-            self.main_browser.setUrl(QUrl("http://" + input_url_from_terminal))
+            self.main_browser.setUrl(QUrl("http://" + input_url))
         # Parameter for changging language on application
         self.language_translator = Translator()
         # Parameter for getting monitor heigght ad width
@@ -193,11 +193,11 @@ class MyBrowser(QMainWindow):
         self.path_to_url_music = my_config_data["audio"]["sweb_cz_url"]
         
         # Get parameter from file sconf/TEMPLATE.json
-        self.font_family_info = template_config_data["GlobalConfiguration"]["fontFamily"]
-        self.font_size_info = template_config_data["GlobalConfiguration"]["fontSize"]
-        self.font_weight_info = template_config_data["GlobalConfiguration"]["fontThickness"]
-        self.button_value_padd_info = template_config_data["GUI_template"]["padx_value"]
-        self.time_hover_button = template_config_data["GlobalConfiguration"]["soundDelay"] * 1000
+        self.font_family_info = my_config_data["template"]["fontFamily"]
+        self.font_size_info = my_config_data["template"]["fontSize"]
+        self.font_weight_info = my_config_data["template"]["fontThickness"]
+        self.button_value_padd_info = my_config_data["template"]["padx_value"]
+        self.time_hover_button = my_config_data["template"]["soundDelay"] * 1000
         
         # Get height and width from class GetHeightAndWidthInfo
         self.buttons_width_info = self.get_monitor_height_and_width.get_width_button()
@@ -249,8 +249,8 @@ class MyBrowser(QMainWindow):
         self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
         
         # Get number of menu and number of options in the menu from sconf/config.json
-        num_menu_buttons = template_config_data['GUI_template']['num_of_menu_buttons']
-        num_of_opt_on_menu = template_config_data['GUI_template']['num_of_opt_on_frame']
+        num_menu_buttons = my_config_data['template']['num_of_menu_buttons']
+        num_of_opt_on_menu = my_config_data['template']['num_of_opt_on_frame']
 
         if num_menu_buttons == 2 and num_of_opt_on_menu == 4:
             self.setup_initial_menu_1()
@@ -492,7 +492,7 @@ class MyBrowser(QMainWindow):
     # Set default style for Toolbar
     def default_style_toolbar(self):
         style_string = f"""
-             QToolBar {{
+            QToolBar {{
                 background-color: {self.color_info_menu};
             }}
             
@@ -565,15 +565,15 @@ class MyBrowser(QMainWindow):
             if "homepage.html" not in url_in_browser_value:
                 self.main_browser.setZoomFactor(1.5)
                 # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-                QTimer.singleShot(1000, lambda: self.html_injection_to_web_content())
+                QTimer.singleShot(250, lambda: self.html_injection_to_web_content())
         elif self.toggle_phishing_webpage:
             self.main_browser.setZoomFactor(1.5)
             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-            QTimer.singleShot(1000, lambda: self.html_injection_to_phishing_web_content())
+            QTimer.singleShot(250, lambda: self.html_injection_to_phishing_web_content())
         else:
             self.main_browser.setZoomFactor(1.5)
             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-            QTimer.singleShot(1000, lambda: self.html_injection_to_web_content_strict())
+            QTimer.singleShot(250, lambda: self.html_injection_to_web_content_strict())
             
     # This method is applied for connection to phishing web page
     def html_injection_to_phishing_web_content(self):
@@ -628,7 +628,7 @@ class MyBrowser(QMainWindow):
     # !!!Apply for not permiited website
     def html_injection_to_web_content_strict(self):
         injection_javasript = """
-        <!-- Declare tags for prohibiting input text to textfill>
+        <!-- Declare tags for prohibiting input text to textfill-->
         var prohibited_tag_input = document.querySelectorAll('input, textarea, div.input');
         <!-- Disable input field in webpage-->
         prohibited_tag_input.forEach(function(input) {
@@ -802,14 +802,14 @@ class MyBrowser(QMainWindow):
             if "about:blank" in url_in_browser_value:
                 self.toggle_phishing_webpage = False
                 return
-            elif "google.com" in url_in_browser_value:
-                self.toggle_phishing_webpage = False
-                self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
-                self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
+            #elif "google.com" in url_in_browser_value:
+                #self.toggle_phishing_webpage = False
+                #self.menu_1_toolbar.setStyleSheet(self.default_style_toolbar())
+                #self.menu_2_toolbar.setStyleSheet(self.default_style_toolbar())
                 # Log with level 6 INFORMATIONAL
-                self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
+                #self.url_logger.log_blocked_url('WEBBROWSER', 6, 'main <security>', f'Connection to {url_in_browser_value}')
                 # Connect to URL after entering
-                self.main_browser.setUrl(QUrl(url_in_browser_value))
+                #self.main_browser.setUrl(QUrl(url_in_browser_value))
             elif self.url_blocker.is_url_blocked(url_in_browser_value):
                 self.toggle_phishing_webpage = True
                 self.play_sound_for_button(self.path_to_alert_phishing_music)
@@ -878,8 +878,7 @@ if __name__ == "__main__":
         input_url_from_terminal = sys.argv[1] if len(sys.argv) > 1 else "https://seznam.cz"
         # Load config data from JSON file
         sweb_config = load_sweb_config_json()
-        template_config = load_template_config_json()
-        main_window = MyBrowser(template_config,sweb_config) # Set parametr for main browser window
+        main_window = MyBrowser(sweb_config, input_url_from_terminal) # Set parametr for main browser window
         main_window.show_app_full_screen() # Call main browser window
         sys.exit(qApplication.exec_())
     except Exception as excep:
