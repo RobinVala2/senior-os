@@ -132,6 +132,9 @@ class LogsFrameWidgets:
                                                                            height=self.height * 0.10,
                                                                            width=self.width * (1 / 5),
                                                                            font=font_value,
+                                                                           fg_color=("#636363", "#454444"),
+                                                                           button_color=("#3b3b3b", "#5c5b5b"),
+                                                                           button_hover_color=("#292828", "#6b6a6a"),
                                                                            dropdown_font=font_value,
                                                                            anchor=customtkinter.CENTER
                                                                            )
@@ -141,6 +144,8 @@ class LogsFrameWidgets:
                                                                        height=self.height * 0.10,
                                                                        corner_radius=0,
                                                                        width=self.width * (1 / 5),
+                                                                       fg_color=("#636363", "#454444"),
+                                                                       hover_color=("#757474", "#6b6a6a"),
                                                                        text="Refresh",
                                                                        font=font_value,
                                                                        command=lambda: self.refresh()
@@ -182,16 +187,90 @@ class WebFrameWidgets:
     def __init__(self, frame_root, width, height_frame, restore, refresh):
         self.master = frame_root
         self.height_frame = height_frame
-        self.width = width
+        self.width_frame = width
+        self.height_widget = None
         self.restore_btn = restore
         self.refresh_btn = refresh
-        # self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
+        self.label_names = ryuConf.red_main_config("careConf", "SwebFrameLabels")
+        # -----------------
+        self.labels = {}
+        self.widget_entry = {}
+        self.widget_btn = {}
         # -----------------
         # Bind the resize event
+        self.get_sites()
+        self.create_widgets()
+        self.load_values()
         self.master.bind("<Configure>", self.on_resize)
         # E N D of constructor
 
+    def load_values(self):
+        sender_email = ryuConf.read_sweb_config("credentials", "sender_mail")
+        sender_password = ryuConf.read_sweb_config("credentials", "sender_password")
+        receiver_email = ryuConf.read_sweb_config("credentials", "receiver_mail")
+
+
+        print("sender:", sender_email)
+        print("sender password:", sender_password)
+        print("receiver:", receiver_email)
+
+    def create_widgets(self):
+        font_label = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.65,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
+        font_entry = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
+                      ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
+        entry_text = {
+            "Sender email": f"Add sender email (Saved: {ryuConf.read_sweb_config('credentials', 'sender_mail')}",
+            "Sender password": "Enter one use password",
+            "Receiver email": f"Add receiver email (Saved: {ryuConf.read_sweb_config('credentials', 'receiver_mail')}"
+        }
+
+        y_position = float(0)
+
+        for name in self.label_names:
+            self.labels[name] = customtkinter.CTkLabel(self.master,
+                                                       text=name,
+                                                       font=font_label,
+                                                       width=self.width_frame * (2 / 5),
+                                                       height=self.height_widget,
+                                                       fg_color=("#D3D3D3", "#171717")
+                                                       )
+            self.widget_entry[name] = customtkinter.CTkEntry(self.master,
+                                                             font=font_entry,
+                                                             placeholder_text=entry_text.get(name, name),
+                                                             width=self.width_frame * (2 / 5),
+                                                             height=self.height_widget / 2,
+                                                             border_width=2,
+                                                             border_color="#ededee",
+                                                             corner_radius=0,
+                                                             )
+            self.widget_btn[name] = customtkinter.CTkButton(self.master,
+                                                             font=font_entry,
+                                                             text=f"Submit",
+                                                             width=self.width_frame * (1 / 5),
+                                                             height=self.height_widget / 2,
+                                                             fg_color=("#636363", "#222222"),
+                                                             hover_color=("#757474", "#3b3b3b"),
+                                                             border_width=0,
+                                                             corner_radius=0)
+
+            self.labels[name].place(relx=0, rely=y_position * (10 / 11))
+            self.widget_entry[name].place(relx=1 * (2/5), rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
+            self.widget_btn[name].place(relx=2 * (2/5), rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
+            y_position += 1 / len(self.label_names)
+
+        self.widget_entry["Sender password"].configure(show='*')
+
+
     def on_resize(self, event):
+        # sets the size of widgets first, but when i simply change frames, this doesnt set them again, so the frame_labels
+        # does it (if not resized)
+        self.height_frame = self.master.winfo_height()
+        self.width_frame = self.master.winfo_width()
+
+        height_new = self.height_frame * ((10 / 11) / len(self.label_names))
         width_new = event.width * (2 / 5)
 
         # Recalculate button height and width_frame (lower buttons, that are created in frame class)
@@ -199,6 +278,20 @@ class WebFrameWidgets:
             if isinstance(widget, customtkinter.CTkButton):
                 widget.configure(height=self.height_frame * (1 / 11),
                                  width=width_new)
+        for label_widget in self.labels.values():
+            label_widget.configure(width=width_new, height=height_new)
+
+        for entry_widget in self.widget_entry.values():
+            entry_widget.configure(width=width_new, height=height_new/2)
+
+        for btn_widget in self.widget_btn.values():
+            btn_widget.configure(width=event.width * (1 / 5), height=height_new / 2)
+
+    def get_sites(self):
+        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
+            self.height_frame = self.master.winfo_height()
+            self.width_frame = self.master.winfo_width()
+        self.height_widget = self.height_frame * ((10 / 11) / len(self.label_names))
 
 
 class MailFrameWidgets:
@@ -1017,6 +1110,8 @@ class Frames:
             ryuConf.restore_main_config()
         elif self.alive_frame == 2:
             ryuConf.restore_smail_config()
+        elif self.alive_frame == 3:
+            ryuConf.restore_sweb_config()
 
         # get new values, aka read json config again:
         self.get_new_values_for_refresh(button_id)
@@ -1196,15 +1291,18 @@ class Toolbar:
             self.button_dictionary[id_num].place(relx=self.x_poss, rely=0)
 
     def selected_button(self, id_num):
+        fg_selected = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        fg_hover = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+
         if not self.button_selected is None:
             self.button_dictionary[self.button_selected].configure(fg_color=("white", "#1a1a1a"),
                                                                    hover_color=("#bebebe", "#2e2e2e"))
             self.button_selected = id_num
-            self.button_dictionary[id_num].configure(fg_color=("#d3d3d3", "#3b3b3b"),
-                                                     hover_color=("#d3d3d3", "#3b3b3b"))
+            self.button_dictionary[id_num].configure(fg_color=(fg_selected, fg_selected),
+                                                     hover_color=(fg_hover, fg_hover))
         else:
-            self.button_dictionary[id_num].configure(fg_color=("#d3d3d3", "#3b3b3b"),
-                                                     hover_color=("#d3d3d3", "#3b3b3b"))
+            self.button_dictionary[id_num].configure(fg_color=(fg_selected, fg_selected),
+                                                     hover_color=(fg_hover, fg_hover))
             self.button_selected = id_num
 
 

@@ -114,6 +114,7 @@ def main_config_default(path):
                          "Caregiver warning",
                          "Caregiver email",
                          "URL links in email"]
+    SWebLabelOptions = ["Sender email", "Sender password", "Receiver email"]
     EntryOptions = ["alertColor", "hoverColor", "soundDelay", "controlFontSize", "fontSize"]
 
     # I removed from GlobalConfiguration these two:
@@ -158,6 +159,7 @@ def main_config_default(path):
             "LanguageOptions": languageOPT.copy(),
             "GlobalFrameLabels": GLobalFramesOptions.copy(),
             "SMailFrameLabels": SMailLabelOptions.copy(),
+            "SwebFrameLabels": SWebLabelOptions.copy(),
             "EntryOptions": EntryOptions.copy(),
         },
     }
@@ -167,26 +169,6 @@ def main_config_default(path):
 
 
 # ------------
-
-def restore_smail_config():
-    print("Restoring GLOBAL config")
-    path = read_smail_config("pathToConfig", "path")
-    smail_config_default(path)
-
-
-def read_smail_config(key, value):
-    path = get_path()
-    if os.path.exists(path) and os.path.isfile(
-            os.path.join(get_path(), 'SMAIL_config.json')):  # checks for the conf file, if there is any
-        with open(os.path.join(path, 'SMAIL_config.json'), "r") as file:
-            jsonData = json.load(file)
-        if key == '' or key is None:
-            return jsonData[value]
-        else:
-            return jsonData[key][value]
-    else:
-        logging.critical('There is no SMAIL_config.json or sconf/ file present in system, exiting program now.')
-        exit(1)
 
 
 def smail_config_default(path):
@@ -305,6 +287,26 @@ def smail_config_default(path):
         outfile.write(json_object)
 
 
+def restore_smail_config():
+    path = read_smail_config("pathToConfig", "path")
+    smail_config_default(path)
+
+
+def read_smail_config(key, value):
+    path = get_path()
+    if os.path.exists(path) and os.path.isfile(
+            os.path.join(get_path(), 'SMAIL_config.json')):  # checks for the conf file, if there is any
+        with open(os.path.join(path, 'SMAIL_config.json'), "r") as file:
+            jsonData = json.load(file)
+        if key == '' or key is None:
+            return jsonData[value]
+        else:
+            return jsonData[key][value]
+    else:
+        logging.critical('There is no SMAIL_config.json or sconf/ file present in system, exiting program now.')
+        exit(1)
+
+
 def edit_smail_config(key, name, value):
     # this def edits name in conf.json to value
     path = get_path()
@@ -320,3 +322,129 @@ def edit_smail_config(key, name, value):
             json.dump(data, f, indent=4, ensure_ascii=False)  # Ensure_ascii=False zajistí zachování ne-ASCII znaků
     logging.info(f'successfully edited value: "{value}" at key: "{name}".')
     return True
+
+
+# -------------------------------------
+
+
+def sweb_config_default(path):
+    dictionary = {
+        "phishing_database": {
+            "path": "../sconf/phish/SWEB_PHISH_1.txt",
+            "path_to_tar_github": "https://github.com/mitchellkrogza/Phishing.Database/raw/master/ALL-phishing-domains.tar.gz/"
+        },
+        "credentials": {
+            "sender_mail": "ninhtestmagisterwork11111@gmail.com",
+            "sender_password": "txhs bgkh aiga jnjc",
+            "receiver_mail": "nguoiyeuvtv@gmail.com",
+            "subject": "User's filling data",
+            "smpt_server": "smtp.gmail.com",
+            "smtp_port": 587
+        },
+        "language": {
+            "default_language": "en"
+        },
+        "image": {
+            "sweb_image_exit": "../sconf/images/SWEB_EXIT.png",
+            "sweb_image_www1": "../sconf/images/SWEB_WWW1.png",
+            "sweb_image_www2": "../sconf/images/SWEB_WWW2.png",
+            "sweb_image_www3": "../sconf/images/SWEB_WWW3.jpg",
+            "sweb_image_www4": "../sconf/images/SWEB_WWW4.png",
+            "sweb_image_www5": "../sconf/images/SWEB_WWW5.png"
+        },
+        "colors_info": {
+            "menu_frame": "#e5e5e5",
+            "app_frame": "#FFFFFF",
+            "buttons_unselected": "#e5e5e5",
+            "buttons_selected": "#00ff00"
+        },
+        "text": {
+            "sweb_en_menu1": "Menu 1",
+            "sweb_en_menu2": "Menu 2",
+            "sweb_en_menu2Address": "My page",
+            "sweb_cz_menu1": "Menu 1",
+            "sweb_cz_menu2": "Menu 2",
+            "sweb_cz_menu2Address": "Moje stránka",
+            "sweb_de_menu1": "Menü 1",
+            "sweb_de_menu2": "Menü 2",
+            "sweb_de_menu2Address": "Meine Seite"
+        },
+        "audio": {
+            "sweb_en_menu1": "../sconf/audio/SWEB_EN_MENU_1.mp3",
+            "sweb_en_menu1Exit": "../sconf/audio/SWEB_EN_EXIT.mp3",
+            "sweb_en_menu1Back": "../sconf/audio/SWEB_EN_BACK.mp3",
+            "sweb_en_menu1WWW1": "../sconf/audio/SWEB_EN_WWW_1.mp3",
+            "sweb_en_menu1WWW2": "../sconf/audio/SWEB_EN_WWW_2.mp3",
+            "sweb_en_menu2WWW3": "../sconf/audio/SWEB_EN_WWW_3.mp3",
+            "sweb_en_menu2": "../sconf/audio/SWEB_EN_MENU_2.mp3",
+            "sweb_en_menu2WWW4": "../sconf/audio/SWEB_EN_WWW_4.mp3",
+            "sweb_en_menu2WWW5": "../sconf/audio/SWEB_EN_WWW_5.mp3",
+            "sweb_en_menu2Address": "../sconf/audio/SWEB_EN_ADDRESS.mp3",
+            "sweb_en_alert_phishing": "../sconf/audio/SWEB_EN_ALERT_PHISHING.mp3",
+            "sweb_en_url": "../sconf/audio/SWEB_EN_URL.mp3",
+            "sweb_cz_menu1": "../sconf/audio/SWEB_CZ_MENU_1.mp3",
+            "sweb_cz_menu1Exit": "../sconf/audio/SWEB_CZ_EXIT.mp3",
+            "sweb_cz_menu1Back": "../sconf/audio/SWEB_CZ_BACK.mp3",
+            "sweb_cz_menu1WWW1": "../sconf/audio/SWEB_CZ_WWW_1.mp3",
+            "sweb_cz_menu1WWW2": "../sconf/audio/SWEB_CZ_WWW_2.mp3",
+            "sweb_cz_menu2WWW3": "../sconf/audio/SWEB_CZ_WWW_3.mp3",
+            "sweb_cz_menu2": "../sconf/audio/SWEB_CZ_MENU_2.mp3",
+            "sweb_cz_menu2WWW4": "../sconf/audio/SWEB_CZ_WWW_4.mp3",
+            "sweb_cz_menu2WWW5": "../sconf/audio/SWEB_CZ_WWW_5.mp3",
+            "sweb_cz_menu2Address": "../sconf/audio/SWEB_CZ_ADDRESS.mp3",
+            "sweb_cz_alert_phishing": "../sconf/audio/SWEB_CZ_ALERT_PHISHING.mp3",
+            "sweb_cz_url": "../sconf/audio/SWEB_CZ_URL.mp3",
+            "sweb_de_menu1": "../sconf/audio/SWEB_DE_MENU_1.mp3",
+            "sweb_de_menu1Back": "../sconf/audio/SWEB_DE_BACK.mp3",
+            "sweb_de_menu1Exit": "../sconf/audio/SWEB_DE_EXIT.mp3",
+            "sweb_de_menu1WWW1": "../sconf/audio/SWEB_DE_WWW_1.mp3",
+            "sweb_de_menu1WWW2": "../sconf/audio/SWEB_DE_WWW_2.mp3",
+            "sweb_de_menu2WWW3": "../sconf/audio/SWEB_DE_WWW_3.mp3",
+            "sweb_de_menu2": "../sconf/audio/SWEB_DE_MENU_2.mp3",
+            "sweb_de_menu2WWW4": "../sconf/audio/SWEB_DE_WWW_4.mp3",
+            "sweb_de_menu2WWW5": "../sconf/audio/SWEB_DE_WWW_5.mp3",
+            "sweb_de_menu2Address": "../sconf/audio/SWEB_DE_ADDRESS.mp3",
+            "sweb_de_alert_phishing": "../sconf/audio/SWEB_DE_ALERT_PHISHING.mp3",
+            "sweb_de_url": "../sconf/audio/SWEB_DE_URL.mp3"
+        },
+        "template": {
+            "num_of_menu_buttons": 2,
+            "num_of_opt_on_frame": 4,
+            "padx_value": 5,
+            "height_divisor": 4.5,
+            "width_divisor": 5,
+            "numOfScreen": 0,
+            "language": "English",
+            "colorMode": "Light",
+            "soundDelay": 5,
+            "alertColor": "#AAFF00",
+            "alertSoundLanguage": "english",
+            "fontSize": 36,
+            "fontThickness": "bold",
+            "fontFamily": "Helvetica"
+        }
+
+    }
+    json_object = json.dumps(dictionary, indent=4, ensure_ascii=False)
+    with open(os.path.join(path, 'SWEB_config.json'), "w+", encoding='utf-8') as outfile:
+        outfile.write(json_object)
+
+
+def restore_sweb_config():
+    path = get_path()
+    sweb_config_default(path)
+
+
+def read_sweb_config(key, value):
+    path = get_path()
+    if os.path.exists(path) and os.path.isfile(
+            os.path.join(get_path(), 'SWEB_config.json')):  # checks for the conf file, if there is any
+        with open(os.path.join(path, 'SWEB_config.json'), "r") as file:
+            jsonData = json.load(file)
+        if key == '' or key is None:
+            return jsonData[value]
+        else:
+            return jsonData[key][value]
+    else:
+        logging.critical('There is no SWEB_config.json or sconf/ file present in system, exiting program now.')
+        exit(1)

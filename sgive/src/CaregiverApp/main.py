@@ -28,7 +28,7 @@ if __name__ == '__main__':
                 print("todo")
 
     # calling ML
-    url = ['https://xhamster.com/', 'https://www.seznamzpravy.cz/clanek/zahranicni-stredni-evropa-policek-pro-slovensko-vlada-rusi-spolecna-jednani-247254#dop_ab_variant=0&dop_source_zone_name=zpravy.sznhp.box&source=hp&seq_no=1&utm_campaign=abtest241_shrnuti_llm_varB&utm_medium=z-boxiku&utm_source=www.seznam.cz']
+    url = ['https://xhamster.com/', 'https://www.rodinnebaleni.cz/jersey-prosteradlo-exclusive-na-vysokou-matraci-tmave-sede-180x200-cm-81767?gad_source=1']
     ryuconf.MLcheck(url)
     # calling Frontend
     FrontEnd.main()

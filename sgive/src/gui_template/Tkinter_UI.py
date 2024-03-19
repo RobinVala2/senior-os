@@ -16,7 +16,7 @@ def getButtonConf():
 
 
 def resolutionMath():
-     #TODO: do len(get_monitors()) when choosing which screen to get in caregiver app
+     # TODO: do len(get_monitors()) when choosing which screen to get in caregiver app
     _numOfScreen = JS.jsonRed('resolution_info', "numOfScreen")
     # this is from screen_info imported get_monitors to get always the first screen
     _screenWidth = get_monitors()[_numOfScreen].width
