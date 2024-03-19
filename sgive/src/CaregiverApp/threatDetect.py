@@ -1,3 +1,4 @@
+import re
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
@@ -123,12 +124,30 @@ class Main:
         self.ML.machineLearning(language)
         self.model_and_vectorizer_check()
 
-
     def model_and_vectorizer_check(self):
         self.return_array = []
         num_of_languages = ryuconf.red_main_config("careConf", "LanguageOptions")
         list_dir = os.listdir("ML-saved")
-        if len(list_dir) != len(num_of_languages) * 2 and not len(list_dir) == 0:
+        pattern_model = r'^\d{4}-\d{2}-\d{2}_model_[A-Z]{2}$'
+        pattern_vecorizer = r'^\d{4}-\d{2}-\d{2}_vectorizer_[A-Z]{2}$'
+        pattern_check_bool = False
+
+        if len(list_dir) == 0:
+            print("Training model for the first time (or the file got empty).")
+
+        for filename in list_dir:
+            if "model" in filename:
+                match_model = re.match(pattern_model, filename)
+                if not match_model and not pattern_check_bool:
+                    pattern_check_bool = True
+                    print("Name regex doesnt match up")
+            elif "vectorizer" in filename:
+                match_vectorizer = re.match(pattern_vecorizer, filename)
+                if not match_vectorizer and not pattern_check_bool:
+                    pattern_check_bool = True
+                    print("Name regex doesnt match up")
+
+        if len(list_dir) != len(num_of_languages) * 2 and not len(list_dir) == 0 or pattern_check_bool:
             folder_path = os.path.join(os.getcwd(), "ML-saved")
             for name in list_dir:
                 file_path = os.path.join(folder_path, name)
@@ -143,18 +162,18 @@ class Main:
         model_files = [f for f in os.listdir("ML-saved") if f.endswith(f"_{self.language}")]
         if model_files:
             for name in model_files:
+                # checking, if model and vectorizer are older than 6 months
                 time_check = name.split("_")
                 date_object = datetime.strptime(time_check[0], '%Y-%m-%d').date()
-                time_threshold = date.today() - relativedelta(months=3)  # 3 months threshold
+                time_threshold = date.today() - relativedelta(months=6)  # 3 months threshold
                 result = date_object < time_threshold
                 if result:
                     print("Too old →", model_files)
                     self.delete_and_retrain(model_files, self.language)
                 else:
                     self.return_array.append(name)
-        else:
-            return []
-
+        # else:
+        #     return []
         return self.return_array
 
     def trainModels(self, language_options):
@@ -178,11 +197,10 @@ class Main:
                     model = filename
                 else:
                     vectorizer = filename
-            # print("model is:", model)
-            # print("vectoriter is:", vectorizer)
             self.ML.predictURL(model_file=model, vectorizer_file=vectorizer, URLarray=self.URLthing)  # prediction
         else:
-            print("\n\n\n what di")
+            # don't know if this is needed, but making sure it at least tries to retrain the model if something random happens
+            self.trainModels(["CZ", "EN", "DE"])
 
 
 # ↓ needed when executing only this .py thing alone ↓

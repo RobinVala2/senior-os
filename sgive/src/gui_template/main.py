@@ -2,9 +2,9 @@ from tkinter import *
 import tkinter
 from screeninfo import get_monitors
 
-import FrontEnd_CTK as temp
-import FrontEnd_CTK as guiTempCTK
-import configActions as act
+import sgive.src.gui_template.Tkinter_UI as temp
+import sgive.src.gui_template.CustomTkinter_UI as guiTempCTK
+import sgive.src.gui_template.configActions as act
 import sgive.src.gui_template.configActions as JS
 
 # from sgive.src.guiTemplateCustomTkinter import guiTempCTK
@@ -20,7 +20,7 @@ def deprecated_tkinter(old_root):
     _currentVersionOfConfig = 0.3
     isExist = act.configExistCheck(_currentVersionOfConfig)
     if isExist:
-        root = Tk()
+        root = tkinter.Tk()
         temp.App(root)
         AppResolution = temp.resolutionMath()
         print(f"resolution of the app is:{AppResolution[3]}x{AppResolution[4]}")
