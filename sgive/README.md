@@ -19,7 +19,9 @@
 - Is resizable, so caregiver can look at other stuff too, for example at config itself.
 - UI is strongly influenced by my UI template, but is newer version, so it is little better. <br>
 <img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/CaregiverApp_GLOBAL.png" alt="App_screenshot_not_showing" style="width:50%;"></br>
-> will add more screenshots
+<img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/CaregiverApp_SMAIL.png" alt="App_screenshot_not_showing" style="width:50%;"></br>
+<img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/CaregiverApp_SWEB.png" alt="App_screenshot_not_showing" style="width:50%;"></br>
+<img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/CaregiverApp_LOGS.png" alt="App_screenshot_not_showing" style="width:50%;"></br>
 
 
 ## User interface template:
@@ -30,13 +32,12 @@
 - every element is dynamic (etc. buttons are) or its in progress to be dynamic.
 
 <img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/newGuiTemp-white.png" alt="App_screenshot_not_showing" style="width:50%;"></br>
+<img src="https://github.com/RYUseless/senior-os/blob/dev/sgive/screenshots/newGuiTemp-black.png" alt="App_screenshot_not_showing" style="width:50%;"></br>
 
-> will add more screenshots
-
-
+## How to use:
+> TODO:
 
 ### TODO:
-- [ ] SWEB configuration
 - [ ] Optimalization
 - [ ] Testing
 
