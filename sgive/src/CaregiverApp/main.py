@@ -25,7 +25,7 @@ if __name__ == '__main__':
             elif file_name == "SMAIL_config.json":
                 ryuconf.smail_config_default(config_folder)
             elif file_name == "SWEB_config.json":
-                print("todo")
+                ryuconf.sweb_config_default(config_folder)
 
     # calling ML
     url = ['https://xhamster.com/', 'https://www.rodinnebaleni.cz/jersey-prosteradlo-exclusive-na-vysokou-matraci-tmave-sede-180x200-cm-81767?gad_source=1']
