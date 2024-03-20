@@ -3,7 +3,6 @@ import os
 import subprocess
 import threading
 import tkinter as tk
-
 import pygame
 from ttkwidgets import ScrolledListbox
 import webbrowser
