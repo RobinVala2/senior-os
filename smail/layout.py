@@ -3,7 +3,6 @@ import os
 import subprocess
 import threading
 import tkinter as tk
-
 import pygame
 from ttkwidgets import ScrolledListbox
 import webbrowser
@@ -673,9 +672,27 @@ class one_frame(tk.Frame):
 
         # If successful, all entries are deleted
         if status == 1:
-            self.recipient_entry.delete(0, tk.END)
-            self.subject_entry.delete(0, tk.END)
-            self.content_entry.delete("1.0", tk.END)
+            self.send_email_success()
+
+    def send_email_success(self):
+        default_color, selected_color = load_button_colors()
+        bg_default_color = app_color()
+
+        self.recipient_entry.delete(0, tk.END)
+        self.subject_entry.delete(0, tk.END)
+        self.content_entry.delete("1.0", tk.END)
+        self.content_entry.insert("1.0", "Email has been sent.")
+        self.content_entry.tag_configure("center", justify="center")
+        self.content_entry.tag_add("center", "1.0", "end")
+        self.content_entry.config(bg=selected_color)
+        self.content_entry.configure(state="disabled")
+
+        self.master.after(5000, self.clear_content_entry, bg_default_color)
+
+    def clear_content_entry(self, default_color):
+        self.content_entry.configure(state="normal")
+        self.content_entry.delete("1.0", "end")
+        self.content_entry.config(bg=default_color)
 
     def fill_recipient(self, id):
 

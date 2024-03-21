@@ -1,8 +1,6 @@
 import logging
 import json
 import os
-from tkinter import Label
-
 import pygame
 import PIL
 from PIL import Image, ImageTk
