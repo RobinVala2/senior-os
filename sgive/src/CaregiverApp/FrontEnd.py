@@ -185,6 +185,7 @@ class LogsFrameWidgets:
 
 class WebFrameWidgets:
     def __init__(self, frame_root, width, height_frame, restore, refresh):
+        logger.info("Creating and showing frame for Web configuration.")
         self.master = frame_root
         self.height_frame = height_frame
         self.width_frame = width
@@ -199,13 +200,13 @@ class WebFrameWidgets:
         self.error_btns = {}
         self.error_label = {}
         # -----------------
-        # Bind the resize event
         self.get_sites()
         self.create_widgets()
+        # Bind the resize event
         self.master.bind("<Configure>", self.on_resize)
-        # E N D of constructor
 
-    def error_update(self, button_name):
+    def error_update(self, button_name, input_value):
+
         button_x = self.widget_btn[button_name].winfo_x() / self.width_frame
         button_y = self.widget_btn[button_name].winfo_y() / self.height_frame
         label_x = self.widget_entry[button_name].winfo_x() / self.width_frame
@@ -216,9 +217,12 @@ class WebFrameWidgets:
 
         options = {
             "Sender email": "Submitted email format was incorrect!",
-            "Sender password": "Submitted password is ilegal!",
+            "Sender password": "Submitted password is in illegal form!",
             "Receiver email": "Submitted email format was incorrect!"
         }
+
+        logger.warning(f"{options.get(button_name, button_name)}. User input was: \"{input_value}\"")
+
 
         self.error_btns[button_name].configure(command=lambda: [self.widget_btn[button_name].place(relx=button_x, rely=button_y),
                                                                 self.widget_entry[button_name].place(relx=label_x, rely=label_y),
@@ -250,17 +254,22 @@ class WebFrameWidgets:
             if email_pattern.match(value):
                 update = ryuConf.edit_sweb_config("credentials", update_values[0], update_values[1])
                 if not update:
-                    self.error_update(button_name)
+                    self.error_update(button_name, value)
                 else:
                     self.widget_btn[button_name].configure(fg_color=fg_color_values, hover_color=hover_color_values)
             else:
-                self.error_update(button_name)
+                self.error_update(button_name, value)
 
-        # password update
+        # password update check
         else:
-            print("just password basic check")
-            print("key value jest:", update_values[0])
-            print("value value jest:", update_values[1])
+            if value and not re.match(r'^\s*$', value):
+                update = ryuConf.edit_sweb_config("credentials", update_values[0], update_values[1])
+                if not update:
+                    self.error_update(button_name, value)
+                else:
+                    self.widget_btn[button_name].configure(fg_color=fg_color_values, hover_color=hover_color_values)
+            else:
+                self.error_update(button_name, value)
 
     def create_widgets(self):
         alert_col = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
