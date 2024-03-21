@@ -147,15 +147,22 @@ class Main:
                     pattern_check_bool = True
                     print("Name regex doesnt match up")
 
-        if len(list_dir) != len(num_of_languages) * 2 and not len(list_dir) == 0 or pattern_check_bool:
+        number_of_files = len(list_dir)
+        # checking for any dotfiles, that i need to ignore :)
+        for name in list_dir:
+            if name.startswith('.'):
+                number_of_files = int(number_of_files) - 1
+
+        if number_of_files != len(num_of_languages) * 2 and not len(list_dir) == 0 or pattern_check_bool:
             folder_path = os.path.join(os.getcwd(), "ML-saved")
             for name in list_dir:
-                file_path = os.path.join(folder_path, name)
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                else:
-                    print("couldn't remove")
-            print("There is no MachineLearning files, or the files got corrupted, generating new ones.")
+                if not name.startswith('.'):
+                    file_path = os.path.join(folder_path, name)
+                    if os.path.exists(file_path):
+                        os.remove(file_path)
+                    else:
+                        print("couldn't remove")
+            print("There are no Machine Learning files, or the files got corrupted. Generating new ones.")
             return None
 
         # Searching specific model and vectorizer, based on language.
