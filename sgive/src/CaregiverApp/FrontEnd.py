@@ -185,6 +185,7 @@ class LogsFrameWidgets:
 
 class WebFrameWidgets:
     def __init__(self, frame_root, width, height_frame, restore, refresh):
+        logger.info("Creating and showing frame for Web configuration.")
         self.master = frame_root
         self.height_frame = height_frame
         self.width_frame = width
@@ -196,25 +197,84 @@ class WebFrameWidgets:
         self.labels = {}
         self.widget_entry = {}
         self.widget_btn = {}
+        self.error_btns = {}
+        self.error_label = {}
         # -----------------
-        # Bind the resize event
         self.get_sites()
         self.create_widgets()
-        self.load_values()
+        # Bind the resize event
         self.master.bind("<Configure>", self.on_resize)
-        # E N D of constructor
 
-    def load_values(self):
-        sender_email = ryuConf.read_sweb_config("credentials", "sender_mail")
-        sender_password = ryuConf.read_sweb_config("credentials", "sender_password")
-        receiver_email = ryuConf.read_sweb_config("credentials", "receiver_mail")
+    def error_update(self, button_name, input_value):
+
+        button_x = self.widget_btn[button_name].winfo_x() / self.width_frame
+        button_y = self.widget_btn[button_name].winfo_y() / self.height_frame
+        label_x = self.widget_entry[button_name].winfo_x() / self.width_frame
+        label_y = self.widget_entry[button_name].winfo_y() / self.height_frame
+
+        self.widget_btn[button_name].place_forget()
+        self.widget_entry[button_name].place_forget()
+
+        options = {
+            "Sender email": "Submitted email format was incorrect!",
+            "Sender password": "Submitted password is in illegal form!",
+            "Receiver email": "Submitted email format was incorrect!"
+        }
+
+        logger.warning(f"{options.get(button_name, button_name)}. User input was: \"{input_value}\"")
 
 
-        print("sender:", sender_email)
-        print("sender password:", sender_password)
-        print("receiver:", receiver_email)
+        self.error_btns[button_name].configure(command=lambda: [self.widget_btn[button_name].place(relx=button_x, rely=button_y),
+                                                                self.widget_entry[button_name].place(relx=label_x, rely=label_y),
+                                                                self.error_label[button_name].place_forget(),
+                                                                self.error_btns[button_name].place_forget()])
+        self.error_label[button_name].configure(text=options.get(button_name, button_name))
+
+        self.error_btns[button_name].place(relx=button_x, rely=button_y)
+        self.error_label[button_name].place(relx=label_x, rely=label_y)
+
+    def update_value(self, button_name, value):
+        # ---
+        fg_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        fg_color_values = (fg_col, fg_col)
+        hov_co = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        hover_color_values = (hov_co, hov_co)
+        # ---
+        options = {
+            "Sender email": ["sender_mail", value],
+            "Sender password": ["sender_password", value],
+            "Receiver email": ["receiver_mail", value]
+        }
+
+        # regex check for emails:
+        update_values = options.get(button_name, button_name)
+        email_pattern = re.compile(r'^.{1,100}@[a-zA-Z]{1,50}\.[a-zA-Z]{1,5}$')
+
+        if not button_name == "Sender password":
+            if email_pattern.match(value):
+                update = ryuConf.edit_sweb_config("credentials", update_values[0], update_values[1])
+                if not update:
+                    self.error_update(button_name, value)
+                else:
+                    self.widget_btn[button_name].configure(fg_color=fg_color_values, hover_color=hover_color_values)
+            else:
+                self.error_update(button_name, value)
+
+        # password update check
+        else:
+            if value and not re.match(r'^\s*$', value):
+                update = ryuConf.edit_sweb_config("credentials", update_values[0], update_values[1])
+                if not update:
+                    self.error_update(button_name, value)
+                else:
+                    self.widget_btn[button_name].configure(fg_color=fg_color_values, hover_color=hover_color_values)
+            else:
+                self.error_update(button_name, value)
 
     def create_widgets(self):
+        alert_col = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
+        alert_values = (alert_col, alert_col)
+
         font_label = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.65,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
@@ -223,7 +283,7 @@ class WebFrameWidgets:
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         entry_text = {
             "Sender email": f"Add sender email (Saved: {ryuConf.read_sweb_config('credentials', 'sender_mail')}",
-            "Sender password": "Enter one use password",
+            "Sender password": "Enter one-time-use password",
             "Receiver email": f"Add receiver email (Saved: {ryuConf.read_sweb_config('credentials', 'receiver_mail')}"
         }
 
@@ -247,22 +307,42 @@ class WebFrameWidgets:
                                                              corner_radius=0,
                                                              )
             self.widget_btn[name] = customtkinter.CTkButton(self.master,
-                                                             font=font_entry,
-                                                             text=f"Submit",
-                                                             width=self.width_frame * (1 / 5),
-                                                             height=self.height_widget / 2,
-                                                             fg_color=("#636363", "#222222"),
-                                                             hover_color=("#757474", "#3b3b3b"),
-                                                             border_width=0,
-                                                             corner_radius=0)
+                                                            font=font_entry,
+                                                            text=f"Submit",
+                                                            width=self.width_frame * (1 / 5),
+                                                            height=self.height_widget / 2,
+                                                            fg_color=("#636363", "#222222"),
+                                                            hover_color=("#757474", "#3b3b3b"),
+                                                            border_width=0,
+                                                            corner_radius=0,
+                                                            command=lambda saved_name=name:
+                                                            self.update_value(saved_name,
+                                                                              self.widget_entry[saved_name].get())
+                                                            )
+            self.error_btns[name] = customtkinter.CTkButton(self.master,
+                                                            font=font_entry,
+                                                            text=f"Let me try again!",
+                                                            width=self.width_frame * (1 / 5),
+                                                            height=self.height_widget / 2,
+                                                            fg_color=("#636363", "#222222"),
+                                                            hover_color=("#757474", "#3b3b3b"),
+                                                            border_width=0,
+                                                            corner_radius=0)
+
+            self.error_label[name] = customtkinter.CTkLabel(self.master,
+                                                            font=font_entry,
+                                                            width=self.width_frame * (2 / 5),
+                                                            height=self.height_widget / 2,
+                                                            fg_color=alert_values)
 
             self.labels[name].place(relx=0, rely=y_position * (10 / 11))
-            self.widget_entry[name].place(relx=1 * (2/5), rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
-            self.widget_btn[name].place(relx=2 * (2/5), rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
+            self.widget_entry[name].place(relx=1 * (2 / 5),
+                                          rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
+            self.widget_btn[name].place(relx=2 * (2 / 5),
+                                        rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
             y_position += 1 / len(self.label_names)
 
         self.widget_entry["Sender password"].configure(show='*')
-
 
     def on_resize(self, event):
         # sets the size of widgets first, but when i simply change frames, this doesnt set them again, so the frame_labels
@@ -282,10 +362,16 @@ class WebFrameWidgets:
             label_widget.configure(width=width_new, height=height_new)
 
         for entry_widget in self.widget_entry.values():
-            entry_widget.configure(width=width_new, height=height_new/2)
+            entry_widget.configure(width=width_new, height=height_new / 2)
 
         for btn_widget in self.widget_btn.values():
             btn_widget.configure(width=event.width * (1 / 5), height=height_new / 2)
+
+        for error_btn in self.error_btns.values():
+            error_btn.configure(width=event.width * (1 / 5), height=height_new / 2)
+
+        for error_label in self.error_label.values():
+            error_label.configure(width=width_new, height=height_new / 2)
 
     def get_sites(self):
         if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
@@ -1316,16 +1402,31 @@ class Core(customtkinter.CTk):
         self.buttons_names = ryuConf.red_main_config("careConf", "menuButtonsList")
         self.toolbar_buttons_count = len(ryuConf.red_main_config("careConf", "menuButtonsList"))
         # ---
-        # root window setup:
         self.title(f"Caregiver configuration application -- Version:{Version}")
+        # self.minsize(int(self.screenWidth * 0.80), int(self.screenHeight * 0.80))  # width_frame, height
+        # self.maxsize(self.screenWidth, self.screenHeight)  # width_frame x height + x + y
+        # self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
+        self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
         self.minsize(int(self.screenWidth * 0.80), int(self.screenHeight * 0.80))  # width_frame, height
         self.maxsize(self.screenWidth, self.screenHeight)  # width_frame x height + x + y
-        self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
-        logger.info("Creating root window for application")
+        self.fullscreen_state = False
         # ---
-        # toolbar class call:
+        logger.info("Creating root window for application")
+        """Toolbar class call"""
         self.toolbar = Toolbar(self, self.screenWidth, self.screenHeight, self.heightDivisor,
                                self.toolbar_buttons_count, self.buttons_names)
+        """fullscreen binding"""
+        self.bind("<F11>", lambda _: self.toggle_fullscreen())
+        self.bind("<Escape>", lambda _: self.toggle_fullscreen())
+
+    def toggle_fullscreen(self):
+        """Toggle fullscreen mode."""
+        self.fullscreen_state = not self.fullscreen_state
+        if self.fullscreen_state:  # Pokud je fullscreen režim zapnutý
+            self.attributes('-fullscreen', True)
+        else:
+            self.attributes('-fullscreen', False)
+            self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")  # Nastaví původní velikost okna
 
 
 def main():

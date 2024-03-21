@@ -448,3 +448,20 @@ def read_sweb_config(key, value):
     else:
         logging.critical('There is no SWEB_config.json or sconf/ file present in system, exiting program now.')
         exit(1)
+
+
+def edit_sweb_config(key, name, value):
+    # this def edits name in conf.json to value
+    path = get_path()
+    # checks for the conf file, if there is any
+    if os.path.exists(path) and os.path.isfile(os.path.join(get_path(), 'config.json')):
+        with open(os.path.join(path, 'SWEB_config.json'), 'r', encoding='utf-8') as file:
+            data = json.load(file)
+            if key is None:
+                data[name] = value
+            else:
+                data[key][name] = value
+        with open(os.path.join(path, 'SWEB_config.json'), 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)  # Ensure_ascii=False zajistí zachování ne-ASCII znaků
+    logging.info(f'successfully edited value: "{value}" at key: "{name}".')
+    return True
