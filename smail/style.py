@@ -32,9 +32,7 @@ def load_button_colors():
 
     data = load_json_file(get_path("sconf", "config.json"))
     default_color = data["GUI_template"]["buttons_unselected"]
-
-    global_data = load_json_file(get_path("sconf", "config.json"))
-    select_color = global_data["GlobalConfiguration"]["hoverColor"]
+    select_color = data["GUI_template"]["buttons_selected"]
     return default_color, select_color
 
 

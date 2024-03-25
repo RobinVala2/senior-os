@@ -4,7 +4,7 @@ import tkinter
 from layout import one_frame
 from antiphishing.get_DB import get_DB
 from template import configActions as act
-from configuration import smail_config_default, global_config_default
+from configuration import smail_config_default
 
 
 logging.basicConfig(
@@ -22,12 +22,7 @@ if __name__ == '__main__':
     try:
 
         # Generating old configuration file for template
-        config_old = act.configExistCheck("0")
-
-        # Check if configuration files exist
-        if not os.path.exists(os.path.join(config_path, "config.json")):
-            global_config_default(os.path.join(config_path))
-            logging.info("Generating global configuration file.")
+        config_old = act.configExistCheck()
 
         if not os.path.exists(os.path.join(config_path, "SMAIL_config.json")):
             smail_config_default(os.path.join(config_path))

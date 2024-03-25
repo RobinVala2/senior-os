@@ -78,8 +78,8 @@ class one_frame(tk.Frame):
             # Width and height configuration
             self.six_height = temp.resolutionMath()[2]
             self.six_width = temp.resolutionMath()[1]
-            num_opt = act.jsonRed('buttons_info', "num_of_opt_on_frame")
-            padx_value = act.jsonRed('buttons_info', "padx_value")
+            num_opt = act.jsonRed('GUI_template', "num_of_opt_on_frame")
+            padx_value = act.jsonRed('GUI_template', "padx_value")
 
             # Calculating the width of each button according to screen width
             self.button_width = int(self.six_width - (padx_value * num_opt))
