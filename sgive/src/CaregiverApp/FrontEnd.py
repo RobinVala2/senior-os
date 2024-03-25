@@ -29,18 +29,117 @@ customtkinter.set_appearance_mode(_colorScheme)  # Modes: system (default), ligh
 customtkinter.set_default_color_theme("dark-blue")  # Themes: blue (default), dark-blue, green
 
 
-class DefaultFrameWidgets:
-    def __init__(self, frame_root):
+class FrameElements:
+    def __init__(self, frame_root, original_width, original_height, frame_name):
         self.master = frame_root
-        text_variable = ("This is configuration application for caregiver only!\n"
-                         "If you are senior yourself, you shouldn't be here.\n"
-                         "\nTo leave, click \"EXIT\" in upper right corner.")
-        font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize") * 1.1,
-                      ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
+        self.original_width = original_width
+        self.original_height = original_height
+        self.font_family = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        self.widget_font_size = ryuConf.red_main_config("GlobalConfiguration", "fontSize")
+        self.font_weight = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.label_font_size = self.widget_font_size * 1.65
+        self.current_label_font = self.label_font_size
+        self.current_widget_font = self.widget_font_size
+        self.label_names = ryuConf.red_main_config("careConf", frame_name)
+        # for true original fullscreen sizes:
+        screenNum = ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")
+        self.screenWidth = get_monitors()[screenNum].width  # screen width_frame
+        self.screenHeight = get_monitors()[screenNum].height  # screen height
+        self.heightDivisor = ryuConf.red_main_config("GUI_template", "height_divisor")
 
-        label = customtkinter.CTkLabel(master=frame_root, text=text_variable, font=font_value)
-        label.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
+    def is_window_resized(self, widgets_array):
+        """checking if window is in resized down or if it isn't,
+                  because resize event isn't triggered when I resize down and switch frame"""
+        real_width = self.master.winfo_width()
+        self.master.update_idletasks()
+        # real_height = self.master.winfo_height()
+        if self.screenWidth > real_width:
+            self.original_width = self.screenWidth
+            self.original_height = self.screenHeight - (self.screenHeight / self.heightDivisor)
+            self.resize_font(widgets_array)
+            self.resize_widgets(widgets_array)
+
+    def get_correct_size(self):
+        self.master.update()
+        if ((not self.original_height < self.master.winfo_height())
+                or (not self.original_width < self.master.winfo_width())):
+            self.original_height = self.master.winfo_height()
+            self.original_width = self.master.winfo_width()
+
+        widget_height = int(self.original_height * ((10 / 11) / len(self.label_names)) + 1)
+        return widget_height
+
+
+    def resize_widgets(self, widgets_array):
+        height_frame = self.master.winfo_height()
+        width_frame = self.master.winfo_width()
+
+        widget_height = height_frame * ((10 / 11) / len(self.label_names))
+        # rounding up
+        widget_height = int(widget_height + 1)
+        label_width = width_frame * (2 / 5)
+        button_width = width_frame * (1 / 5)
+
+
+        for widget_list in widgets_array:
+            for name, widget in widget_list.items():
+                if isinstance(widget, customtkinter.CTkLabel):
+                    widget.configure(width=label_width, height=widget_height)
+                elif isinstance(widget, customtkinter.CTkEntry):
+                    widget.configure(width=label_width - 2, height=widget_height - 2)
+                elif isinstance(widget, customtkinter.CTkButton):
+                    if name == "picture0":  # this button needs to be 2/5 in length
+                        widget.configure(width=label_width - 2, height=widget_height - 2)
+                    else:
+                        widget.configure(width=button_width - 2, height=widget_height - 2)
+                else:
+                    print("Instance jinačího typu:", type(widget))
+
+    def resize_font(self, widgets_array):
+        new_height = self.master.winfo_height()
+        new_width = self.master.winfo_width()
+
+        if new_height != self.original_height or new_width != self.original_width:
+            percentil_change = float(new_height / self.original_height)
+            # TODO: fix if percentil goes up than 100%, so the next run knows it
+
+            if new_height < self.original_height and new_height != 1:
+                self.current_widget_font = int(self.current_widget_font * percentil_change)
+                self.current_label_font = int(self.label_font_size * percentil_change)
+            else:
+                self.current_widget_font = int(self.widget_font_size)
+                self.current_label_font = int(self.label_font_size)
+
+            new_label_font = (self.font_family, self.current_label_font * 1.05, self.font_weight)
+            new_widget_font = (self.font_family, self.current_widget_font, self.font_weight)
+
+            self.original_height = new_height
+            self.original_width = new_width
+
+            for widget_list in widgets_array:
+                for widget in widget_list.values():
+                    if isinstance(widget, customtkinter.CTkLabel):
+                        widget.configure(font=new_label_font)
+                    elif isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
+                        widget.configure(font=new_widget_font)
+                    else:
+                        print(f"Widget is in unsuspected type ({type(widget)}), skipping.")
+
+    def create_labels(self, height_widget):
+        labels = {}
+        font_label = (self.font_family, self.label_font_size, self.font_weight)
+        y_position = float(0)
+        for name in self.label_names:
+            labels[name] = customtkinter.CTkLabel(self.master,
+                                                  text=name,
+                                                  font=font_label,
+                                                  width=self.original_width * (2 / 5),
+                                                  height=height_widget,
+                                                  fg_color=("#D3D3D3", "#171717")
+                                                  )
+            labels[name].place(relx=0, rely=y_position * (10 / 11))
+            y_position += 1 / len(self.label_names)
+        return labels
 
 
 class LogsFrameWidgets:
@@ -188,22 +287,31 @@ class WebFrameWidgets:
         logger.info("Creating and showing frame for Web configuration.")
         self.master = frame_root
         self.height_frame = height_frame
+        self.height_frame_origin = height_frame
+        self.width_frame_origin = width
         self.width_frame = width
-        self.height_widget = None
         self.restore_btn = restore
         self.refresh_btn = refresh
         self.label_names = ryuConf.red_main_config("careConf", "SwebFrameLabels")
         # -----------------
-        self.labels = {}
         self.widget_entry = {}
         self.widget_btn = {}
         self.error_btns = {}
         self.error_label = {}
-        # -----------------
-        self.get_sites()
-        self.create_widgets()
-        # Bind the resize event
-        self.master.bind("<Configure>", self.on_resize)
+        # CALLS:
+        resize_event_instance = FrameElements(frame_root, width, height_frame, "SwebFrameLabels")
+        self.height_widget = resize_event_instance.get_correct_size()
+        self.labels = resize_event_instance.create_labels(self.height_widget)
+        # self.create_widgets()
+        # event for resizing widgets and font
+        widget_list_array = [self.labels]
+        resize_event_instance.is_window_resized(widget_list_array)
+        self.master.bind("<Configure>",
+                         lambda _: resize_event_instance.resize_font(widget_list_array))
+        self.master.bind("<Configure>",
+                         lambda _: resize_event_instance.resize_widgets(widget_list_array))
+
+        # self.master.bind("<Configure>", self.resize_widgets)
 
     def error_update(self, button_name, input_value):
 
@@ -223,11 +331,11 @@ class WebFrameWidgets:
 
         logger.warning(f"{options.get(button_name, button_name)}. User input was: \"{input_value}\"")
 
-
-        self.error_btns[button_name].configure(command=lambda: [self.widget_btn[button_name].place(relx=button_x, rely=button_y),
-                                                                self.widget_entry[button_name].place(relx=label_x, rely=label_y),
-                                                                self.error_label[button_name].place_forget(),
-                                                                self.error_btns[button_name].place_forget()])
+        self.error_btns[button_name].configure(
+            command=lambda: [self.widget_btn[button_name].place(relx=button_x, rely=button_y),
+                             self.widget_entry[button_name].place(relx=label_x, rely=label_y),
+                             self.error_label[button_name].place_forget(),
+                             self.error_btns[button_name].place_forget()])
         self.error_label[button_name].configure(text=options.get(button_name, button_name))
 
         self.error_btns[button_name].place(relx=button_x, rely=button_y)
@@ -297,87 +405,9 @@ class WebFrameWidgets:
                                                        height=self.height_widget,
                                                        fg_color=("#D3D3D3", "#171717")
                                                        )
-            self.widget_entry[name] = customtkinter.CTkEntry(self.master,
-                                                             font=font_entry,
-                                                             placeholder_text=entry_text.get(name, name),
-                                                             width=self.width_frame * (2 / 5),
-                                                             height=self.height_widget / 2,
-                                                             border_width=2,
-                                                             border_color="#ededee",
-                                                             corner_radius=0,
-                                                             )
-            self.widget_btn[name] = customtkinter.CTkButton(self.master,
-                                                            font=font_entry,
-                                                            text=f"Submit",
-                                                            width=self.width_frame * (1 / 5),
-                                                            height=self.height_widget / 2,
-                                                            fg_color=("#636363", "#222222"),
-                                                            hover_color=("#757474", "#3b3b3b"),
-                                                            border_width=0,
-                                                            corner_radius=0,
-                                                            command=lambda saved_name=name:
-                                                            self.update_value(saved_name,
-                                                                              self.widget_entry[saved_name].get())
-                                                            )
-            self.error_btns[name] = customtkinter.CTkButton(self.master,
-                                                            font=font_entry,
-                                                            text=f"Let me try again!",
-                                                            width=self.width_frame * (1 / 5),
-                                                            height=self.height_widget / 2,
-                                                            fg_color=("#636363", "#222222"),
-                                                            hover_color=("#757474", "#3b3b3b"),
-                                                            border_width=0,
-                                                            corner_radius=0)
-
-            self.error_label[name] = customtkinter.CTkLabel(self.master,
-                                                            font=font_entry,
-                                                            width=self.width_frame * (2 / 5),
-                                                            height=self.height_widget / 2,
-                                                            fg_color=alert_values)
 
             self.labels[name].place(relx=0, rely=y_position * (10 / 11))
-            self.widget_entry[name].place(relx=1 * (2 / 5),
-                                          rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
-            self.widget_btn[name].place(relx=2 * (2 / 5),
-                                        rely=(y_position * (10 / 11)) + (0.25 / len(self.label_names)))
             y_position += 1 / len(self.label_names)
-
-        self.widget_entry["Sender password"].configure(show='*')
-
-    def on_resize(self, event):
-        # sets the size of widgets first, but when i simply change frames, this doesnt set them again, so the frame_labels
-        # does it (if not resized)
-        self.height_frame = self.master.winfo_height()
-        self.width_frame = self.master.winfo_width()
-
-        height_new = self.height_frame * ((10 / 11) / len(self.label_names))
-        width_new = event.width * (2 / 5)
-
-        # Recalculate button height and width_frame (lower buttons, that are created in frame class)
-        for widget in [self.master.children[child] for child in self.master.children]:
-            if isinstance(widget, customtkinter.CTkButton):
-                widget.configure(height=self.height_frame * (1 / 11),
-                                 width=width_new)
-        for label_widget in self.labels.values():
-            label_widget.configure(width=width_new, height=height_new)
-
-        for entry_widget in self.widget_entry.values():
-            entry_widget.configure(width=width_new, height=height_new / 2)
-
-        for btn_widget in self.widget_btn.values():
-            btn_widget.configure(width=event.width * (1 / 5), height=height_new / 2)
-
-        for error_btn in self.error_btns.values():
-            error_btn.configure(width=event.width * (1 / 5), height=height_new / 2)
-
-        for error_label in self.error_label.values():
-            error_label.configure(width=width_new, height=height_new / 2)
-
-    def get_sites(self):
-        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
-            self.height_frame = self.master.winfo_height()
-            self.width_frame = self.master.winfo_width()
-        self.height_widget = self.height_frame * ((10 / 11) / len(self.label_names))
 
 
 class MailFrameWidgets:
@@ -398,8 +428,6 @@ class MailFrameWidgets:
         # ------
         self.person_counter = 1  # counter for person name key
         self.filedialog_counter = 1
-        self.widget_height = None
-        self.label_dict = {}
         self.button_height_fract = 11
         self.entry_widgets = {}
         self.submit_entry_btn = {}
@@ -411,13 +439,20 @@ class MailFrameWidgets:
         self.combo_y = 0
         # -----------------
         # calls:
-        self.screen_size_check()
-        self.create_labels()
+        resize_event_instance = FrameElements(frame_root, width, height_frame, "SMailFrameLabels")
+        self.widget_height = resize_event_instance.get_correct_size()
+        self.labels = resize_event_instance.create_labels(self.widget_height)
+        widget_list_array = [self.labels, self.entry_widgets, self.submit_entry_btn, self.caregiver_warning,
+                             self.url_link, self.choose_pictures
+                             ]
         self.create_widgets()
         self.load_defaults()
-        self.master.bind("<Configure>", lambda _: self.on_resize())
-
-        # -----------------
+        resize_event_instance.is_window_resized(widget_list_array)
+        # resize events:
+        self.master.bind("<Configure>",
+                         lambda _: resize_event_instance.resize_font(widget_list_array))
+        self.master.bind("<Configure>",
+                         lambda _: resize_event_instance.resize_widgets(widget_list_array))
 
     def load_defaults(self):
         value_mapping = {1: "Enable", 0: "Disable"}
@@ -439,8 +474,8 @@ class MailFrameWidgets:
 
         entry_placeholderText_values = [f"Enter here (current: {email_entry})",
                                         "Add senior's password here",
-                                        "Use: <name>@<domain.name>",
-                                        f"Enter here (current: {caregiver_entry})"]
+                                        f"Enter here (current: {caregiver_entry})",
+                                        "Use: <name>@<domain.name>"]
 
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
@@ -486,15 +521,15 @@ class MailFrameWidgets:
         # in progres rn.
         entry_value_mapping = {0: "username",
                                1: "password",
-                               2: "Person",
-                               3: "guardian_email"}
+                               2: "guardian_email",
+                               3: "Person",
+                               }
 
         # reset back submit button color, if its red or green
         self.submit_entry_btn[button_id].configure(fg_color=("#636363", "#222222"),
                                                    hover_color=("#757474", "#3b3b3b"))
 
         if email_val is None:
-            print("bro")
             self.submit_entry_btn[button_id].configure(fg_color=("red", "red"),
                                                        hover_color=("red", "red"), )
             return
@@ -504,18 +539,18 @@ class MailFrameWidgets:
                                  email_val)
 
             # email inputs for seniors email and caregiver email
-            if match and not entry_type == 2 and not entry_type == 3:
+            if match and not entry_type == 3 and not entry_type == 2:
                 entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
                 self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
                 ryuConf.edit_smail_config("credentials", entry_type, email_val)
 
-            elif match and entry_type == 3 and not entry_type == 2:
+            elif match and entry_type == 2 and not entry_type == 3:
                 entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
                 self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
                 ryuConf.edit_smail_config(None, entry_type, email_val)
 
             # add six emails:
-            elif match and entry_type == 2 and not entry_type == 3:
+            elif match and entry_type == 3 and not entry_type == 2:
                 if self.person_counter < 6:
                     entry_type = entry_value_mapping.get(entry_type, entry_type)
                     ryuConf.edit_smail_config("emails", f"{entry_type}{self.person_counter}", email_val)
@@ -540,23 +575,6 @@ class MailFrameWidgets:
             ryuConf.edit_smail_config("credentials", entry_type, email_val)
             self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
             print("placeholder")
-
-    def create_labels(self):
-        font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.65,
-                      ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
-        y_position = 0.0
-        label_num = len(self.label_names)
-        for label_name in self.label_names:
-            self.label_dict[label_name] = customtkinter.CTkLabel(self.master,
-                                                                 text=label_name,
-                                                                 font=font_value,
-                                                                 width=self.width_frame * (2 / 5),
-                                                                 height=self.widget_height,
-                                                                 fg_color=("#D3D3D3", "#171717")
-                                                                 )
-            self.label_dict[label_name].place(relx=0, rely=y_position * (10 / 11))
-            y_position += 1 / label_num
 
     def file_dialog(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
@@ -599,13 +617,13 @@ class MailFrameWidgets:
         for entry_number in range(len(self.label_names) - number_of_non_entry_widgets):
             self.submit_entry_btn[entry_number] = customtkinter.CTkButton(self.master,
                                                                           font=font_value,
-                                                                          width=self.width_frame * (1 / 5) - 2.5,
-                                                                          height=self.widget_height - 2.5,
+                                                                          width=self.width_frame * (1 / 5) - 2,
+                                                                          height=self.widget_height - 2,
                                                                           border_width=0,
                                                                           corner_radius=0,
                                                                           fg_color=("#636363", "#222222"),
                                                                           hover_color=("#757474", "#3b3b3b"),
-                                                                          text="submit",
+                                                                          text="Submit",
                                                                           command=lambda
                                                                               entry_id=entry_number: self.update_entry_widgets(
                                                                               self.entry_widgets[entry_id].get(),
@@ -613,22 +631,19 @@ class MailFrameWidgets:
                                                                           )
             self.entry_widgets[entry_number] = customtkinter.CTkEntry(self.master,
                                                                       font=("Halvetice", 100),
-                                                                      width=self.width_frame * (2 / 5) - 2.5,
-                                                                      height=self.widget_height - 2.5,
+                                                                      width=self.width_frame * (2 / 5) - 2,
+                                                                      height=self.widget_height - 2,
                                                                       border_width=0,
                                                                       corner_radius=0
                                                                       )
 
             if entry_number == 3:  # 3rd row
                 self.combo_x = rel_x
-                self.combo_y = rel_y
-                rel_y += (1 / len(self.label_names))
-                rel_y_btns = rel_y
-                rel_y += (1 / len(self.label_names))
-                # Place entry widget and submit button
                 self.entry_widgets[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
                 rel_x += (2 / 5)
                 self.submit_entry_btn[entry_number].place(relx=rel_x, rely=rel_y * (10 / 11))
+                rel_y += (1 / len(self.label_names))
+                self.combo_y = rel_y
                 rel_x -= (2 / 5)
                 rel_y += (1 / len(self.label_names))
             else:
@@ -642,27 +657,27 @@ class MailFrameWidgets:
         self.entry_widgets[1].configure(show='*')
 
         # Configure text for the first button
-        self.submit_entry_btn[2].configure(text="Add Person1")
+        self.submit_entry_btn[3].configure(text="Add Person1")
 
         for widget in range(2):
-            self.choose_pictures[widget] = customtkinter.CTkButton(master=self.master,
-                                                                   height=self.widget_height - 2.5,
-                                                                   corner_radius=0,
-                                                                   fg_color=("#636363", "#222222"),
-                                                                   hover_color=("#757474", "#3b3b3b"),
-                                                                   font=font_value,
-                                                                   )
-        self.choose_pictures[0].configure(text="Add picture for picked person →",
-                                          width=self.width_frame * (2 / 5) - 2.5,
-                                          command=lambda: self.file_dialog())
+            self.choose_pictures[f"picture{widget}"] = customtkinter.CTkButton(master=self.master,
+                                                                               height=self.widget_height - 2,
+                                                                               corner_radius=0,
+                                                                               fg_color=("#636363", "#222222"),
+                                                                               hover_color=("#757474", "#3b3b3b"),
+                                                                               font=font_value,
+                                                                               )
+        self.choose_pictures[f"picture{0}"].configure(text="Add picture for selected person →",
+                                                      width=self.width_frame * (2 / 5) - 2,
+                                                      command=lambda: self.file_dialog())
 
-        self.choose_pictures[1].configure(text=f"Add person{self.filedialog_counter}",
-                                          width=self.width_frame * (1 / 5) - 2.5,
-                                          command=lambda: self.submit_filedialog())
+        self.choose_pictures[f"picture{1}"].configure(text=f"Add person{self.filedialog_counter}",
+                                                      width=self.width_frame * (1 / 5) - 2,
+                                                      command=lambda: self.submit_filedialog())
 
-        self.choose_pictures[0].place(relx=self.combo_x, rely=self.combo_y * (10 / 11))
+        self.choose_pictures[f"picture{0}"].place(relx=self.combo_x, rely=self.combo_y * (10 / 11))
         self.combo_x += (2 / 5)
-        self.choose_pictures[1].place(relx=self.combo_x, rely=self.combo_y * (10 / 11))
+        self.choose_pictures[f"picture{1}"].place(relx=self.combo_x, rely=self.combo_y * (10 / 11))
 
         # Define a list of options
         number_options = ["Enable", "Disable"]
@@ -670,8 +685,8 @@ class MailFrameWidgets:
         for value_name in number_options:
             self.caregiver_warning[value_name] = customtkinter.CTkButton(self.master,
                                                                          font=font_value,
-                                                                         width=self.width_frame * (1 / 5) - 2.5,
-                                                                         height=self.widget_height - 2.5,
+                                                                         width=self.width_frame * (1 / 5) - 2,
+                                                                         height=self.widget_height - 2,
                                                                          border_width=0,
                                                                          corner_radius=0,
                                                                          fg_color=("#636363", "#222222"),
@@ -685,8 +700,8 @@ class MailFrameWidgets:
 
             self.url_link[value_name] = customtkinter.CTkButton(self.master,
                                                                 font=font_value,
-                                                                width=self.width_frame * (1 / 5) - 2.5,
-                                                                height=self.widget_height - 2.5,
+                                                                width=self.width_frame * (1 / 5) - 2,
+                                                                height=self.widget_height - 2,
                                                                 border_width=0,
                                                                 corner_radius=0,
                                                                 fg_color=("#636363", "#222222"),
@@ -697,54 +712,16 @@ class MailFrameWidgets:
                                                                                            value_id, self.url_link)
                                                                 )
             # Place buttons
-            self.caregiver_warning[value_name].place(relx=rel_x_btns, rely=rel_y_btns * (10 / 11))
-            rel_x_btns += (1 / 5) + 0.00015
-            self.url_link[value_name].place(relx=rel_x, rely=rel_y * (10 / 11))
+            self.caregiver_warning[value_name].place(relx=rel_x_btns, rely=rel_y * (10 / 11))
+            rel_x_btns += (1 / 5)
+            self.url_link[value_name].place(relx=rel_x, rely=(rel_y + 1 / len(self.label_names)) * (10 / 11))
             rel_x += (1 / 5)
-
-    def on_resize(self):
-        # Get new dimensions
-        self.height_frame = self.master.winfo_height()
-        self.width_frame = self.master.winfo_width()
-
-        # Calculate new sizes for widgets
-        width_new = self.width_frame * (2 / 5)
-        height_new = self.height_frame * ((10 / 11) / len(self.label_names))
-        width_btn = self.master.winfo_width() * (1 / 5)
-
-        # Resize restore and refresh buttons
-        for btn in [self.restore_configurations, self.refresh_frame]:
-            btn.configure(height=self.height_frame * (1 / 11), width=width_new, anchor=customtkinter.CENTER)
-
-        # choose pictures things
-        self.choose_pictures[0].configure(width=width_new - 2.5, height=height_new - 2.5)
-        self.choose_pictures[1].configure(width=width_btn - 2.5, height=height_new - 2.5)
-
-        # Resize label widgets
-        for label in self.label_dict.values():
-            label.configure(width=width_new, height=height_new)
-
-        # Resize entry widgets
-        for entry_widget in list(self.entry_widgets.values()):
-            entry_widget.configure(width=width_new - 2.5, height=height_new - 2.5)
-
-        # Resize all buttons
-        for button in list(self.caregiver_warning.values()) + list(self.url_link.values()) + list(
-                self.submit_entry_btn.values()):
-            button.configure(width=width_btn - 2.5, height=height_new - 2.5)
-
-    def screen_size_check(self):
-        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
-            self.height_frame = self.master.winfo_height()
-            self.width_frame = self.master.winfo_width()
-        self.widget_height = self.height_frame * ((10 / 11) / len(self.label_names))
 
 
 class GlobalFrameWidgets:
     def __init__(self, frame_root, width, height_frame, restore, refresh):
         logger.info("Initiated widgets creation for Global frame.")
         self.master = frame_root
-        self.height_frame = height_frame
         self.width_frame = width
         self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
@@ -754,7 +731,6 @@ class GlobalFrameWidgets:
         self.error_label_arr = []
         self.screen_arr = []
         self.screen_num = {}  # choose which screen size scale to
-        self.label_dict = {}  # i forgor what dis :)
         self.language_dict = {}  # language for applications array
         self.language_alert_dict = {}  # language alert dictionary
         self.colorscheme_dict = {}
@@ -764,15 +740,66 @@ class GlobalFrameWidgets:
         # for showing each buttons at one function and resize calculations ↓ ↓ ↓ ↓ ↓
         self.array_coranteng = [self.screen_num, self.language_dict, self.language_alert_dict, self.colorscheme_dict,
                                 self.entry_dict, self.font_size]
-        # percentage ------------------
-        self.scale = 0.79
         # ---------- CALS --------------
-        self.screen_size_check()
-        self.create_labels()  # creating labels for each lane
-        self.buttons()  # creating objects for buttons
-        self.highlight_configured_widgets()  # set default options
-        self.master.bind("<Configure>", lambda _: self.on_resize())
-        # E N D of constructor
+        resize_class = FrameElements(frame_root, width, height_frame, "GlobalFrameLabels")
+        self.height_frame = resize_class.get_correct_size()
+        self.labels = resize_class.create_labels(self.height_frame)
+        self.buttons()
+        self.highlight_configured_widgets()
+        widget_list_array = [self.labels, self.screen_num, self.language_dict, self.language_alert_dict,
+                             self.colorscheme_dict, self.entry_dict, self.font_size, self.entry_buttons_dict]
+        # resize events:
+        resize_class.is_window_resized(widget_list_array)
+        self.master.bind("<Configure>", lambda _: [resize_class.resize_font(widget_list_array),
+                                                   resize_class.resize_widgets(widget_list_array)])
+
+
+
+    @staticmethod
+    def calculate_lighter_hover_color(input_value):
+        hex_color = input_value.strip("#")
+        # hex -> R G B
+        red = int(hex_color[0:2], 16)
+        green = int(hex_color[2:4], 16)
+        blue = int(hex_color[4:6], 16)
+        # lighten
+        red = min(255, int(red * (1 + 35 / 100)))
+        green = min(255, int(green * (1 + 35 / 100)))
+        blue = min(255, int(blue * (1 + 35 / 100)))
+        # back to hex
+        new_hex_color = "#{:02x}{:02x}{:02x}".format(red, green, blue)
+        print("new hex:", new_hex_color)
+        # edit
+        ryuConf.edit_main_config("GlobalConfiguration", "hoverColorLighten", new_hex_color)
+
+    @staticmethod
+    def update_config(key, name, value, button_id, button_list):
+        # pokud se zadaří a nikde nebude value a button_id rozdílné, tak pak tyto proměnné sloučit
+        print("name", name)
+        print("value", value)
+
+        language_mapping = {
+            "Czech": "CZ",
+            "English": "EN",
+            "German": "DE"
+        }
+        value = language_mapping.get(value, value)
+
+        # read json configs for hover color settings
+        fg_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        selected_button = (fg_col, fg_col)
+        hov_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        sel_btn_hover = (hov_col, hov_col)
+
+        # trying to update with visual notifications
+        return_value = ryuConf.edit_main_config(key, name, value)
+        for all_buttons in button_list:  # aka restore all buttons in that row to its original color
+            button_list[all_buttons].configure(fg_color=("#636363", "#222222"), hover_color=("#757474", "#3b3b3b"))
+        if return_value is True:
+            button_list[button_id].configure(fg_color=selected_button, hover_color=sel_btn_hover)
+        else:
+            logger.error("There was an error while updating the value.")
+            button_list[button_id].configure(fg_color=("red", "red"), hover_color=("#8B0000", "#8B0000"))
 
     def highlight_configured_widgets(self):
         fg_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
@@ -858,23 +885,6 @@ class GlobalFrameWidgets:
         label_id_btn.place(relx=rel_button_x, rely=rel_button_y)
         self.error_label_arr.append(label_id_btn)
 
-    @staticmethod
-    def calculate_lighter_hover_color(input_value):
-        hex_color = input_value.strip("#")
-        # hex -> R G B
-        red = int(hex_color[0:2], 16)
-        green = int(hex_color[2:4], 16)
-        blue = int(hex_color[4:6], 16)
-        # lighten
-        red = min(255, int(red * (1 + 35 / 100)))
-        green = min(255, int(green * (1 + 35 / 100)))
-        blue = min(255, int(blue * (1 + 35 / 100)))
-        # back to hex
-        new_hex_color = "#{:02x}{:02x}{:02x}".format(red, green, blue)
-        print("new hex:", new_hex_color)
-        # edit
-        ryuConf.edit_main_config("GlobalConfiguration", "hoverColorLighten", new_hex_color)
-
     def update_config_entry(self, key, name, input_value, button_object, entry_object):
         # firstly read hover color settings, so it doesn't get mismatched when changing
         selected_button = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
@@ -910,35 +920,6 @@ class GlobalFrameWidgets:
                 self.show_entry_error(button_object, entry_object, name)
                 logger.error(f"Changed integer value was not number, user input was: {input_value}")
                 return
-
-    @staticmethod
-    def update_config(key, name, value, button_id, button_list):
-        # pokud se zadaří a nikde nebude value a button_id rozdílné, tak pak tyto proměnné sloučit
-        print("name", name)
-        print("value", value)
-
-        language_mapping = {
-            "Czech": "CZ",
-            "English": "EN",
-            "German": "DE"
-        }
-        value = language_mapping.get(value, value)
-
-        # read json configs for hover color settings
-        fg_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
-        selected_button = (fg_col, fg_col)
-        hov_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
-        sel_btn_hover = (hov_col, hov_col)
-
-        # trying to update with visual notifications
-        return_value = ryuConf.edit_main_config(key, name, value)
-        for all_buttons in button_list:  # aka restore all buttons in that row to its original color
-            button_list[all_buttons].configure(fg_color=("#636363", "#222222"), hover_color=("#757474", "#3b3b3b"))
-        if return_value is True:
-            button_list[button_id].configure(fg_color=selected_button, hover_color=sel_btn_hover)
-        else:
-            logger.error("There was an error while updating the value.")
-            button_list[button_id].configure(fg_color=("red", "red"), hover_color=("#8B0000", "#8B0000"))
 
     def buttons(self):
         # First config row:
@@ -997,9 +978,9 @@ class GlobalFrameWidgets:
 
         # Fifth config row:
         width_size = self.width_frame * (2 / 5) - 2.5
-        height_size = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
+        height_size = self.height_frame - 2.5
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * self.scale,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         entry_objects = ryuConf.red_main_config("careConf", "EntryOptions")
@@ -1049,17 +1030,18 @@ class GlobalFrameWidgets:
         This very scary looking function does multiple things, it sets repetitive parameters for widgets and its place on frame
         """
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * self.scale,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
-        height_num = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
-        width_num = self.width_frame * (1 / 5) - 2.5
-        y_position = 0.001
+        # height_num = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
+        height_num = self.height_frame - 2
+        width_num = self.width_frame * (1 / 5) - 2
+        y_position = float(0)
 
         for widget_dictionary in self.array_coranteng:
             # place entry widgets to frame
             if widget_dictionary is self.entry_dict:
-                x_position = 1 * (2 / 5) + 0.001  # starting place
+                x_position = 1 * (2 / 5)  # starting place
                 entry_buttons_counter = 0
                 for entry_object in widget_dictionary.values():
                     x_button_poss = x_position + (2 / 5)
@@ -1070,14 +1052,14 @@ class GlobalFrameWidgets:
                                                                              font=font_value,
                                                                              width=width_num,
                                                                              height=height_num)
-                    self.entry_buttons_dict[entry_buttons_counter].place(relx=x_button_poss, rely=y_position)
                     entry_object.place(relx=x_position, rely=y_position)
+                    self.entry_buttons_dict[entry_buttons_counter].place(relx=x_button_poss, rely=y_position)
                     y_position += 1 * (1 / (len(self.label_names) + 1))
                     entry_buttons_counter += 1
                 y_position -= 1 * (1 / (len(self.label_names) + 1))
             # place other widgets that aren't anyhow bond to entry to frame
             else:
-                x_position = 1 * (2 / 5) + 0.001  # starting place for other dictionaries
+                x_position = 1 * (2 / 5)  # starting place for other dictionaries
                 for button in widget_dictionary.values():
                     button.configure(border_width=0,
                                      corner_radius=0,
@@ -1091,70 +1073,19 @@ class GlobalFrameWidgets:
             y_position += 1 * (1 / (len(self.label_names) + 1))
         logger.info("Created buttons and entry widgets for GLOBAL frame")
 
-    def create_labels(self):
+
+class DefaultFrameWidgets:
+    def __init__(self, frame_root):
+        self.master = frame_root
+        text_variable = ("Welcome to the Configuration Application for Senior-os\n"
+                         "Each button in menubar has its own configuration frame.\n"
+                         "\nMore information in documentation <link>")
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.40,
+                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize") * 1.1,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
-        y_position = 0.001
-        label_width = self.width_frame * (2 / 5)
-        label_height = self.height_frame * (1 / (len(self.label_names) + 1))
-        for label_name in self.label_names:
-            label = customtkinter.CTkLabel(self.master,
-                                           text=label_name,
-                                           width=label_width,
-                                           height=label_height,
-                                           font=font_value,
-                                           # whiteMode DarkMode
-                                           fg_color=("#D3D3D3", "#171717"),
-                                           compound="right",
-                                           anchor=customtkinter.CENTER)
-            label.place(relx=0, rely=y_position)
-            self.label_dict[label_name] = label
-            y_position += 1 * (1 / (len(self.label_names) + 1))
-        logger.info("Created labels for global frame.")
-
-    def on_resize(self):
-        # update variables
-        self.height_frame = self.master.winfo_height()
-        self.width_frame = self.master.winfo_width()
-
-        # set new width_frame, height variables:
-        new_width_larger = self.width_frame * (2 / 5)
-        new_width_smaller = self.width_frame * (1 / 5)
-        new_height = self.height_frame * (1 / (len(self.label_names) + 1))
-
-        # for loop for labels
-        for label in self.label_dict.values():
-            label.configure(width=new_width_larger,
-                            height=new_height)
-
-        # recalculate sizes for all buttons that are 2/5 of the size:
-        for btn in [self.restore_configurations, self.refresh_frame]:
-            btn.configure(height=new_height,
-                          width=new_width_larger,
-                          anchor=customtkinter.CENTER)
-
-        for _, button_obj in self.entry_buttons_dict.items():
-            button_obj.configure(width=new_width_smaller - 2.5,
-                                 height=new_height - 2.5)
-
-        # recalculates widgets in self.array_coranteng giga mega array:
-        for item in self.array_coranteng:
-            if item is self.entry_dict:
-                for key, widget in item.items():
-                    widget.configure(width=new_width_larger - 2.5,
-                                     height=new_height - 2.5)
-            else:
-                for key, widget in item.items():
-                    widget.configure(width=new_width_smaller - 2.5,
-                                     height=new_height - 2.5)
-        logger.info("Calculating logic for frame widget to fit to new sized window.")
-
-    def screen_size_check(self):
-        if not self.height_frame < self.master.winfo_height() or not self.width_frame < self.master.winfo_width():
-            self.width_frame = self.master.winfo_width()
-            self.height_frame = self.master.winfo_height()
+        label = customtkinter.CTkLabel(master=frame_root, text=text_variable, font=font_value)
+        label.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
 
 
 class Frames:
@@ -1163,7 +1094,6 @@ class Frames:
     It also handles two "restore" and "Refresh" buttons.
     and lastly, it handles switching the frames.
     """
-
     def __init__(self, master, width, height, divisor, number_of_buttons, name_of_buttons):
         # -------------
         self.master = master

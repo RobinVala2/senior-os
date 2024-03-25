@@ -104,17 +104,22 @@ def main_config_default(path):
                            "Alert color (in hex)",
                            "Highlight color (in hex)",
                            "Sound delay (in s)",
-                           "Toolbar font (in px)",
-                           "Widget font (in px)",
+                           "Menu font size (in px)",
+                           "Text font size (in px)",
                            "Font weight"]
     SMailLabelOptions = ["Senior email",
                          "Senior password",
-                         "Email contacts (six)",
-                         "Pictures (six)",
-                         "Caregiver warning",
                          "Caregiver email",
-                         "URL links in email"]
-    SWebLabelOptions = ["Sender email", "Sender password", "Receiver email"]
+                         "Email contacts (up to six)",
+                         "Email pictures (up to six)",
+                         "Send phishing warning",
+                         "Show URL links in email"]
+    SWebLabelOptions = ["URLs for websites",
+                        "Pictures for websites",
+                        "Send phising warning",
+                        "Phishing formular",
+                        "Senior website posting",
+                        "Allowed website posting"]
     EntryOptions = ["alertColor", "hoverColor", "soundDelay", "controlFontSize", "fontSize"]
 
     # I removed from GlobalConfiguration these two:
