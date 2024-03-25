@@ -87,6 +87,8 @@ class MachineLearning:
             predict = model.predict(feature)
 
             whichUrlIsJudged = 0
+
+            logging.info("Start of machine learning detection (looking through suspicious URLs for phishing)...")
             for finalJudgement in predict:  # 0 → OK, 1 → THREAT
                 if finalJudgement == 0:
                     logging.info(f"URL[{URLarray[whichUrlIsJudged]}] isn't a threat. Marking as a False alarm.")
@@ -94,12 +96,13 @@ class MachineLearning:
                     logging.warning(
                         f"URL[{URLarray[whichUrlIsJudged]}] is a possible threat. Human-based check is recommended.")
                 whichUrlIsJudged += 1
+            logging.info("End of machine learning detection...")
 
         except Exception as e:
             logging.error(f"An error occurred while loading model or vectorizer: {e}")
 
 
-class Main:
+class ModelValidation:
     def __init__(self, URL):
         self.return_array = []
         self.URLthing = URL
@@ -210,7 +213,49 @@ class Main:
             self.trainModels(["CZ", "EN", "DE"])
 
 
+class ThreatDetection_ML:
+    def __init__(self):
+        self.URLs = []
+        self.process_files()
+        self.call_validation_of_ML()
+
+    @staticmethod
+    def get_path_to_log():
+        current_dir = os.getcwd()
+        path_parts = current_dir.split(os.sep)
+        index = path_parts.index("senior-os")
+        logs_path = os.path.join(os.sep.join(path_parts[:index + 1]), "sconf", "logs")
+        return logs_path
+
+    def filtering_log_files(self):
+        logs_path = self.get_path_to_log()
+        files = os.listdir(logs_path)
+        filtered_files = [file for file in files if "ConfigurationApp.log" not in file and not file.startswith('.')]
+        return filtered_files
+
+    def process_files(self):
+        filtered_files = self.filtering_log_files()
+        for file in filtered_files:
+            file_path = os.path.join(self.get_path_to_log(), file)
+            print(f"Processing file: {file_path}")
+            with open(file_path, 'r') as file2:
+                lines = file2.readlines()
+                for line in lines:
+                    if "WARNING" in line:
+                        urls = re.findall(
+                            r"https?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(),]|%[0-9a-fA-F][0-9a-fA-F])+", line)
+                        for url in urls:
+                            self.URLs.append(url)
+
+    def call_validation_of_ML(self):
+        if not self.URLs is None:
+            ModelValidation(self.URLs)
+        else:
+            logging.info(f"There is no URLs for Machine Learning validation, exiting...")
+            return
+
+
 # ↓ needed when executing only this .py thing alone ↓
 if __name__ == '__main__':
-    possibleThreatURLs = ['https://www.google.com/', 'https://www.youtube.com/']
-    obj = Main(possibleThreatURLs)
+    ThreatDetection_ML()
+

@@ -2,14 +2,33 @@ from tkinter import *
 import configurationActions as ryuconf
 import os
 from sgive.src.CaregiverApp import FrontEnd
+from sgive.src.CaregiverApp import threatDetect
 import logging
+from logging.handlers import TimedRotatingFileHandler
+import datetime
+
+_log_directory = ryuconf.get_log()
+_log_file = os.path.join(_log_directory, 'ConfigurationApp.log')
+
+# last time update check
+last_change_time = datetime.datetime.fromtimestamp(os.path.getmtime(_log_file))
+current_date = datetime.datetime.now().date()
+
+# time validation (if older than a day, yeet it out)
+if last_change_time.date() != current_date:
+    try:
+        os.remove(_log_file)
+    except OSError:
+        pass  # There is nothing we can do
 
 logging.basicConfig(
-    filename=os.path.join(ryuconf.get_log(), 'ConfigurationApp.log'),
+    filename=_log_file,
     level=logging.INFO,
-    format="%(asctime)s : %(module)s %(levelname)s - %(funcName)s at line %(lineno)s : %(message)s",
-    filemode='w+',
+    format="%(asctime)s : %(module)s %(levelname)s - %(funcName)s at line %(lineno)s : %(message)s"
 )
+logging.info("START OF APPLICATION━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+
+
 
 if __name__ == '__main__':
     whereTheFuckAmI = os.getcwd()
@@ -27,8 +46,7 @@ if __name__ == '__main__':
             elif file_name == "SWEB_config.json":
                 ryuconf.sweb_config_default(config_folder)
 
-    # calling ML
-    url = ['https://xhamster.com/', 'https://www.rodinnebaleni.cz/jersey-prosteradlo-exclusive-na-vysokou-matraci-tmave-sede-180x200-cm-81767?gad_source=1']
-    ryuconf.MLcheck(url)
+    # ML detection:
+    threatDetect.ThreatDetection_ML()
     # calling Frontend
     FrontEnd.main()
