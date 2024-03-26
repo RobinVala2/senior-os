@@ -12,7 +12,7 @@ import re  # regex
 Author: RYUseless
 Github: https://github.com/RYUseless
 """
-Version = "0.0.3(Alpha)"  # lmao the most useless thing ever :)
+Version = "0.1.1(Alpha)"  # lmao the most useless thing ever :)
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
@@ -37,10 +37,13 @@ class FrameElements:
         self.font_family = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
         self.widget_font_size = ryuConf.red_main_config("GlobalConfiguration", "fontSize")
         self.font_weight = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.menu_font_size = ryuConf.red_main_config("GlobalConfiguration", "controlFontSize")
+        self.current_menu_font_size = self.menu_font_size
         self.label_font_size = self.widget_font_size * 1.65
         self.current_label_font = self.label_font_size
         self.current_widget_font = self.widget_font_size
         self.label_names = ryuConf.red_main_config("careConf", frame_name)
+        self.percentil_above = 0
         # for true original fullscreen sizes:
         screenNum = ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")
         self.screenWidth = get_monitors()[screenNum].width  # screen width_frame
@@ -69,7 +72,6 @@ class FrameElements:
         widget_height = int(self.original_height * ((10 / 11) / len(self.label_names)) + 1)
         return widget_height
 
-
     def resize_widgets(self, widgets_array):
         height_frame = self.master.winfo_height()
         width_frame = self.master.winfo_width()
@@ -80,7 +82,6 @@ class FrameElements:
         label_width = width_frame * (2 / 5)
         button_width = width_frame * (1 / 5)
 
-
         for widget_list in widgets_array:
             for name, widget in widget_list.items():
                 if isinstance(widget, customtkinter.CTkLabel):
@@ -89,6 +90,8 @@ class FrameElements:
                     widget.configure(width=label_width - 2, height=widget_height - 2)
                 elif isinstance(widget, customtkinter.CTkButton):
                     if name == "picture0":  # this button needs to be 2/5 in length
+                        widget.configure(width=label_width - 2, height=widget_height - 2)
+                    elif name == "restore_widget" or name == "refresh_widget":
                         widget.configure(width=label_width - 2, height=widget_height - 2)
                     else:
                         widget.configure(width=button_width - 2, height=widget_height - 2)
@@ -101,27 +104,37 @@ class FrameElements:
 
         if new_height != self.original_height or new_width != self.original_width:
             percentil_change = float(new_height / self.original_height)
-            # TODO: fix if percentil goes up than 100%, so the next run knows it
+
+            # if new percentil is above 100 (1.0), for next run I need amount above 100%
+            if percentil_change > float(1.0):
+                self.percentil_above = percentil_change - 1
+            else:
+                percentil_change = percentil_change + self.percentil_above
+                self.percentil_above = 0  # just in case
 
             if new_height < self.original_height and new_height != 1:
                 self.current_widget_font = int(self.current_widget_font * percentil_change)
                 self.current_label_font = int(self.label_font_size * percentil_change)
+                self.current_menu_font_size = int(self.current_menu_font_size * percentil_change)
             else:
                 self.current_widget_font = int(self.widget_font_size)
                 self.current_label_font = int(self.label_font_size)
+                self.current_menu_font_size = int(self.menu_font_size)
 
             new_label_font = (self.font_family, self.current_label_font * 1.05, self.font_weight)
             new_widget_font = (self.font_family, self.current_widget_font, self.font_weight)
+            new_menu_font = (self.font_family, self.current_menu_font_size, self.font_weight)
 
             self.original_height = new_height
             self.original_width = new_width
 
             for widget_list in widgets_array:
-                for widget in widget_list.values():
+                for key, widget in widget_list.items():
                     if isinstance(widget, customtkinter.CTkLabel):
                         widget.configure(font=new_label_font)
                     elif isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
-                        widget.configure(font=new_widget_font)
+                        if key == "restore_widget" or key == "refresh_widget":
+                            widget.configure(font=new_menu_font)
                     else:
                         print(f"Widget is in unsuspected type ({type(widget)}), skipping.")
 
@@ -290,124 +303,182 @@ class WebFrameWidgets:
         self.height_frame_origin = height_frame
         self.width_frame_origin = width
         self.width_frame = width
-        self.restore_btn = restore
-        self.refresh_btn = refresh
+        self.action_widgets = {"restore_widget": restore, "refresh_widget": refresh}
         self.label_names = ryuConf.red_main_config("careConf", "SwebFrameLabels")
-        # -----------------
+        self.url_web = 1
+        self.url_allowed = 1
+        self.dummy_counter = 1
+        # lists: --------------------
         self.widget_entry = {}
         self.widget_btn = {}
-        self.error_btns = {}
-        self.error_label = {}
-        # CALLS:
+        self.submit_btn = {}
+        self.picture_btn = {}
+        # CALLS: --------------------
         resize_event_instance = FrameElements(frame_root, width, height_frame, "SwebFrameLabels")
         self.height_widget = resize_event_instance.get_correct_size()
         self.labels = resize_event_instance.create_labels(self.height_widget)
-        # self.create_widgets()
-        # event for resizing widgets and font
-        widget_list_array = [self.labels]
+        self.create_widgets()
+        # resizing events: --------------------
+        widget_list_array = [self.labels, self.widget_btn, self.widget_entry, self.submit_btn, self.picture_btn,
+                             self.action_widgets]
         resize_event_instance.is_window_resized(widget_list_array)
         self.master.bind("<Configure>",
                          lambda _: resize_event_instance.resize_font(widget_list_array))
         self.master.bind("<Configure>",
                          lambda _: resize_event_instance.resize_widgets(widget_list_array))
 
-        # self.master.bind("<Configure>", self.resize_widgets)
-
-    def error_update(self, button_name, input_value):
-
-        button_x = self.widget_btn[button_name].winfo_x() / self.width_frame
-        button_y = self.widget_btn[button_name].winfo_y() / self.height_frame
-        label_x = self.widget_entry[button_name].winfo_x() / self.width_frame
-        label_y = self.widget_entry[button_name].winfo_y() / self.height_frame
-
-        self.widget_btn[button_name].place_forget()
-        self.widget_entry[button_name].place_forget()
-
-        options = {
-            "Sender email": "Submitted email format was incorrect!",
-            "Sender password": "Submitted password is in illegal form!",
-            "Receiver email": "Submitted email format was incorrect!"
+    def entry_update(self, entry_id):
+        url_pattern = r'https?://(?:www\.)?[\w\.-]+\.\w+'
+        user_input = self.widget_entry[f"entry:{entry_id}"].get()
+        entry_key = {
+            0: "url_web",
+            1: "url_allowed",
         }
 
-        logger.warning(f"{options.get(button_name, button_name)}. User input was: \"{input_value}\"")
-
-        self.error_btns[button_name].configure(
-            command=lambda: [self.widget_btn[button_name].place(relx=button_x, rely=button_y),
-                             self.widget_entry[button_name].place(relx=label_x, rely=label_y),
-                             self.error_label[button_name].place_forget(),
-                             self.error_btns[button_name].place_forget()])
-        self.error_label[button_name].configure(text=options.get(button_name, button_name))
-
-        self.error_btns[button_name].place(relx=button_x, rely=button_y)
-        self.error_label[button_name].place(relx=label_x, rely=label_y)
-
-    def update_value(self, button_name, value):
-        # ---
-        fg_col = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
-        fg_color_values = (fg_col, fg_col)
-        hov_co = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
-        hover_color_values = (hov_co, hov_co)
-        # ---
-        options = {
-            "Sender email": ["sender_mail", value],
-            "Sender password": ["sender_password", value],
-            "Receiver email": ["receiver_mail", value]
-        }
-
-        # regex check for emails:
-        update_values = options.get(button_name, button_name)
-        email_pattern = re.compile(r'^.{1,100}@[a-zA-Z]{1,50}\.[a-zA-Z]{1,5}$')
-
-        if not button_name == "Sender password":
-            if email_pattern.match(value):
-                update = ryuConf.edit_sweb_config("credentials", update_values[0], update_values[1])
-                if not update:
-                    self.error_update(button_name, value)
-                else:
-                    self.widget_btn[button_name].configure(fg_color=fg_color_values, hover_color=hover_color_values)
-            else:
-                self.error_update(button_name, value)
-
-        # password update check
+        if entry_id == 0:
+            self.dummy_counter = self.url_web
         else:
-            if value and not re.match(r'^\s*$', value):
-                update = ryuConf.edit_sweb_config("credentials", update_values[0], update_values[1])
-                if not update:
-                    self.error_update(button_name, value)
-                else:
-                    self.widget_btn[button_name].configure(fg_color=fg_color_values, hover_color=hover_color_values)
+            self.dummy_counter = self.url_allowed
+
+        if re.match(url_pattern, user_input):
+            if self.dummy_counter == 6:
+                self.dummy_counter = 1
+                self.submit_btn[f"submit:{entry_id}"].configure(text=f"Add URL {self.dummy_counter}")
             else:
-                self.error_update(button_name, value)
+                self.submit_btn[f"submit:{entry_id}"].configure(text=f"Add URL {self.dummy_counter + 1}")
+                self.dummy_counter += 1
+
+            print("URL value for:", entry_key.get(entry_id, entry_id))
+
+            if entry_id == 0:
+                self.url_web = self.dummy_counter
+            else:
+                self.url_allowed = self.dummy_counter
+            return
+        else:
+            print("URL není platná")
+
+    def buttons_update(self, button_name):
+        selected_button = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        sel_btn_hover = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        button_name_split = button_name.split(":")
+        """
+        I do selected button change like this, because at start, i dont know which button is selected, so i just
+        restore both and then select value that triggered this function (Bit of redundant)
+        """
+        for numero in range(2):
+            btn_key = f"{button_name_split[0]}:{numero}"
+            self.widget_btn[btn_key].configure(fg_color=("#636363", "#222222"),
+                                               hover_color=("#757474", "#3b3b3b"))
+        self.widget_btn[button_name].configure(fg_color=(selected_button, selected_button),
+                                               hover_color=(sel_btn_hover, sel_btn_hover))
 
     def create_widgets(self):
-        alert_col = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
-        alert_values = (alert_col, alert_col)
-
-        font_label = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * 1.65,
-                      ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
         font_entry = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
+
         entry_text = {
-            "Sender email": f"Add sender email (Saved: {ryuConf.read_sweb_config('credentials', 'sender_mail')}",
-            "Sender password": "Enter one-time-use password",
-            "Receiver email": f"Add receiver email (Saved: {ryuConf.read_sweb_config('credentials', 'receiver_mail')}"
+            0: "Add full URL for website  (Up to six) →",
+            1: "Add full URL for enabled website →",
         }
 
+        for entry_widget in range(2):
+            self.widget_entry[f"entry:{entry_widget}"] = customtkinter.CTkEntry(self.master,
+                                                                                placeholder_text=entry_text.get(
+                                                                                    entry_widget,
+                                                                                    entry_widget),
+                                                                                font=font_entry,
+                                                                                width=self.width_frame * (2 / 5) - 2,
+                                                                                height=self.height_widget - 2,
+                                                                                border_width=0,
+                                                                                corner_radius=0
+                                                                                )
+            self.submit_btn[f"submit:{entry_widget}"] = customtkinter.CTkButton(self.master,
+                                                                                text="Add URL 1",
+                                                                                font=font_entry,
+                                                                                width=self.width_frame * (1 / 5) - 2,
+                                                                                height=self.height_widget - 2,
+                                                                                fg_color=("#636363", "#222222"),
+                                                                                hover_color=("#757474", "#3b3b3b"),
+                                                                                border_width=0,
+                                                                                corner_radius=0,
+                                                                                command=lambda btn_id=entry_widget:
+                                                                                self.entry_update(btn_id)
+                                                                                )
+        self.picture_btn["picture0"] = customtkinter.CTkButton(self.master,
+                                                               text="Add picture for selected URL → ",
+                                                               font=font_entry,
+                                                               width=self.width_frame * (2 / 5) - 2,
+                                                               height=self.height_widget - 2,
+                                                               fg_color=("#636363", "#222222"),
+                                                               hover_color=("#757474", "#3b3b3b"),
+                                                               border_width=0,
+                                                               corner_radius=0
+                                                               )
+        self.picture_btn["submit"] = customtkinter.CTkButton(self.master,
+                                                             text="First URL",
+                                                             font=font_entry,
+                                                             width=self.width_frame * (1 / 5) - 2,
+                                                             height=self.height_widget - 2,
+                                                             fg_color=("#636363", "#222222"),
+                                                             hover_color=("#757474", "#3b3b3b"),
+                                                             border_width=0,
+                                                             corner_radius=0
+                                                             )
+        button_name = {
+            0: ["phishing_warning:0", "Disable"],
+            1: ["phishing_warning:1", "Enable"],
+            2: ["phishing_formular:0", "Disable"],
+            3: ["phishing_formular:1", "Enable"],
+            4: ["website_posting:0", "Disable"],
+            5: ["website_posting:1", "Enable"],
+        }
+
+        for button_widget in range(6):
+            name = button_name.get(button_widget, button_widget)
+            self.widget_btn[name[0]] = customtkinter.CTkButton(self.master,
+                                                               text=name[1],
+                                                               font=font_entry,
+                                                               width=self.width_frame * (1 / 5) - 2,
+                                                               height=self.height_widget - 2,
+                                                               fg_color=("#636363", "#222222"),
+                                                               hover_color=("#757474", "#3b3b3b"),
+                                                               border_width=0,
+                                                               corner_radius=0,
+                                                               command=lambda button_id=name[0]:
+                                                               self.buttons_update(button_id)
+                                                               )
+        # show widgets:
+        self.show_widgets(button_name)
+
+    def show_widgets(self, button_name):
         y_position = float(0)
+        x_position = float(1 * (2 / 5))
 
-        for name in self.label_names:
-            self.labels[name] = customtkinter.CTkLabel(self.master,
-                                                       text=name,
-                                                       font=font_label,
-                                                       width=self.width_frame * (2 / 5),
-                                                       height=self.height_widget,
-                                                       fg_color=("#D3D3D3", "#171717")
-                                                       )
+        # first entry website URL
+        self.widget_entry["entry:0"].place(relx=x_position, rely=y_position * (10 / 11))
+        self.submit_btn["submit:0"].place(relx=x_position + 1 * (2 / 5), rely=y_position * (10 / 11))
+        y_position += 1 / len(button_name)
+        self.picture_btn["picture0"].place(relx=x_position, rely=y_position * (10 / 11))
+        self.picture_btn["submit"].place(relx=x_position + 1 * (2 / 5), rely=y_position * (10 / 11))
+        y_position += 1 / len(button_name)
 
-            self.labels[name].place(relx=0, rely=y_position * (10 / 11))
-            y_position += 1 / len(self.label_names)
+        # buttons choice: send phishing, phishing formular, website posting
+        buttons_in_row = 1
+        for _, widget_btn in self.widget_btn.items():
+            if buttons_in_row == 1:
+                widget_btn.place(relx=x_position, rely=y_position * (10 / 11))
+                x_position += 1 * (1 / 5)
+                buttons_in_row += 1
+            else:
+                widget_btn.place(relx=x_position, rely=y_position * (10 / 11))
+                y_position += 1 / len(button_name)
+                x_position = 1 * (2 / 5)
+                buttons_in_row = 1
+        # website posting
+        self.widget_entry["entry:1"].place(relx=x_position, rely=y_position * (10 / 11))
+        self.submit_btn["submit:1"].place(relx=x_position + 1 * (2 / 5), rely=y_position * (10 / 11))
 
 
 class MailFrameWidgets:
@@ -423,8 +494,8 @@ class MailFrameWidgets:
         self.width_frame = width
         self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
-        self.restore_configurations = restore
-        self.refresh_frame = refresh
+        self.action_widgets = {"restore_widget": restore, "refresh_widget": refresh}
+
         # ------
         self.person_counter = 1  # counter for person name key
         self.filedialog_counter = 1
@@ -443,7 +514,7 @@ class MailFrameWidgets:
         self.widget_height = resize_event_instance.get_correct_size()
         self.labels = resize_event_instance.create_labels(self.widget_height)
         widget_list_array = [self.labels, self.entry_widgets, self.submit_entry_btn, self.caregiver_warning,
-                             self.url_link, self.choose_pictures
+                             self.url_link, self.choose_pictures, self.action_widgets
                              ]
         self.create_widgets()
         self.load_defaults()
@@ -607,7 +678,6 @@ class MailFrameWidgets:
         global value_name
         rel_x = 1 * (2 / 5)
         rel_y = 0
-        rel_y_btns = 0
         rel_x_btns = rel_x
 
         # Define the number of non-entry widgets
@@ -725,8 +795,7 @@ class GlobalFrameWidgets:
         self.width_frame = width
         self.label_names = ryuConf.red_main_config("careConf", "GlobalFrameLabels")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
-        self.restore_configurations = restore
-        self.refresh_frame = refresh
+        self.action_widgets = {"restore_widget": restore, "refresh_widget": refresh}
         # create objects for widgets:
         self.error_label_arr = []
         self.screen_arr = []
@@ -747,13 +816,12 @@ class GlobalFrameWidgets:
         self.buttons()
         self.highlight_configured_widgets()
         widget_list_array = [self.labels, self.screen_num, self.language_dict, self.language_alert_dict,
-                             self.colorscheme_dict, self.entry_dict, self.font_size, self.entry_buttons_dict]
+                             self.colorscheme_dict, self.entry_dict, self.font_size, self.entry_buttons_dict,
+                             self.action_widgets]
         # resize events:
         resize_class.is_window_resized(widget_list_array)
         self.master.bind("<Configure>", lambda _: [resize_class.resize_font(widget_list_array),
                                                    resize_class.resize_widgets(widget_list_array)])
-
-
 
     @staticmethod
     def calculate_lighter_hover_color(input_value):
@@ -1094,6 +1162,7 @@ class Frames:
     It also handles two "restore" and "Refresh" buttons.
     and lastly, it handles switching the frames.
     """
+
     def __init__(self, master, width, height, divisor, number_of_buttons, name_of_buttons):
         # -------------
         self.master = master
@@ -1333,30 +1402,62 @@ class Core(customtkinter.CTk):
         self.toolbar_buttons_count = len(ryuConf.red_main_config("careConf", "menuButtonsList"))
         # ---
         self.title(f"Caregiver configuration application -- Version:{Version}")
-        # self.minsize(int(self.screenWidth * 0.80), int(self.screenHeight * 0.80))  # width_frame, height
-        # self.maxsize(self.screenWidth, self.screenHeight)  # width_frame x height + x + y
-        # self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
         self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
-        self.minsize(int(self.screenWidth * 0.80), int(self.screenHeight * 0.80))  # width_frame, height
+        self.minsize(int(self.screenWidth * 0.55), int(self.screenHeight * 0.55))  # width_frame, height
         self.maxsize(self.screenWidth, self.screenHeight)  # width_frame x height + x + y
-        self.fullscreen_state = False
         # ---
         logger.info("Creating root window for application")
         """Toolbar class call"""
         self.toolbar = Toolbar(self, self.screenWidth, self.screenHeight, self.heightDivisor,
                                self.toolbar_buttons_count, self.buttons_names)
-        """fullscreen binding"""
-        self.bind("<F11>", lambda _: self.toggle_fullscreen())
-        self.bind("<Escape>", lambda _: self.toggle_fullscreen())
+
+        # Fullscreen thingy:
+        self.fullscreen_lock = False
+        self.fullscreen_state = False
+        self.esc_pressed = False
+        self.f11_pressed = False
+
+        self.bind("<KeyPress>", self.on_key_press)
+        self.bind("<KeyRelease>", self.on_key_release)
+
+    def on_key_press(self, event):
+        if not self.fullscreen_lock:
+            if event.keysym == "Escape":
+                self.toggle_fullscreen()
+                self.fullscreen_lock = True
+            elif event.keysym == "F11":
+                self.toggle_fullscreen()
+                self.fullscreen_lock = True
+
+        ms_delay = 350
+        if event.keysym == "Escape":
+            self.esc_pressed = True
+            self.after(ms_delay, self.check_long_press, "esc")
+        elif event.keysym == "F11":
+            self.f11_pressed = True
+            self.after(ms_delay, self.check_long_press, "f11")
+
+    def on_key_release(self, event):
+        if event.keysym == "Escape":
+            self.esc_pressed = False
+        elif event.keysym == "F11":
+            self.f11_pressed = False
+
+    def check_long_press(self, key):
+        if key == "esc" and self.esc_pressed:
+            logger.info("Long press key detected on Esc, opinion rejected.")
+        elif key == "f11" and self.f11_pressed:
+            logger.info("Long press key detected on Esc, opinion rejected.")
+        else:
+            self.fullscreen_lock = False
 
     def toggle_fullscreen(self):
-        """Toggle fullscreen mode."""
         self.fullscreen_state = not self.fullscreen_state
-        if self.fullscreen_state:  # Pokud je fullscreen režim zapnutý
-            self.attributes('-fullscreen', True)
+        if self.fullscreen_state:
+            self.attributes("-fullscreen", True)
         else:
-            self.attributes('-fullscreen', False)
-            self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")  # Nastaví původní velikost okna
+            self.attributes("-fullscreen", False)
+            self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
 
 
 def main():
