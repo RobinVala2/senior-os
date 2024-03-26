@@ -248,10 +248,10 @@ class ThreatDetection_ML:
                             self.URLs.append(url)
 
     def call_validation_of_ML(self):
-        if not self.URLs is None:
+        if self.URLs:  # aka, it array isn't empty
             ModelValidation(self.URLs)
         else:
-            logging.info(f"There is no URLs for Machine Learning validation, exiting...")
+            logging.warning(f"There is no URLs for Machine Learning validation, skipping ML check ...")
             return
 
 

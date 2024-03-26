@@ -1,10 +1,8 @@
-from tkinter import *
 import configurationActions as ryuconf
 import os
 from sgive.src.CaregiverApp import FrontEnd
 from sgive.src.CaregiverApp import threatDetect
 import logging
-from logging.handlers import TimedRotatingFileHandler
 import datetime
 
 _log_directory = ryuconf.get_log()
@@ -27,7 +25,6 @@ logging.basicConfig(
     format="%(asctime)s : %(module)s %(levelname)s - %(funcName)s at line %(lineno)s : %(message)s"
 )
 logging.info("START OF APPLICATION━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-
 
 
 if __name__ == '__main__':
