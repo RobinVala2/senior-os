@@ -40,7 +40,7 @@ class NotificationFillTextToPhishing(QObject):
         computer_devicename = socket.gethostname()
         current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         # Customize result 
-        send_data = f'''*****Data received from sWEB*****
+        send_data = f'''*****Data received from sWEB when user filled text in phishing website*****
         - Device name: {computer_devicename}
         - User name: {computer_username}
         - Website: {connected_phishing_url}
@@ -48,7 +48,12 @@ class NotificationFillTextToPhishing(QObject):
         - Filled text: {input_text}
         '''
         # Send received data to authorized people
-        self.send_email(send_data)
+        my_config_data = load_sweb_config_json()
+        send_phishing_option = my_config_data["advanced_against_phishing"]["enable"]
+        if "enable" in send_phishing_option:
+            self.send_email(send_data)
+        else:
+            return
         
     def send_email(self, message_to_receiver):
         # Load needed configuration from sweb_config in sconf for sending notification to authorized people
@@ -176,6 +181,7 @@ class MyBrowser(QMainWindow):
         self.notification_fill_text = NotificationFillTextToPhishing()
         self.my_custom_page.channel.registerObject("notification_fill_text",self.notification_fill_text)
         # Load URL blocker and logger
+        self.data_in_my_config_data = my_config_data
         path_to_phishing_database = my_config_data["phishing_database"]["path"]
         self.url_blocker = URLBlocker(path_to_phishing_database)
         self.url_logger = URLLogger()
@@ -556,9 +562,10 @@ class MyBrowser(QMainWindow):
     def finished_load_web_page(self):
         # Get url value from browser
         url_in_browser_value = self.main_browser.url().toString()
+        senior_website_posting_option = self.data_in_my_config_data["advanced_against_phishing"]["senior_website_posting"]
         
         # Get permitted websites list from sgive
-        permitted_website_list = load_permitted_website_from_sgive()
+        permitted_website_list = load_permitted_website_from_sgive(self.data_in_my_config_data)
         # Check if it is permitted website
         check_result = any(permitted_website in url_in_browser_value for permitted_website in permitted_website_list)
         if check_result:
@@ -571,9 +578,12 @@ class MyBrowser(QMainWindow):
             # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
             QTimer.singleShot(250, lambda: self.html_injection_to_phishing_web_content())
         else:
-            self.main_browser.setZoomFactor(1.5)
-            # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
-            QTimer.singleShot(250, lambda: self.html_injection_to_web_content_strict())
+            if "enable" in senior_website_posting_option:
+                self.main_browser.setZoomFactor(1.5)
+                # Wait 1 second for loading, after 1 second, connect to change web content (HTML injection)
+                QTimer.singleShot(250, lambda: self.html_injection_to_web_content_strict())
+            else:
+                return
             
     # This method is applied for connection to phishing web page
     def html_injection_to_phishing_web_content(self):

@@ -38,11 +38,11 @@ def load_config_in_same_directory(file_name):
     except json.JSONDecodeError:
         print(f"Error parsing JSON file: {file_name}")
         
-def load_permitted_website_from_sgive():
+def load_permitted_website_from_sgive(my_config_data):
     permitted_website_list = set()
     # Exit when error occurs and print notification to log
     try:
-        with open("../sgive/Demo_SWEB_Permitted_Websites.txt", 'r') as open_file:
+        with open(my_config_data["advanced_against_phishing"]["path_to_allowed_url_file"], 'r') as open_file:
             content  = open_file.read()
             reading_website = content.strip().split('\n')
             permitted_website_list.update(reading_website)

@@ -3,6 +3,11 @@
         "path": "../sconf/phish/SWEB_PHISH_1.txt",
         "path_to_tar_github": "https://github.com/mitchellkrogza/Phishing.Database/raw/master/ALL-phishing-domains.tar.gz/"
     },
+    "advanced_against_phishing":{
+        "path_to_allowed_url_file": "../sgive/Demo_SWEB_Permitted_Websites.txt",
+        "senior_website_posting": "enable",
+        "send_phishing_warning": "enable"
+    },
     "credentials":{
         "sender_mail": "ninhtestmagisterwork11111@gmail.com",
         "sender_password": "txhs bgkh aiga jnjc",
