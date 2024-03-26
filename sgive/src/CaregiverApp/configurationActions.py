@@ -1,7 +1,6 @@
 import json
 import os
 import logging
-from getmac import get_mac_address as gmac
 from sgive.src.CaregiverApp import threatDetect
 
 logger = logging.getLogger(__file__)
@@ -58,7 +57,7 @@ def read_log(givenFilter, givenName):
 def MLcheck(URL):
     path = os.path.join(os.getcwd(), "ML-saved")
     if os.path.exists(path):
-        threatDetect.Main(URL)
+        threatDetect.ThreatDetection_ML()
 
 
 # MAIN (GLOBAL) CONFIG ACTIONS: ----------------------------------------------------------------------------------------

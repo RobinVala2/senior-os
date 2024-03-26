@@ -43,7 +43,7 @@ class FrameElements:
         self.current_label_font = self.label_font_size
         self.current_widget_font = self.widget_font_size
         self.label_names = ryuConf.red_main_config("careConf", frame_name)
-        self.percentil_above = 0
+        self.percentage_above = 0
         # for true original fullscreen sizes:
         screenNum = ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")
         self.screenWidth = get_monitors()[screenNum].width  # screen width_frame
@@ -54,9 +54,10 @@ class FrameElements:
         """checking if window is in resized down or if it isn't,
                   because resize event isn't triggered when I resize down and switch frame"""
         real_width = self.master.winfo_width()
+        real_height = self.master.winfo_height()
         self.master.update_idletasks()
         # real_height = self.master.winfo_height()
-        if self.screenWidth > real_width:
+        if self.screenWidth > real_width and self.screenHeight > real_height:
             self.original_width = self.screenWidth
             self.original_height = self.screenHeight - (self.screenHeight / self.heightDivisor)
             self.resize_font(widgets_array)
@@ -92,7 +93,7 @@ class FrameElements:
                     if name == "picture0":  # this button needs to be 2/5 in length
                         widget.configure(width=label_width - 2, height=widget_height - 2)
                     elif name == "restore_widget" or name == "refresh_widget":
-                        widget.configure(width=label_width - 2, height=widget_height - 2)
+                        widget.configure(width=label_width - 2, height=widget_height - 2, anchor=customtkinter.CENTER)
                     else:
                         widget.configure(width=button_width - 2, height=widget_height - 2)
                 else:
@@ -103,19 +104,19 @@ class FrameElements:
         new_width = self.master.winfo_width()
 
         if new_height != self.original_height or new_width != self.original_width:
-            percentil_change = float(new_height / self.original_height)
+            percentage_change = float(new_height / self.original_height)
 
             # if new percentil is above 100 (1.0), for next run I need amount above 100%
-            if percentil_change > float(1.0):
-                self.percentil_above = percentil_change - 1
+            if percentage_change > float(1.0) and new_width == self.original_width:
+                self.percentage_above = percentage_change - 1
             else:
-                percentil_change = percentil_change + self.percentil_above
-                self.percentil_above = 0  # just in case
+                percentage_change = percentage_change + self.percentage_above
+                self.percentage_above = 0  # just in case
 
             if new_height < self.original_height and new_height != 1:
-                self.current_widget_font = int(self.current_widget_font * percentil_change)
-                self.current_label_font = int(self.label_font_size * percentil_change)
-                self.current_menu_font_size = int(self.current_menu_font_size * percentil_change)
+                self.current_widget_font = int(self.current_widget_font * percentage_change)
+                self.current_label_font = int(self.label_font_size * percentage_change)
+                self.current_menu_font_size = int(self.current_menu_font_size * percentage_change)
             else:
                 self.current_widget_font = int(self.widget_font_size)
                 self.current_label_font = int(self.label_font_size)
@@ -135,6 +136,8 @@ class FrameElements:
                     elif isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
                         if key == "restore_widget" or key == "refresh_widget":
                             widget.configure(font=new_menu_font)
+                        else:
+                            widget.configure(font=new_widget_font)
                     else:
                         print(f"Widget is in unsuspected type ({type(widget)}), skipping.")
 
@@ -317,15 +320,14 @@ class WebFrameWidgets:
         resize_event_instance = FrameElements(frame_root, width, height_frame, "SwebFrameLabels")
         self.height_widget = resize_event_instance.get_correct_size()
         self.labels = resize_event_instance.create_labels(self.height_widget)
-        self.create_widgets()
-        # resizing events: --------------------
-        widget_list_array = [self.labels, self.widget_btn, self.widget_entry, self.submit_btn, self.picture_btn,
+        widget_list_array = [self.widget_entry, self.widget_btn, self.submit_btn, self.picture_btn, self.labels,
                              self.action_widgets]
+        self.create_widgets()
         resize_event_instance.is_window_resized(widget_list_array)
+        # event for resizing:
         self.master.bind("<Configure>",
-                         lambda _: resize_event_instance.resize_font(widget_list_array))
-        self.master.bind("<Configure>",
-                         lambda _: resize_event_instance.resize_widgets(widget_list_array))
+                         lambda _: [resize_event_instance.resize_font(widget_list_array),
+                                    resize_event_instance.resize_widgets(widget_list_array)])
 
     def entry_update(self, entry_id):
         url_pattern = r'https?://(?:www\.)?[\w\.-]+\.\w+'
@@ -434,7 +436,6 @@ class WebFrameWidgets:
             4: ["website_posting:0", "Disable"],
             5: ["website_posting:1", "Enable"],
         }
-
         for button_widget in range(6):
             name = button_name.get(button_widget, button_widget)
             self.widget_btn[name[0]] = customtkinter.CTkButton(self.master,
@@ -675,7 +676,8 @@ class MailFrameWidgets:
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
-        global value_name
+        # global value_name
+
         rel_x = 1 * (2 / 5)
         rel_y = 0
         rel_x_btns = rel_x
@@ -694,8 +696,8 @@ class MailFrameWidgets:
                                                                           fg_color=("#636363", "#222222"),
                                                                           hover_color=("#757474", "#3b3b3b"),
                                                                           text="Submit",
-                                                                          command=lambda
-                                                                              entry_id=entry_number: self.update_entry_widgets(
+                                                                          command=lambda entry_id=entry_number:
+                                                                          self.update_entry_widgets(
                                                                               self.entry_widgets[entry_id].get(),
                                                                               entry_id, entry_id)
                                                                           )
@@ -915,7 +917,7 @@ class GlobalFrameWidgets:
         window_width = self.master.winfo_width()
 
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize") * self.scale,
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
 
         rel_entry_x = entry_object.winfo_x() / window_width
@@ -1246,7 +1248,7 @@ class Frames:
             return
 
         # Pack the new frame and forget the old one
-        elif not self.alive_frame is None:
+        elif self.alive_frame is not None:
             self.frame_dictionary[self.alive_frame].pack_forget()
             for widget in self.frame_dictionary[self.alive_frame].winfo_children():
                 widget.place_forget()
@@ -1379,7 +1381,7 @@ class Toolbar:
         fg_selected = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
         fg_hover = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
 
-        if not self.button_selected is None:
+        if self.button_selected is not None:
             self.button_dictionary[self.button_selected].configure(fg_color=("white", "#1a1a1a"),
                                                                    hover_color=("#bebebe", "#2e2e2e"))
             self.button_selected = id_num
@@ -1401,21 +1403,18 @@ class Core(customtkinter.CTk):
         self.buttons_names = ryuConf.red_main_config("careConf", "menuButtonsList")
         self.toolbar_buttons_count = len(ryuConf.red_main_config("careConf", "menuButtonsList"))
         # ---
-        self.title(f"Caregiver configuration application -- Version:{Version}")
-        self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
-        self.minsize(int(self.screenWidth * 0.55), int(self.screenHeight * 0.55))  # width_frame, height
-        self.maxsize(self.screenWidth, self.screenHeight)  # width_frame x height + x + y
-        # ---
-        logger.info("Creating root window for application")
-        """Toolbar class call"""
         self.toolbar = Toolbar(self, self.screenWidth, self.screenHeight, self.heightDivisor,
                                self.toolbar_buttons_count, self.buttons_names)
-
+        self.title(f"Caregiver configuration application -- Version:{Version}")
+        # ---
+        logger.info("Creating root window for application")
         # Fullscreen thingy:
         self.fullscreen_lock = False
-        self.fullscreen_state = False
+        self.fullscreen_state = True
         self.esc_pressed = False
         self.f11_pressed = False
+
+        self.attributes("-fullscreen", True)
 
         self.bind("<KeyPress>", self.on_key_press)
         self.bind("<KeyRelease>", self.on_key_release)
@@ -1456,8 +1455,10 @@ class Core(customtkinter.CTk):
         if self.fullscreen_state:
             self.attributes("-fullscreen", True)
         else:
-            self.attributes("-fullscreen", False)
-            self.geometry(f"{self.screenWidth}x{self.screenHeight}+0+0")
+            self.attributes('-fullscreen', False)
+            self.geometry(f"{int(self.screenWidth * 0.70)}x{int(self.screenHeight * 0.70)}+0+0")  # Nastaví původní
+            self.minsize(int(self.screenWidth * 0.70), int(self.screenHeight * 0.70))  # width_frame, height
+            self.maxsize(int(self.screenWidth), int(self.screenHeight))  # width_frame x height + x + y
 
 
 def main():
