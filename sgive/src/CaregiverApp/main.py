@@ -4,6 +4,9 @@ from sgive.src.CaregiverApp import FrontEnd
 from sgive.src.CaregiverApp import threatDetect
 import logging
 import datetime
+# testing:
+from screeninfo import get_monitors
+
 
 _log_directory = ryuconf.get_log()
 _log_file = os.path.join(_log_directory, 'ConfigurationApp.log')
@@ -27,7 +30,22 @@ logging.basicConfig(
 logging.info("START OF APPLICATION━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 
+def get_primary_monitor_info():
+    for idx, monitor in enumerate(get_monitors()):
+        if monitor.is_primary:
+            return idx, monitor.width, monitor.height
+    return None, None, None
+
+
 if __name__ == '__main__':
+    # testing
+    idx, width, height = get_primary_monitor_info()
+    if width and height:
+        print(f"Primární monitor (ID {idx}) má rozlišení {width}x{height}.")
+    else:
+        print("Nepodařilo se získat informace o primárním monitoru.")
+
+    # true main
     whereTheFuckAmI = os.getcwd()
     path_split = whereTheFuckAmI.split("sgive")
     config_folder = os.path.join(path_split[0], "sconf")

@@ -76,7 +76,6 @@ class FrameElements:
     def resize_widgets(self, widgets_array):
         height_frame = self.master.winfo_height()
         width_frame = self.master.winfo_width()
-        print(height_frame, "huh")
 
         widget_height = height_frame * ((10 / 11) / len(self.label_names))
         # rounding up
@@ -93,7 +92,7 @@ class FrameElements:
                 elif isinstance(widget, customtkinter.CTkButton):
                     if name == "picture0":  # this button needs to be 2/5 in length
                         widget.configure(width=label_width - 2, height=widget_height - 2)
-                    elif name == "restore_widget" or name == "refresh_widget":
+                    elif name == "restore_widget" or name == "refresh_widget":  # refresh and restore buttons (Frame 1 - 3)
                         widget.configure(width=label_width - 2, height=height_frame * (1 / 11))
                         widget.anchor(customtkinter.CENTER)
                     else:
@@ -325,18 +324,58 @@ class WebFrameWidgets:
         widget_list_array = [self.widget_entry, self.widget_btn, self.submit_btn, self.picture_btn, self.labels,
                              self.action_widgets]
         self.create_widgets()
+        self.load_configured_options()
         resize_event_instance.is_window_resized(widget_list_array)
         # event for resizing:
         self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_list_array),
                                                    resize_event_instance.resize_widgets(widget_list_array)])
 
+    def load_configured_options(self):
+        posting = ryuConf.read_sweb_config("advanced_against_phishing", "senior_website_posting")
+        phish_warn = ryuConf.read_sweb_config("advanced_against_phishing", "send_phishing_warning")
+        atcker_broadcast = ryuConf.read_sweb_config("advanced_against_phishing", "send_phish_attacker_formular")
+        selected_color = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
+        selected_color_lghtn = ryuConf.red_main_config("GlobalConfiguration", "hoverColorLighten")
+        color = (selected_color, selected_color_lghtn)
+
+        option_convert = {
+            "enable": 1,
+            "disable": 0,
+        }
+        buttons_option_arr = [f"senior_website_posting:{option_convert.get(posting, posting)}",
+                              f"send_phishing_warning:{option_convert.get(phish_warn, phish_warn)}"]
+        if phish_warn == "enable":
+            buttons_option_arr.append(
+                f"send_phish_attacker_formular:{option_convert.get(atcker_broadcast, atcker_broadcast)}")
+        else:
+            self.widget_btn[f"send_phish_attacker_formular:0"].configure(state="disabled")
+            self.widget_btn[f"send_phish_attacker_formular:1"].configure(state="disabled")
+
+        for wdgt_name in buttons_option_arr:
+            self.widget_btn[wdgt_name].configure(fg_color=color)
+
+    @staticmethod
+    def create_sweb_permittedURLs_txt(user_input):
+        current_directory = os.getcwd().replace("sgive/src/CaregiverApp", "sconf")
+        if not os.path.exists(current_directory):
+            logger.error("Couldn't find any file named sconf, leaving.")
+            return
+
+        file_path = os.path.join(current_directory, "Demo_SWEB_Permitted_Websites.txt")
+
+        try:
+            f = open(file_path, "a+")
+            f.write(f"{user_input};\n")
+        except Exception as e:
+            logger.error(f"An error occurred while writing to the file: {e}")
+        finally:
+            f.close()
+
     def entry_update(self, entry_id):
+        # id → 0 URLs for websites, 1 → allowed for website posting
+        number_of_urls = ryuConf.read_sweb_array("url")
         url_pattern = r'https?://(?:www\.)?[\w\.-]+\.\w+'
         user_input = self.widget_entry[f"entry:{entry_id}"].get()
-        entry_key = {
-            0: "url_web",
-            1: "url_allowed",
-        }
 
         if entry_id == 0:
             self.dummy_counter = self.url_web
@@ -344,14 +383,20 @@ class WebFrameWidgets:
             self.dummy_counter = self.url_allowed
 
         if re.match(url_pattern, user_input):
-            if self.dummy_counter == 6:
+            dummy_upper_gate = 0
+            if entry_id == 0:
+                ryuConf.edit_sweb_config("url", f"sweb_url_www{self.dummy_counter}", user_input)
+                dummy_upper_gate = len(number_of_urls)
+            elif entry_id == 1:
+                self.create_sweb_permittedURLs_txt(user_input)
+
+            # need this for the entry loop, where I add only limited amount of URLs, on second (ID=1), this should be true
+            if self.dummy_counter == dummy_upper_gate:
                 self.dummy_counter = 1
                 self.submit_btn[f"submit:{entry_id}"].configure(text=f"Add URL {self.dummy_counter}")
             else:
                 self.submit_btn[f"submit:{entry_id}"].configure(text=f"Add URL {self.dummy_counter + 1}")
                 self.dummy_counter += 1
-
-            print("URL value for:", entry_key.get(entry_id, entry_id))
 
             if entry_id == 0:
                 self.url_web = self.dummy_counter
@@ -375,6 +420,14 @@ class WebFrameWidgets:
                                                hover_color=("#757474", "#3b3b3b"))
         self.widget_btn[button_name].configure(fg_color=(selected_button, selected_button),
                                                hover_color=(sel_btn_hover, sel_btn_hover))
+        raw_string = button_name.split(":")
+        key_switch = {
+            "1": "enable",
+            "0": "disable",
+        }
+        changed_value = key_switch.get(raw_string[1], raw_string[1])
+
+        ryuConf.edit_sweb_config("advanced_against_phishing", raw_string[0], changed_value)
 
     def create_widgets(self):
         font_entry = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
@@ -430,12 +483,12 @@ class WebFrameWidgets:
                                                              corner_radius=0
                                                              )
         button_name = {
-            0: ["phishing_warning:0", "Disable"],
-            1: ["phishing_warning:1", "Enable"],
-            2: ["phishing_formular:0", "Disable"],
-            3: ["phishing_formular:1", "Enable"],
-            4: ["website_posting:0", "Disable"],
-            5: ["website_posting:1", "Enable"],
+            0: ["send_phishing_warning:0", "Disable"],
+            1: ["send_phishing_warning:1", "Enable"],
+            2: ["send_phish_attacker_formular:0", "Disable"],
+            3: ["send_phish_attacker_formular:1", "Enable"],
+            4: ["senior_website_posting:0", "Disable"],
+            5: ["senior_website_posting:1", "Enable"],
         }
         for button_widget in range(6):
             name = button_name.get(button_widget, button_widget)
@@ -1230,7 +1283,7 @@ class Frames:
                              height=self.height_frame * (1 / 11),
                              width=self.master.winfo_width() * (2 / 5),
                              border_width=2,
-                             corner_radius=0,)
+                             corner_radius=0, )
 
     def choose_frame(self, button_id, refresh):
         if refresh:

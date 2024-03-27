@@ -337,6 +337,12 @@ def sweb_config_default(path):
             "path": "../sconf/phish/SWEB_PHISH_1.txt",
             "path_to_tar_github": "https://github.com/mitchellkrogza/Phishing.Database/raw/master/ALL-phishing-domains.tar.gz/"
         },
+        "advanced_against_phishing": {
+            "path_to_allowed_url_file": "../sconf/Demo_SWEB_Permitted_Websites.txt",
+            "senior_website_posting": "enable",
+            "send_phishing_warning": "enable",
+            "send_phish_attacker_formular": "enable"
+        },
         "credentials": {
             "sender_mail": "ninhtestmagisterwork11111@gmail.com",
             "sender_password": "txhs bgkh aiga jnjc",
@@ -345,8 +351,12 @@ def sweb_config_default(path):
             "smpt_server": "smtp.gmail.com",
             "smtp_port": 587
         },
-        "language": {
-            "default_language": "en"
+        "url": {
+            "sweb_url_www1": "https://edition.cnn.com",
+            "sweb_url_www2": "https://irozhlas.cz",
+            "sweb_url_www3": "https://google.com",
+            "sweb_url_www4": "https://www.aktualne.cz",
+            "sweb_url_www5": "https://www.denik.cz"
         },
         "image": {
             "sweb_image_exit": "../sconf/images/SWEB_EXIT.png",
@@ -411,6 +421,9 @@ def sweb_config_default(path):
             "sweb_de_alert_phishing": "../sconf/audio/SWEB_DE_ALERT_PHISHING.mp3",
             "sweb_de_url": "../sconf/audio/SWEB_DE_URL.mp3"
         },
+        "language": {
+            "default_language": "en"
+        },
         "template": {
             "num_of_menu_buttons": 2,
             "num_of_opt_on_frame": 4,
@@ -427,7 +440,6 @@ def sweb_config_default(path):
             "fontThickness": "bold",
             "fontFamily": "Helvetica"
         }
-
     }
     json_object = json.dumps(dictionary, indent=4, ensure_ascii=False)
     with open(os.path.join(path, 'SWEB_config.json'), "w+", encoding='utf-8') as outfile:
@@ -449,6 +461,18 @@ def read_sweb_config(key, value):
             return jsonData[value]
         else:
             return jsonData[key][value]
+    else:
+        logging.critical('There is no SWEB_config.json or sconf/ file present in system, exiting program now.')
+        exit(1)
+
+
+def read_sweb_array(key):
+    path = get_path()
+    if os.path.exists(path) and os.path.isfile(
+            os.path.join(get_path(), 'SWEB_config.json')):  # checks for the conf file, if there is any
+        with open(os.path.join(path, 'SWEB_config.json'), "r") as file:
+            jsonData = json.load(file)
+        return jsonData[key]
     else:
         logging.critical('There is no SWEB_config.json or sconf/ file present in system, exiting program now.')
         exit(1)
