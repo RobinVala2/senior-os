@@ -76,6 +76,7 @@ class FrameElements:
     def resize_widgets(self, widgets_array):
         height_frame = self.master.winfo_height()
         width_frame = self.master.winfo_width()
+        print(height_frame, "huh")
 
         widget_height = height_frame * ((10 / 11) / len(self.label_names))
         # rounding up
@@ -93,7 +94,8 @@ class FrameElements:
                     if name == "picture0":  # this button needs to be 2/5 in length
                         widget.configure(width=label_width - 2, height=widget_height - 2)
                     elif name == "restore_widget" or name == "refresh_widget":
-                        widget.configure(width=label_width - 2, height=widget_height - 2, anchor=customtkinter.CENTER)
+                        widget.configure(width=label_width - 2, height=height_frame * (1 / 11))
+                        widget.anchor(customtkinter.CENTER)
                     else:
                         widget.configure(width=button_width - 2, height=widget_height - 2)
                 else:
@@ -325,9 +327,8 @@ class WebFrameWidgets:
         self.create_widgets()
         resize_event_instance.is_window_resized(widget_list_array)
         # event for resizing:
-        self.master.bind("<Configure>",
-                         lambda _: [resize_event_instance.resize_font(widget_list_array),
-                                    resize_event_instance.resize_widgets(widget_list_array)])
+        self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_list_array),
+                                                   resize_event_instance.resize_widgets(widget_list_array)])
 
     def entry_update(self, entry_id):
         url_pattern = r'https?://(?:www\.)?[\w\.-]+\.\w+'
@@ -496,7 +497,6 @@ class MailFrameWidgets:
         self.label_names = ryuConf.red_main_config("careConf", "SMailFrameLabels")
         self.hover_alert_color = ryuConf.red_main_config("GlobalConfiguration", "alertColor")
         self.action_widgets = {"restore_widget": restore, "refresh_widget": refresh}
-
         # ------
         self.person_counter = 1  # counter for person name key
         self.filedialog_counter = 1
@@ -521,10 +521,8 @@ class MailFrameWidgets:
         self.load_defaults()
         resize_event_instance.is_window_resized(widget_list_array)
         # resize events:
-        self.master.bind("<Configure>",
-                         lambda _: resize_event_instance.resize_font(widget_list_array))
-        self.master.bind("<Configure>",
-                         lambda _: resize_event_instance.resize_widgets(widget_list_array))
+        self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_list_array),
+                                                   resize_event_instance.resize_widgets(widget_list_array)])
 
     def load_defaults(self):
         value_mapping = {1: "Enable", 0: "Disable"}
@@ -1232,8 +1230,7 @@ class Frames:
                              height=self.height_frame * (1 / 11),
                              width=self.master.winfo_width() * (2 / 5),
                              border_width=2,
-                             corner_radius=0,
-                             anchor=customtkinter.CENTER)
+                             corner_radius=0,)
 
     def choose_frame(self, button_id, refresh):
         if refresh:
@@ -1327,12 +1324,12 @@ class Toolbar:
         self.button_dictionary = {}
         self.customBtnList = []
         # calls:
-        self.alocate_number_of_buttons()
+        self.allocate_number_of_buttons()
         # class calls:
         self.frame_class = Frames(self.master, self.width, self.height, divisor, toolbar_buttons_count, button_names)
         logger.info("Created toolbar subFrame")
 
-    def alocate_number_of_buttons(self):
+    def allocate_number_of_buttons(self):
         print("allocating memory for creation")
         num = 1
         while num <= self.toolbar_buttons_count:
