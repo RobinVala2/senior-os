@@ -64,9 +64,9 @@ To launch the application, follow these steps:
 
 3. Open the smail_app.py file of the application.
 
-4. Ensure that all necessary dependencies are installed ([Installation](##installation)).
+4. Ensure that all necessary dependencies are installed ([Installation](#installation)).
 
-5. Before executing the application, ensure that you have set up the necessary configurations and generated the required app password for connection, as outlined in the [previous section](##configuration-requirement-for-email-client).
+5. Before executing the application, ensure that you have set up the necessary configurations and generated the required app password for connection, as outlined in the [previous section](#configuration-requirement-for-email-client).
 
 6. Once everything is set up, run the application by clicking on the "Run" or "Play" button within your IDE.
 
