@@ -2,10 +2,13 @@ import json
 import os
 import logging
 from sgive.src.CaregiverApp import threatDetect
+from screeninfo import get_monitors
 
 logger = logging.getLogger(__file__)
 logger.info("initiated logging")
 
+
+# functions:
 
 def get_path():
     whereTheFuckAmI = os.getcwd()
@@ -13,6 +16,14 @@ def get_path():
     path = split[0]
     configPath = os.path.join(path, "sconf")
     return configPath
+
+
+def get_primary_screen():
+    for index, monitor in enumerate(get_monitors()):
+        if monitor.is_primary:
+            print("index primary is:", index)
+            return index
+    return None
 
 
 # LOG FILES ACTIONS: ---------------------------------------------------------------------------------------------------
@@ -130,7 +141,7 @@ def main_config_default(path):
             "path": path
         },
         'GlobalConfiguration': {
-            "numOfScreen": 0,
+            "numOfScreen": get_primary_screen(),
             "language": "EN",
             "alertSoundLanguage": "EN",
             "colorMode": "Light",
