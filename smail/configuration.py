@@ -46,6 +46,7 @@ def smail_config_default(path):
             "smail_en_messageLabel": "Message: ",
             "smail_en_from": "From: ",
             "smail_en_date": "Date: ",
+            "smail_en_email_sent": "Email has been sent.",
             "smail_cz_sendToButton": "Komu",
             "smail_cz_inboxLabel": "Doručené: ",
             "smail_cz_recipientLabel": "Příjemce: ",
@@ -53,13 +54,15 @@ def smail_config_default(path):
             "smail_cz_messageLabel": "Zpráva: ",
             "smail_cz_from": "Od: ",
             "smail_cz_date": "Datum: ",
+            "smail_cz_email_sent": "E-mail byl úspěšně odeslán.",
             "smail_de_sendToButton": "Senden An",
             "smail_de_inboxLabel": "Posteingang: ",
             "smail_de_recipientLabel": "An: ",
             "smail_de_subjectLabel": "Betreff: ",
             "smail_de_messageLabel": "Nachricht: ",
             "smail_de_from": "Von: ",
-            "smail_de_date": "Datum: "
+            "smail_de_date": "Datum: ",
+            "smail_de_email_sent": "Die E-Mail wurde erfolgreich gesendet."
         },
         "audio": {
             "smail_en_exitButton": "../sconf/audio/SMAIL_EN_EXIT_1.mp3",

@@ -4,7 +4,7 @@ import os
 import pygame
 import PIL
 from PIL import Image, ImageTk
-from smail.template.guiTemplate import resolutionMath
+from template.guiTemplate import resolutionMath
 
 logger = logging.getLogger(__file__)
 
