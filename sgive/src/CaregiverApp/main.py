@@ -4,6 +4,9 @@ from sgive.src.CaregiverApp import FrontEnd
 from sgive.src.CaregiverApp import threatDetect
 import logging
 import datetime
+# testing:
+from screeninfo import get_monitors
+
 
 _log_directory = ryuconf.get_log()
 _log_file = os.path.join(_log_directory, 'ConfigurationApp.log')
@@ -26,8 +29,8 @@ logging.basicConfig(
 )
 logging.info("START OF APPLICATION━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
-
 if __name__ == '__main__':
+
     whereTheFuckAmI = os.getcwd()
     path_split = whereTheFuckAmI.split("sgive")
     config_folder = os.path.join(path_split[0], "sconf")
