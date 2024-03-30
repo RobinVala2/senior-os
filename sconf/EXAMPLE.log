@@ -1,8 +1,0 @@
-2023-10-17 09:43:17,843 : WARNING -> main <module> 22 : No config was found, generating new one.
-2023-10-17 09:43:18,092 : INFO -> CaregiverGUI rootSetup 745 : created root window
-2023-10-17 09:43:18,092 : INFO -> CaregiverGUI menuBarFrameSetup 754 : created menuFrame
-2023-10-17 09:43:18,258 : INFO -> CaregiverGUI buttons 83 : created buttons
-2023-10-17 09:43:18,259 : INFO -> CaregiverGUI createFrame 110 : Created all needed frames.
-2023-10-17 09:43:19,888 : INFO -> CaregiverGUI __init__ 183 : Opening Log frame.
-2023-10-17 09:43:44,628 : INFO -> CaregiverGUI __init__ 183 : Opening Log frame.
-2023-10-17 09:53:21,699 : INFO -> CaregiverGUI __init__ 183 : Opening Log frame.

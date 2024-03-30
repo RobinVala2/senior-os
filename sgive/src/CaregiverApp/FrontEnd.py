@@ -43,7 +43,7 @@ class FrameElements:
         self.current_label_font = self.label_font_size
         self.current_widget_font = self.widget_font_size
         self.label_names = ryuConf.red_main_config("careConf", frame_name)
-        self.dummy_label = None
+        self.background_label = None
         # for true original fullscreen sizes:
         screenNum = ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")
         self.screenWidth = get_monitors()[screenNum].width  # screen width_frame
@@ -71,33 +71,37 @@ class FrameElements:
             self.original_height = self.master.winfo_height()
             self.original_width = self.master.winfo_width()
 
-        widget_height = int(self.original_height * ((10 / 11) / len(self.label_names)) + 1)
+        # widget_height = int(self.original_height * ((10 / 11) / len(self.label_names)) + 1)
+        widget_height = self.original_height * ((10 / 11) / len(self.label_names))
         return widget_height
 
     def resize_widgets(self, widgets_array):
         height_frame = self.master.winfo_height()
         width_frame = self.master.winfo_width()
 
-        widget_height = int(height_frame * ((10 / 11) / len(self.label_names)) + 1)
-        widget_height = int(widget_height + 1)
+        widget_height = height_frame * ((10 / 11) / len(self.label_names))
+        widget_height -= widget_height * 0.02
         label_width = width_frame * (2 / 5)
+        # label_width -= label_width * 0.0025
         button_width = width_frame * (1 / 5)
+        button_width -= button_width * 0.005
+        refresh_restore_height = (self.master.winfo_height() / 11) - 2
 
         for widget_list in widgets_array:
             for name, widget in widget_list.items():
                 if isinstance(widget, customtkinter.CTkLabel):
-                    widget.configure(width=label_width, height=widget_height - 2)
+                    widget.configure(width=label_width, height=widget_height)
                 elif isinstance(widget, customtkinter.CTkEntry):
-                    widget.configure(width=label_width - 2, height=widget_height - 2)
+                    widget.configure(width=label_width, height=widget_height)
                 elif isinstance(widget, customtkinter.CTkButton):
                     if name == "picture0":  # this button needs to be 2/5 in length
-                        widget.configure(width=label_width - 2, height=widget_height - 2)
+                        widget.configure(width=label_width, height=widget_height - (widget_height * 0.005))
                     elif name == "restore_widget" or name == "refresh_widget":  # refresh and restore buttons (Frame 1 - 3)
                         self.master.update()
-                        widget.configure(width=label_width - 2, height=self.master.winfo_height() / 11)
+                        widget.configure(width=label_width, height=refresh_restore_height)
                         widget.anchor(customtkinter.CENTER)
                     else:
-                        widget.configure(width=button_width - 2, height=widget_height - 2)
+                        widget.configure(width=button_width, height=widget_height)
                 else:
                     print("Instance jinačího typu:", type(widget))
 
@@ -127,7 +131,11 @@ class FrameElements:
             for widget_list in widgets_array:
                 for key, widget in widget_list.items():
                     if isinstance(widget, customtkinter.CTkLabel):
-                        widget.configure(font=new_label_font)
+                        name = key.split(":")
+                        if name[0] == "error_label":
+                            widget.configure(font=new_widget_font)
+                        else:
+                            widget.configure(font=new_label_font)
                     elif isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
                         if key == "restore_widget" or key == "refresh_widget":
                             widget.configure(font=new_menu_font)
@@ -141,13 +149,20 @@ class FrameElements:
         font_label = (self.font_family, self.label_font_size, self.font_weight)
         y_position = float(0)
         widget_height_to_scale = height_widget / self.original_height
+        width_label = self.original_width * (2 / 5)
+        width_label -= width_label * 0.0025
+        height_label = height_widget
+        # height_label -= height_label * 0.003
+
         for name in self.label_names:
             labels[name] = customtkinter.CTkLabel(self.master,
                                                   text=name,
                                                   font=font_label,
-                                                  width=self.original_width * (2 / 5),
-                                                  height=height_widget - 2,
-                                                  fg_color=("#D3D3D3", "#171717")
+                                                  width=width_label,
+                                                  height=height_label,
+                                                  bg_color=("#D3D3D3", "#171717"),
+                                                  fg_color=("#D3D3D3", "#171717"),
+                                                  compound="center",
                                                   )
             labels[name].place(relx=0, rely=y_position)
             y_position += widget_height_to_scale
@@ -295,7 +310,7 @@ class LogsFrameWidgets:
 
 
 class WebFrameWidgets:
-    def __init__(self, frame_root, width, height_frame, restore, refresh):
+    def __init__(self, frame_root, width, height_frame, restore, refresh, state):
         logger.info("Creating and showing frame for Web configuration.")
         self.master = frame_root
         self.height_frame = height_frame
@@ -314,16 +329,40 @@ class WebFrameWidgets:
         self.picture_btn = {}
         # CALLS: --------------------
         resize_event_instance = FrameElements(frame_root, width, height_frame, "SwebFrameLabels")
-        self.height_widget = resize_event_instance.get_correct_size()
-        self.labels = resize_event_instance.create_labels(self.height_widget)
-        widget_list_array = [self.widget_entry, self.widget_btn, self.submit_btn, self.picture_btn, self.labels,
-                             self.action_widgets]
-        self.create_widgets()
-        self.load_configured_options()
-        resize_event_instance.is_window_resized(widget_list_array)
-        # event for resizing:
-        self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_list_array),
-                                                   resize_event_instance.resize_widgets(widget_list_array)])
+        if not state:
+            self.height_widget = resize_event_instance.get_correct_size()
+            self.labels = resize_event_instance.create_labels(self.height_widget)
+            widget_list_array = [self.widget_entry, self.widget_btn, self.submit_btn, self.picture_btn, self.labels,
+                                 self.action_widgets]
+            self.create_widgets()
+            self.load_configured_options()
+            resize_event_instance.is_window_resized(widget_list_array)
+            # event for resizing:
+            self.fix_scaling_issues()
+            self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_list_array),
+                                                       resize_event_instance.resize_widgets(widget_list_array),
+                                                       self.fix_scaling_issues()])
+        else:
+            widget_array = [self.action_widgets]
+            resize_event_instance.is_window_resized(widget_array)
+            self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_array),
+                                                       resize_event_instance.resize_widgets(widget_array)])
+
+    def fix_scaling_issues(self):
+        y_old = 0
+        height_old = 0
+        for widget in self.labels:
+            predict_new_y = y_old + height_old
+            if predict_new_y != self.labels[widget].winfo_y():
+                new_y = self.labels[widget].winfo_y() - (self.labels[widget].winfo_y() - predict_new_y)
+                new_height = self.labels[widget].winfo_height() + (self.labels[widget].winfo_y() - predict_new_y)
+                self.labels[widget].configure(height=new_height)
+                self.labels[widget].place(relx=0, rely=new_y / self.master.winfo_height())
+                y_old = new_y
+                height_old = new_height
+            else:
+                y_old = self.labels[widget].winfo_y()
+                height_old = self.labels[widget].winfo_height()
 
     @staticmethod
     def create_sweb_permittedURLs_txt(user_input):
@@ -540,7 +579,7 @@ class MailFrameWidgets:
     The frame itself isn't created here, it's created in Frames class, as other frames are
     """
 
-    def __init__(self, frame_root, width, height_frame, restore, refresh):
+    def __init__(self, frame_root, width, height_frame, restore, refresh, state):
         logger.info("Creating and showing frame for Mail configuration.")
         self.master = frame_root
         self.height_frame = height_frame
@@ -563,17 +602,41 @@ class MailFrameWidgets:
         # -----------------
         # calls:
         resize_event_instance = FrameElements(frame_root, width, height_frame, "SMailFrameLabels")
-        self.widget_height = resize_event_instance.get_correct_size()
-        self.labels = resize_event_instance.create_labels(self.widget_height)
-        widget_list_array = [self.labels, self.entry_widgets, self.submit_entry_btn, self.caregiver_warning,
-                             self.url_link, self.choose_pictures, self.action_widgets
-                             ]
-        self.create_widgets()
-        self.load_defaults()
-        resize_event_instance.is_window_resized(widget_list_array)
-        # resize events:
-        self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_list_array),
-                                                   resize_event_instance.resize_widgets(widget_list_array)])
+        if not state:
+            self.widget_height = resize_event_instance.get_correct_size()
+            self.labels = resize_event_instance.create_labels(self.widget_height)
+            widget_list_array = [self.labels, self.entry_widgets, self.submit_entry_btn, self.caregiver_warning,
+                                 self.url_link, self.choose_pictures, self.action_widgets
+                                 ]
+            self.create_widgets()
+            self.load_defaults()
+            # resize events:
+            resize_event_instance.is_window_resized(widget_list_array)
+            self.fix_scaling_issues()
+            self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_list_array),
+                                                       resize_event_instance.resize_widgets(widget_list_array),
+                                                       self.fix_scaling_issues()])
+        else:
+            widget_array = [self.action_widgets]
+            resize_event_instance.is_window_resized(widget_array)
+            self.master.bind("<Configure>", lambda _: [resize_event_instance.resize_font(widget_array),
+                                                       resize_event_instance.resize_widgets(widget_array)])
+
+    def fix_scaling_issues(self):
+        y_old = 0
+        height_old = 0
+        for widget in self.labels:
+            predict_new_y = y_old + height_old
+            if predict_new_y != self.labels[widget].winfo_y():
+                new_y = self.labels[widget].winfo_y() - (self.labels[widget].winfo_y() - predict_new_y)
+                new_height = self.labels[widget].winfo_height() + (self.labels[widget].winfo_y() - predict_new_y)
+                self.labels[widget].configure(height=new_height)
+                self.labels[widget].place(relx=0, rely=new_y / self.master.winfo_height())
+                y_old = new_y
+                height_old = new_height
+            else:
+                y_old = self.labels[widget].winfo_y()
+                height_old = self.labels[widget].winfo_height()
 
     def load_defaults(self):
         value_mapping = {1: "Enable", 0: "Disable"}
@@ -840,7 +903,7 @@ class MailFrameWidgets:
 
 
 class GlobalFrameWidgets:
-    def __init__(self, frame_root, width, height_frame, restore, refresh):
+    def __init__(self, frame_root, width, height_frame, restore, refresh, is_alive):
         logger.info("Initiated widgets creation for Global frame.")
         self.master = frame_root
         self.width_frame = width
@@ -861,19 +924,51 @@ class GlobalFrameWidgets:
         self.array_coranteng = [self.screen_num, self.language_dict, self.language_alert_dict, self.colorscheme_dict,
                                 self.entry_dict, self.font_size]
         # ---------- CALS --------------
-        resize_class = FrameElements(frame_root, width, height_frame, "GlobalFrameLabels")
-        self.height_frame = resize_class.get_correct_size()
-        self.labels = resize_class.create_labels(self.height_frame)
-        self.buttons()
-        self.highlight_configured_widgets()
-        self.load_entry_error_widgets()
-        widget_list_array = [self.labels, self.screen_num, self.language_dict, self.language_alert_dict,
-                             self.colorscheme_dict, self.entry_dict, self.font_size, self.entry_buttons_dict,
-                             self.action_widgets, self.error_labels]
-        # resize events:
-        resize_class.is_window_resized(widget_list_array)
-        self.master.bind("<Configure>", lambda _: [resize_class.resize_font(widget_list_array),
-                                                   resize_class.resize_widgets(widget_list_array)])
+        self.resize_class = FrameElements(frame_root, width, height_frame, "GlobalFrameLabels")
+        if not is_alive:
+            self.height_frame = self.resize_class.get_correct_size()
+            self.labels = self.resize_class.create_labels(self.height_frame)
+            self.buttons()
+            widget_list_array = [self.labels, self.screen_num, self.language_dict, self.language_alert_dict,
+                                 self.colorscheme_dict, self.entry_dict, self.font_size, self.entry_buttons_dict,
+                                 self.action_widgets, self.error_labels]
+            # resize events:
+            self.resize_class.is_window_resized(widget_list_array)
+            self.fix_scaling_issues()
+            self.master.bind("<Configure>", lambda _: [self.resize_class.resize_font(widget_list_array),
+                                                       self.resize_class.resize_widgets(widget_list_array),
+                                                       self.fix_scaling_issues()])
+            self.highlight_configured_widgets()
+            self.load_entry_error_widgets()
+        else:
+            widget_array = [self.action_widgets]
+            self.resize_class.is_window_resized(widget_array)
+            self.master.bind("<Configure>", lambda _: [self.resize_class.resize_font(widget_array),
+                                                       self.resize_class.resize_widgets(widget_array)])
+
+    def fix_scaling_issues(self):
+        y_old = 0
+        height_old = 0
+        for widget in self.labels:
+            # print("Start---------------------------------------")
+            predict_new_y = y_old + height_old
+            # print("y:", self.labels[widget].winfo_y())
+            # print("predikované Y", predict_new_y)
+            # print("height:", self.labels[widget].winfo_height())
+            if predict_new_y != self.labels[widget].winfo_y():
+                # print("nové Y NENÍ oke")
+                new_y = self.labels[widget].winfo_y() - (self.labels[widget].winfo_y() - predict_new_y)
+                new_height = self.labels[widget].winfo_height() + (self.labels[widget].winfo_y() - predict_new_y)
+                # print("origo height:",  self.labels[widget].winfo_height())
+                # print("nová height:", self.labels[widget].winfo_height() + (self.labels[widget].winfo_y() - predict_new_y) )
+                self.labels[widget].configure(height=new_height)
+                self.labels[widget].place(relx=0, rely=new_y / self.master.winfo_height())
+                y_old = new_y
+                height_old = new_height
+            else:
+                y_old = self.labels[widget].winfo_y()
+                height_old = self.labels[widget].winfo_height()
+            # print("end-------------------------------------------")
 
     @staticmethod
     def calculate_lighter_hover_color(input_value):
@@ -973,9 +1068,9 @@ class GlobalFrameWidgets:
             self.error_labels[f"error_label:{name}"].configure(width=self.width_frame * (2 / 5) - 2.5,
                                                                height=self.height_frame,
                                                                fg_color=(self.hover_alert_color,
-                                                                            self.hover_alert_color),
+                                                                         self.hover_alert_color),
                                                                font=font_value,
-                                                               text="There was an error in user input, for more info., please see Log.")
+                                                               text="Wrong user input, see Logs (error filter) for more.")
             self.error_labels[f"error_btn:{name}"] = customtkinter.CTkButton(self.master)
             self.error_labels[f"error_btn:{name}"].configure(width=self.width_frame * (1 / 5) - 2.5,
                                                              height=self.height_frame,
@@ -1152,54 +1247,58 @@ class GlobalFrameWidgets:
 
     def show_buttons(self):
         """
-        This very scary looking function does multiple things, it sets repetitive parameters for widgets and its place on frame
+        This function optimizes the performance of setting parameters for widgets.
         """
-        font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
-                      ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
+        font_value = (
+            ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
+            ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
+            ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        )
 
-        # height_num = self.height_frame * (1 / (len(self.label_names) + 1)) - 2.5
         height_num = self.height_frame
         widget_height_to_scale = height_num / self.master.winfo_height()
+        height_num *= 0.98
 
-        width_num = round(self.width_frame * (1 / 5)) - 2
-        y_position = float(0)
-        x_position = float(2 / 5)
+        width_num = self.width_frame * 0.2 * 0.995
+        y_position = 0
+        x_position = 0.4
+        entry_buttons_counter = 0  # Initial value of entry_buttons_counter
 
         for widget_list in self.array_coranteng:
-            entry_buttons_counter = 0
             for key, widget in widget_list.items():
                 if isinstance(widget, customtkinter.CTkEntry):
                     for _, widget_in_list in widget_list.items():
-                        self.entry_buttons_dict[entry_buttons_counter].configure(border_width=0,
-                                                                                 corner_radius=0,
-                                                                                 fg_color=("#636363", "#222222"),
-                                                                                 hover_color=("#757474", "#3b3b3b"),
-                                                                                 font=font_value,
-                                                                                 width=width_num,
-                                                                                 height=height_num - 2)
+                        self.entry_buttons_dict[entry_buttons_counter].configure(
+                            border_width=0,
+                            corner_radius=0,
+                            fg_color=("#636363", "#222222"),
+                            hover_color=("#757474", "#3b3b3b"),
+                            font=font_value,
+                            width=width_num,
+                            height=height_num
+                        )
                         widget_in_list.place(relx=x_position, rely=y_position)
-                        self.entry_buttons_dict[entry_buttons_counter].place(relx=x_position + 2 / 5, rely=y_position)
+                        self.entry_buttons_dict[entry_buttons_counter].place(relx=x_position + 0.4, rely=y_position)
                         entry_buttons_counter += 1
-                        x_position = 2 / 5
                         y_position += widget_height_to_scale
-                    x_position = 2 / 5
+                    x_position = 0.4
                     break
                 elif isinstance(widget, customtkinter.CTkButton):
                     for _, widget_in_list in widget_list.items():
-                        widget_in_list.configure(border_width=0,
-                                                 corner_radius=0,
-                                                 fg_color=("#636363", "#222222"),
-                                                 hover_color=("#757474", "#3b3b3b"),
-                                                 font=font_value,
-                                                 width=width_num,
-                                                 height=height_num - 2)
+                        widget_in_list.configure(
+                            border_width=0,
+                            corner_radius=0,
+                            fg_color=("#636363", "#222222"),
+                            hover_color=("#757474", "#3b3b3b"),
+                            font=font_value,
+                            width=width_num,
+                            height=height_num
+                        )
                         widget_in_list.place(relx=x_position, rely=y_position)
-                        x_position += 1 / 5
-                    x_position = 2 / 5
+                        x_position += 0.2
+                    x_position = 0.4
                     y_position += widget_height_to_scale
                     break
-
         logger.info("Created buttons and entry widgets for GLOBAL frame")
 
 
@@ -1239,12 +1338,14 @@ class Frames:
         self.frame_dictionary = {}
         self.restore_configurations = None
         self.refresh_frame = None
+        self.is_frame_alive = {}
         # calls:
         self.alocate_frames()
         DefaultFrameWidgets(self.frame_dictionary[self.number_of_buttons])
         self.frame_dictionary[self.number_of_buttons].pack()
 
     def get_new_values_for_refresh(self, button_id):
+        self.is_frame_alive[button_id] = False
         # set global color:
         customtkinter.set_appearance_mode(ryuConf.red_main_config("GlobalConfiguration", "colorMode"))
         # refresh:
@@ -1323,9 +1424,9 @@ class Frames:
         elif self.alive_frame is not None:
             self.frame_dictionary[button_id].pack()
             self.frame_dictionary[self.alive_frame].pack_forget()
-            for widget in self.frame_dictionary[self.alive_frame].winfo_children():
-                widget.place_forget()
-            # set new frame as the alive frame
+            if self.restore_configurations is not None and self.refresh_frame is not None:
+                self.restore_configurations.place_forget()
+                self.refresh_frame.place_forget()
             self.alive_frame = button_id
             logger.info("Showing new frame, hiding the old one.")
         else:
@@ -1356,7 +1457,8 @@ class Frames:
             else:
                 self.refresh_restore_buttons(button_id)  # restore and reset buttons
                 frame_class(self.frame_dictionary[button_id], self.width, self.height_frame,
-                            self.restore_configurations, self.refresh_frame)
+                            self.restore_configurations, self.refresh_frame, self.is_frame_alive[button_id])
+                self.is_frame_alive[button_id] = True
                 logger.info(f"User picked frame '{frame_name}', creating frame now.")
                 return
         else:
@@ -1364,10 +1466,12 @@ class Frames:
 
     # create needed frames for config, based on config.json
     def create_frames(self, number):
+        self.is_frame_alive[number] = False
         self.frame_dictionary[number] = customtkinter.CTkFrame(self.master)
         self.frame_dictionary[number].configure(fg_color=("white", "#1a1a1a"))
         self.frame_dictionary[number].pack_propagate(False)
-        self.frame_dictionary[number].configure(width=self.width, height=self.height_frame)
+        self.frame_dictionary[number].configure(width=self.width, height=self.height_frame, border_width=0,
+                                                corner_radius=0)
         number += 1
 
     def alocate_frames(self):
