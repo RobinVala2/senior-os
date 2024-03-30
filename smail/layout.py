@@ -71,7 +71,6 @@ class one_frame(tk.Frame):
             self.after(10000,self.periodic_email_loading())
 
 
-
     def redefine_template_buttons(self):
 
         try:
@@ -419,7 +418,6 @@ class one_frame(tk.Frame):
                 logger.critical("Failed to apply anti-phishing filters. Omitting security steps.", exc_info=True)
 
             # Inserting emails into the listbox,
-            # for now safe_emails and phish_emails are separated
             self.inbox_list.listbox.delete(0, tk.END)
             print("Clearing the listbox")
 
@@ -439,6 +437,7 @@ class one_frame(tk.Frame):
         # If allow_show_email is not allowed, email will not be displayed
         if not self.allow_show_email:
             return
+
         # Switch frames to the reading frame
         self.switch_to_reading_mail()
 
@@ -522,7 +521,6 @@ class one_frame(tk.Frame):
                 self.mark_and_link_url(url)
 
     def mark_and_link_url(self, url):
-
         # Assign name to URL and bind it for click event
         start_pos = "1.0"
         while True:
@@ -681,7 +679,7 @@ class one_frame(tk.Frame):
         self.recipient_entry.delete(0, tk.END)
         self.subject_entry.delete(0, tk.END)
         self.content_entry.delete("1.0", tk.END)
-        self.content_entry.insert("1.0", "Email has been sent.")
+        self.content_entry.insert("1.0", self.text[f"smail_{self.language}_email_sent"])
         self.content_entry.tag_configure("center", justify="center")
         self.content_entry.tag_add("center", "1.0", "end")
         self.content_entry.config(bg=selected_color)
@@ -726,6 +724,7 @@ class one_frame(tk.Frame):
             print("Send To button pressed")
             recipient = self.switch_to_write_mail()
             recipient.delete(0, tk.END)
+
         #handle actions with Person buttons
         else:
             # If another Person[id] button is pressed:

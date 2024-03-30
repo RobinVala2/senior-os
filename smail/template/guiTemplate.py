@@ -6,7 +6,6 @@ from tkinter import *
 import smail.template.configActions as JS
 from screeninfo import get_monitors
 
-
 def getButtonConf():
     # collecting values for font and colors
     bg = JS.jsonRed('GUI_template', "buttons_unselected")
@@ -151,7 +150,7 @@ class menuButtonCRT:
         if self.id_of_menu < len(self.option):
             new_dict2 = self.optButtons2.button_dict
             for i in new_dict2:
-                new_dict2[i].pack(side=LEFT, padx=JS.red_main_config('GUI_template', "padx_value"))
+                new_dict2[i].pack(side=LEFT, padx=JS.jsonRed('GUI_template', "padx_value"))
             self.button_dict[self.id_of_menu].pack_forget()
             self.button_dict[self.id_of_menu + 1].pack(side=LEFT, expand=True, fill='both')
             self.id_of_menu += 1

@@ -18,9 +18,7 @@ logging.basicConfig(
 if __name__ == '__main__':
 
     config_path = os.path.join(os.getcwd().split("smail")[0], "sconf/")
-
     try:
-
         # Generating old configuration file for template
         config_old = act.configExistCheck()
 
@@ -30,7 +28,6 @@ if __name__ == '__main__':
 
         # Getting phishing database
         get_DB()
-
         root = tkinter.Tk()
         root.configure(bg="#FFFFFF")
         app = one_frame(root)
