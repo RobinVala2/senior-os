@@ -134,6 +134,8 @@ class FrameElements:
                         name = key.split(":")
                         if name[0] == "error_label":
                             widget.configure(font=new_widget_font)
+                        elif name[0] == "default":
+                            widget.configure(font=(self.font_family, self.current_label_font * 1.3, self.font_weight))
                         else:
                             widget.configure(font=new_label_font)
                     elif isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
@@ -351,6 +353,7 @@ class WebFrameWidgets:
     def fix_scaling_issues(self):
         y_old = 0
         height_old = 0
+        last_widget = None
         for widget in self.labels:
             predict_new_y = y_old + height_old
             if predict_new_y != self.labels[widget].winfo_y():
@@ -360,9 +363,18 @@ class WebFrameWidgets:
                 self.labels[widget].place(relx=0, rely=new_y / self.master.winfo_height())
                 y_old = new_y
                 height_old = new_height
+                last_widget = widget
             else:
                 y_old = self.labels[widget].winfo_y()
                 height_old = self.labels[widget].winfo_height()
+                last_widget = widget
+
+        new_height_frame = self.master.winfo_height() * ((10 / 11) / len(self.label_names))
+        expected_full_height = new_height_frame * len(self.label_names)
+        true_full_height = y_old + height_old
+        new_last_widget_height = height_old + (expected_full_height - true_full_height)
+        if int(new_last_widget_height) != height_old:
+            self.labels[last_widget].configure(height=new_last_widget_height)
 
     @staticmethod
     def create_sweb_permittedURLs_txt(user_input):
@@ -625,6 +637,7 @@ class MailFrameWidgets:
     def fix_scaling_issues(self):
         y_old = 0
         height_old = 0
+        last_widget = None
         for widget in self.labels:
             predict_new_y = y_old + height_old
             if predict_new_y != self.labels[widget].winfo_y():
@@ -634,9 +647,18 @@ class MailFrameWidgets:
                 self.labels[widget].place(relx=0, rely=new_y / self.master.winfo_height())
                 y_old = new_y
                 height_old = new_height
+                last_widget = widget
             else:
                 y_old = self.labels[widget].winfo_y()
                 height_old = self.labels[widget].winfo_height()
+                last_widget = widget
+
+        new_height_frame = self.master.winfo_height() * ((10 / 11) / len(self.label_names))
+        expected_full_height = new_height_frame * len(self.label_names)
+        true_full_height = y_old + height_old
+        new_last_widget_height = height_old + (expected_full_height - true_full_height)
+        if int(new_last_widget_height) != height_old:
+            self.labels[last_widget].configure(height=new_last_widget_height)
 
     def load_defaults(self):
         value_mapping = {1: "Enable", 0: "Disable"}
@@ -949,26 +971,28 @@ class GlobalFrameWidgets:
     def fix_scaling_issues(self):
         y_old = 0
         height_old = 0
+        last_widget = None
         for widget in self.labels:
-            # print("Start---------------------------------------")
             predict_new_y = y_old + height_old
-            # print("y:", self.labels[widget].winfo_y())
-            # print("predikované Y", predict_new_y)
-            # print("height:", self.labels[widget].winfo_height())
             if predict_new_y != self.labels[widget].winfo_y():
-                # print("nové Y NENÍ oke")
                 new_y = self.labels[widget].winfo_y() - (self.labels[widget].winfo_y() - predict_new_y)
                 new_height = self.labels[widget].winfo_height() + (self.labels[widget].winfo_y() - predict_new_y)
-                # print("origo height:",  self.labels[widget].winfo_height())
-                # print("nová height:", self.labels[widget].winfo_height() + (self.labels[widget].winfo_y() - predict_new_y) )
                 self.labels[widget].configure(height=new_height)
                 self.labels[widget].place(relx=0, rely=new_y / self.master.winfo_height())
                 y_old = new_y
                 height_old = new_height
+                last_widget = widget
             else:
                 y_old = self.labels[widget].winfo_y()
                 height_old = self.labels[widget].winfo_height()
-            # print("end-------------------------------------------")
+                last_widget = widget
+
+        new_height_frame = self.master.winfo_height() * ((10 / 11) / len(self.label_names))
+        expected_full_height = new_height_frame * len(self.label_names)
+        true_full_height = y_old + height_old
+        new_last_widget_height = height_old + (expected_full_height - true_full_height)
+        if int(new_last_widget_height) != height_old:
+            self.labels[last_widget].configure(height=new_last_widget_height)
 
     @staticmethod
     def calculate_lighter_hover_color(input_value):
@@ -1305,15 +1329,27 @@ class GlobalFrameWidgets:
 class DefaultFrameWidgets:
     def __init__(self, frame_root):
         self.master = frame_root
-        text_variable = ("Welcome to the Configuration Application for Senior-os\n"
-                         "Each button in menubar has its own configuration frame.\n"
-                         "\nMore information in documentation <link>")
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize") * 1.1,
+                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize") * 1.3,
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
+        resize_event_instance = FrameElements(frame_root, frame_root.winfo_width(), frame_root.winfo_height(), "SwebFrameLabels")
+        labels = {}
 
-        label = customtkinter.CTkLabel(master=frame_root, text=text_variable, font=font_value)
-        label.place(relx=0.5, rely=0.5, anchor=customtkinter.CENTER)
+        text = {
+            0: "\n\nCaregiver Application for configuration.\n\n",
+            1: "GLOBAL - System application's configuration.",
+            2: " SMAIL - Email client default configuration.",
+            3: "    SWEB - Web browser default configuration.",
+            4: "LOGS - Apps run and phishing info.       ",
+            5: "\n For more info, please see documentation for this App."
+        }
+
+        for key, value in text.items():
+            label = customtkinter.CTkLabel(frame_root, text=value, font=font_value, anchor="w")
+            label.pack()
+            labels[f"default:{key}"] = label
+        widget_array = [labels]
+        self.master.bind("<Configure>", lambda _: resize_event_instance.resize_font(widget_array))
 
 
 class Frames:
@@ -1389,9 +1425,9 @@ class Frames:
 
         # place:
         self.restore_configurations.place(relx=0.5 - (1 * 2 / 5) - 0.001,
-                                          rely=1 - (self.height_frame / 11) / self.height_frame + 0.005)
+                                          rely=1 - (self.height_frame / 11) / self.height_frame)
         self.refresh_frame.place(relx=0.5 + 0.001,
-                                 rely=1 - (self.height_frame / 11) / self.height_frame + 0.005)
+                                 rely=1 - (self.height_frame / 11) / self.height_frame)
 
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
                       ryuConf.red_main_config("GlobalConfiguration", "controlFontSize"),
