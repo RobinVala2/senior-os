@@ -188,12 +188,9 @@ def main_config_default(path):
 
 def smail_config_default(path):
     dictionary = {
-        'pathToConfig': {
-            "path": path
-        },
-        'credentials': {
+        "credentials": {
             "username": "ts1bp2023@gmail.com",
-            "password": "snfshqlirranyvwe",
+            "password": "ajoliddkigtswdpe",
             "smtp_server": "smtp.gmail.com",
             "smtp_port": 587,
             "imap_server": "imap.gmail.com",
@@ -201,9 +198,9 @@ def smail_config_default(path):
             "max": 20
         },
         "emails": {
-            "Person1": "croce.rosay@gmail.com",
-            "Person2": "robin.valu@seznam.cz",
-            "Person3": "241124@vut.cz",
+            "Person1": "email1@gmail.com",
+            "Person2": "email2@gmail.com",
+            "Person3": "email3@gmail.com",
             "Person4": "email4@gmail.com",
             "Person5": "email5@gmail.com",
             "Person6": "email6@gmail.com"
@@ -230,6 +227,7 @@ def smail_config_default(path):
             "smail_en_messageLabel": "Message: ",
             "smail_en_from": "From: ",
             "smail_en_date": "Date: ",
+            "smail_en_email_sent": "Email has been sent.",
             "smail_cz_sendToButton": "Komu",
             "smail_cz_inboxLabel": "Doručené: ",
             "smail_cz_recipientLabel": "Příjemce: ",
@@ -237,13 +235,15 @@ def smail_config_default(path):
             "smail_cz_messageLabel": "Zpráva: ",
             "smail_cz_from": "Od: ",
             "smail_cz_date": "Datum: ",
+            "smail_cz_email_sent": "E-mail byl úspěšně odeslán.",
             "smail_de_sendToButton": "Senden An",
             "smail_de_inboxLabel": "Posteingang: ",
             "smail_de_recipientLabel": "An: ",
             "smail_de_subjectLabel": "Betreff: ",
             "smail_de_messageLabel": "Nachricht: ",
             "smail_de_from": "Von: ",
-            "smail_de_date": "Datum: "
+            "smail_de_date": "Datum: ",
+            "smail_de_email_sent": "Die E-Mail wurde erfolgreich gesendet."
         },
         "audio": {
             "smail_en_exitButton": "../sconf/audio/SMAIL_EN_EXIT_1.mp3",
@@ -279,7 +279,6 @@ def smail_config_default(path):
             "smail_de_sendToButton": "../sconf/audio/SMAIL_DE_SENDTO_1.mp3",
             "smail_de_menu1": "../sconf/audio/SMAIL_DE_MENU_1.mp3",
             "smail_de_menu2": "../sconf/audio/SMAIL_DE_MENU_2.mp3",
-
             "smail_en_inbox": "../sconf/audio/SMAIL_EN_INBOX_1.mp3",
             "smail_en_recipient": "../sconf/audio/SMAIL_EN_RECIPIENT_1.mp3",
             "smail_en_subject": "../sconf/audio/SMAIL_EN_SUBJECT_1.mp3",
@@ -303,8 +302,12 @@ def smail_config_default(path):
 
 
 def restore_smail_config():
-    path = read_smail_config("pathToConfig", "path")
-    smail_config_default(path)
+    path = get_path()
+    if path is not None:
+        smail_config_default(path)
+    else:
+        logging.critical("system was unable to restore configs, exiting now.")
+        exit("Bad restore attempt.")
 
 
 def read_smail_config(key, value):
@@ -459,7 +462,11 @@ def sweb_config_default(path):
 
 def restore_sweb_config():
     path = get_path()
-    sweb_config_default(path)
+    if path is not None:
+        sweb_config_default(path)
+    else:
+        logging.critical("system was unable to restore configs, exiting now.")
+        exit("Bad restore attempt.")
 
 
 def read_sweb_config(key, value):
