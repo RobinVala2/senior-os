@@ -19,8 +19,8 @@ if __name__ == '__main__':
 
     config_path = os.path.join(os.getcwd().split("smail")[0], "sconf/")
     try:
-        # Generating old configuration file for template
-        config_old = act.configExistCheck()
+        # Generating global configuration file
+        config = act.configExistCheck()
 
         if not os.path.exists(os.path.join(config_path, "SMAIL_config.json")):
             smail_config_default(os.path.join(config_path))

@@ -1,52 +1,65 @@
-import smtplib
+import smtplib, ssl
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, ANY, MagicMock
 from smail.connection.mail_connection import send_email
+
+
 
 class TestSendEmail(unittest.TestCase):
 
-    recipient = "test@test.com"
-    subject = "Test Subject"
-    content = "Test Content"
-    login = "ts1bp2023@gmail.com"
-    password = "password"
-    smtp_server = "smtp.gmail.com"
-    smtp_port = 587
+    def setUp(self):
+        self.recipient = "test@test.com"
+        self.subject = "Test Subject"
+        self.content = "Test Content"
+        self.login = "ts1bp2023@gmail.com"
+        self.password = "password"
+        self.smtp_server = "smtp.gmail.com"
+        self.smtp_port = 587
 
     @patch("smtplib.SMTP")
-    @patch("smtplib.SMTP.starttls")
-    @patch("smtplib.SMTP.login")
-    @patch("smtplib.SMTP.sendmail")
-    @patch("smail.connection.mail_connection.resend_reply")
     @patch("smail.connection.mail_connection.logger")
-    def test_send_email_success(self, mock_logger, mock_resend_reply, mock_sendmail, mock_login, mock_starttls, mock_smtp):
-        mock_server = mock_smtp.return_value
-        mock_server.starttls.return_value = None
-        mock_server.login.return_value = None
-        mock_server.sendmail.return_value = None
-        result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
+    def test_send_email_success(self, mock_logger, mock_smtp):
+        result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server,
+                            self.smtp_port)
         mock_logger.error.assert_not_called()
+        mock_logger.info.assert_called_once_with(f"An email has been sent to {self.recipient}.")
+        mock_smtp.assert_called_with(self.smtp_server, self.smtp_port)
         self.assertEqual(result, 1)
 
-    @patch("smtplib.SMTP")
-    def test_smtp_connect_error(self, mock_smtp):
-        mock_smtp.side_effect = smtplib.SMTPConnectError(421, "Test SMTPConnectError")
-        result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
+    @patch("smtplib.SMTP", side_effect=smtplib.SMTPConnectError(421, "Test SMTPConnectError"))
+    @patch("smail.connection.mail_connection.logger")
+    def test_smtp_connect_error(self, mock_logger, mock_smtp):
+        result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server,
+                            self.smtp_port)
         mock_smtp.assert_called_once_with(self.smtp_server, self.smtp_port)
+        mock_logger.error.assert_called_once_with("SMTP connection error. Check your SMTP server and port.",
+                     exc_info=True)
+        mock_logger.info.assert_not_called()
+
         self.assertEqual(result, 0)
 
-    @patch("smtplib.SMTP")
-    def test_smtp_authentication_error(self, mock_smtp):
-        mock_smtp.side_effect = smtplib.SMTPAuthenticationError(535, "Test SMTPAuthenticationError")
-        result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
+    @patch("smtplib.SMTP", side_effect=smtplib.SMTPAuthenticationError(535, "Test SMTPAuthenticationError"))
+    @patch("smail.connection.mail_connection.logger")
+    def test_smtp_authentication_error(self,mock_logger, mock_smtp):
+        result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server,
+                            self.smtp_port)
         mock_smtp.assert_called_once_with(self.smtp_server, self.smtp_port)
+        mock_logger.error.assert_called_once_with("Authentication error. Check your email and password.",
+                     exc_info=True)
+        mock_logger.info.assert_not_called()
+
         self.assertEqual(result, -1)
 
-    @patch("smtplib.SMTP")
-    def test_exception_during_send_email(self, mock_smtp):
-        mock_smtp.side_effect = Exception("Test Exception")
+    @patch("smtplib.SMTP", side_effect = Exception("Test Exception"))
+    @patch("smail.connection.mail_connection.logger")
+    def test_exception_during_send_email(self,mock_logger, mock_smtp):
         result = send_email(self.recipient, self.subject, self.content, self.login, self.password, self.smtp_server, self.smtp_port)
+
         mock_smtp.assert_called_once_with(self.smtp_server, self.smtp_port)
+        mock_logger.error.assert_called_once_with("Error occurred when trying to send email. ",
+                     exc_info=True)
+        mock_logger.info.assert_not_called()
+
         self.assertEqual(result, -2)
 
     if __name__ == '__main__':

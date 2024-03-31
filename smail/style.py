@@ -4,7 +4,7 @@ import os
 import pygame
 import PIL
 from PIL import Image, ImageTk
-from template.guiTemplate import resolutionMath
+from smail.template.guiTemplate import resolutionMath
 
 logger = logging.getLogger(__file__)
 
@@ -22,10 +22,10 @@ def load_json_file(file_path):
             data = json.load(f)
         return data
     except FileNotFoundError:
-        logging.error(f"File not found: {file_path}")
+        logger.error(f"File not found: {file_path}")
         return 0
     except Exception as error:
-        logging.error(f"An unexpected error occurred while loading data from {file_path}", exc_info=True)
+        logger.error(f"An unexpected error occurred while loading data from {file_path}", exc_info=True)
         return -1
 
 def load_button_colors():
