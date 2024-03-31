@@ -64,8 +64,9 @@ class FrameElements:
             self.resize_widgets(widgets_array)
 
     def get_correct_size(self):
-        self.master.update_idletasks()
-        self.master.update()
+        if self.master.winfo_height() == 1 or self.master.winfo_width() == 1:
+            self.master.update_idletasks()
+            # self.master.update()
         if ((not self.original_height < self.master.winfo_height())
                 or (not self.original_width < self.master.winfo_width())):
             self.original_height = self.master.winfo_height()
@@ -97,7 +98,7 @@ class FrameElements:
                     if name == "picture0":  # this button needs to be 2/5 in length
                         widget.configure(width=label_width, height=widget_height - (widget_height * 0.005))
                     elif name == "restore_widget" or name == "refresh_widget":  # refresh and restore buttons (Frame 1 - 3)
-                        self.master.update()
+                        self.master.update_idletasks()  # needed :)
                         widget.configure(width=label_width, height=refresh_restore_height)
                         widget.anchor(customtkinter.CENTER)
                     else:
@@ -313,6 +314,7 @@ class LogsFrameWidgets:
 
 class WebFrameWidgets:
     def __init__(self, frame_root, width, height_frame, restore, refresh, state):
+        self.filename_picture = None
         logger.info("Creating and showing frame for Web configuration.")
         self.master = frame_root
         self.height_frame = height_frame
@@ -454,6 +456,16 @@ class WebFrameWidgets:
             return
         else:
             print("URL není platná")
+            
+    def file_dialog(self):
+        font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
+                      ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
+                      ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
+        home_dir = os.path.expanduser("~")
+        self.filename_picture = filedialog.askopenfilename(initialdir=home_dir)
+        if not self.filename_picture:  # check, if tuple is empty, if yes, return
+            return
+        self.picture_btn["picture0"].configure(text=f'selected: {self.filename_picture.split("/")[-1]}', font=font_value)
 
     def buttons_update(self, button_name):
         selected_button = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
@@ -519,7 +531,9 @@ class WebFrameWidgets:
                                                                fg_color=("#636363", "#222222"),
                                                                hover_color=("#757474", "#3b3b3b"),
                                                                border_width=0,
-                                                               corner_radius=0
+                                                               corner_radius=0,
+                                                               compound="left",
+                                                               command=lambda: self.file_dialog()
                                                                )
         self.picture_btn["submit"] = customtkinter.CTkButton(self.master,
                                                              text="First URL",
