@@ -1429,10 +1429,13 @@ class Frames:
                 logger.error("Couldn't find any file named sconf, leaving.")
                 return
             file_path = os.path.join(current_directory, "Demo_SWEB_Permitted_Websites.txt")
-            try:
-                os.remove(file_path)
-            except Exception as e:
-                logger.error(f"An error occurred while removing file Demo_SWEB_Permitted_Websites.txt: {e}")
+            if not os.path.exists(file_path):
+                return
+            else:
+                try:
+                    os.remove(file_path)
+                except Exception as e:
+                    logger.error(f"An error occurred while removing file Demo_SWEB_Permitted_Websites.txt: {e}")
         # -------------------------------------------
         # get new values, aka read json config again:
         self.get_new_values_for_refresh(button_id)

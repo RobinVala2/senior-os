@@ -198,9 +198,7 @@ class ModelValidation:
         folder_path = os.path.join(os.getcwd(), "ML-saved")
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-
             gitignore_path = os.path.join(folder_path, ".gitignore")
-
             # create gitignore
             with open(gitignore_path, 'w+') as f:
                 f.write("*")
