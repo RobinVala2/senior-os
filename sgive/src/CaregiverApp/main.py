@@ -4,23 +4,21 @@ from sgive.src.CaregiverApp import FrontEnd
 from sgive.src.CaregiverApp import threatDetect
 import logging
 import datetime
-# testing:
-from screeninfo import get_monitors
-
 
 _log_directory = ryuconf.get_log()
 _log_file = os.path.join(_log_directory, 'ConfigurationApp.log')
 
-# last time update check
-last_change_time = datetime.datetime.fromtimestamp(os.path.getmtime(_log_file))
-current_date = datetime.datetime.now().date()
+# Last time update check
+if os.path.exists(_log_file):
+    last_change_time = datetime.datetime.fromtimestamp(os.path.getmtime(_log_file))
+    current_date = datetime.datetime.now().date()
 
-# time validation (if older than a day, yeet it out)
-if last_change_time.date() != current_date:
-    try:
-        os.remove(_log_file)
-    except OSError:
-        pass  # There is nothing we can do
+    # Time validation (if older than a day, delete it)
+    if last_change_time.date() != current_date:
+        try:
+            os.remove(_log_file)
+        except OSError:
+            pass  # There is nothing we can do
 
 logging.basicConfig(
     filename=_log_file,
