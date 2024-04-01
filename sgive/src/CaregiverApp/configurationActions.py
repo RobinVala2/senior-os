@@ -321,8 +321,8 @@ def read_smail_config(key, value):
         else:
             return jsonData[key][value]
     else:
-        logging.critical('There is no SMAIL_config.json or sconf/ file present in system, exiting program now.')
-        exit(1)
+        logging.error('There is no SMAIL_config.json or sconf/ file present in system, trying to generate new config')
+        restore_smail_config()
 
 
 def edit_smail_config(key, name, value):
@@ -480,8 +480,8 @@ def read_sweb_config(key, value):
         else:
             return jsonData[key][value]
     else:
-        logging.critical('There is no SWEB_config.json or sconf/ file present in system, exiting program now.')
-        exit(1)
+        logging.error('There is no SWEB_config.json or sconf/ file present in system, trying to generate new config')
+        restore_sweb_config()
 
 
 def read_sweb_array(key):
