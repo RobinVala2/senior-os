@@ -94,7 +94,8 @@ class MachineLearning:
                     logging.info(f"URL[{URLarray[whichUrlIsJudged]}] isn't a threat. Marking as a False alarm.")
                 else:
                     logging.warning(
-                        f"URL[{URLarray[whichUrlIsJudged]}] is a possible threat. Human-based check is recommended.")
+                        f"URL[{URLarray[whichUrlIsJudged]}] IS possible threat, review recommended."
+                    )
                 whichUrlIsJudged += 1
             logging.info("End of machine learning detection...")
 
@@ -113,6 +114,7 @@ class ModelValidation:
 
     def delete_and_retrain(self, filenames, language):
         folder_path = os.path.join(os.getcwd(), "ML-saved")
+
         for name in filenames:
             file_path = os.path.join(folder_path, name)
             if os.path.exists(file_path):
@@ -182,8 +184,7 @@ class ModelValidation:
                     self.delete_and_retrain(model_files, self.language)
                 else:
                     self.return_array.append(name)
-        # else:
-        #     return []
+
         return self.return_array
 
     def trainModels(self, language_options):
@@ -193,7 +194,19 @@ class ModelValidation:
         self.MLdetection()
 
     def MLdetection(self):
-        get_names = self.model_and_vectorizer_check()  # loading the files again
+        # Check if ML-saved folder exists
+        folder_path = os.path.join(os.getcwd(), "ML-saved")
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+            gitignore_path = os.path.join(folder_path, ".gitignore")
+
+            # create gitignore
+            with open(gitignore_path, 'w+') as f:
+                f.write("*")
+
+        # loading the files again
+        get_names = self.model_and_vectorizer_check()
         model = None
         vectorizer = None
 
@@ -237,7 +250,6 @@ class ThreatDetection_ML:
         filtered_files = self.filtering_log_files()
         for file in filtered_files:
             file_path = os.path.join(self.get_path_to_log(), file)
-            print(f"Processing file: {file_path}")
             with open(file_path, 'r') as file2:
                 lines = file2.readlines()
                 for line in lines:
