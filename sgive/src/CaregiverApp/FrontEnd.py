@@ -49,6 +49,16 @@ class FrameElements:
         self.screenWidth = get_monitors()[screenNum].width  # screen width_frame
         self.screenHeight = get_monitors()[screenNum].height  # screen height
         self.heightDivisor = ryuConf.red_main_config("GUI_template", "height_divisor")
+        self.font_multiplier = 1
+        self.decide_font_multipliers()
+
+    def decide_font_multipliers(self):
+        if self.screenHeight < 1200:
+            self.font_multiplier = 1.15
+        elif 1200 < self.screenHeight < 1400:
+            self.font_multiplier = 1.25
+        elif self.screenHeight > 1400:
+            self.font_multiplier = 1.35
 
     def is_window_resized(self, widgets_array):
         """checking if window is in resized down or if it isn't,
@@ -122,7 +132,7 @@ class FrameElements:
                 self.current_label_font = int(self.label_font_size)
                 self.current_menu_font_size = int(self.menu_font_size)
 
-            new_label_font = (self.font_family, self.current_label_font * 1.05, self.font_weight)
+            new_label_font = (self.font_family, self.current_label_font * self.font_multiplier, self.font_weight)
             new_widget_font = (self.font_family, self.current_widget_font, self.font_weight)
             new_menu_font = (self.font_family, self.current_menu_font_size, self.font_weight)
 
@@ -136,7 +146,7 @@ class FrameElements:
                         if name[0] == "error_label":
                             widget.configure(font=new_widget_font)
                         elif name[0] == "default":
-                            widget.configure(font=(self.font_family, self.current_label_font * 1.3, self.font_weight))
+                            widget.configure(font=(self.font_family, self.current_menu_font_size * self.font_multiplier, self.font_weight))
                         else:
                             widget.configure(font=new_label_font)
                     elif isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
@@ -456,7 +466,7 @@ class WebFrameWidgets:
             return
         else:
             print("URL není platná")
-            
+
     def file_dialog(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
@@ -465,7 +475,8 @@ class WebFrameWidgets:
         self.filename_picture = filedialog.askopenfilename(initialdir=home_dir)
         if not self.filename_picture:  # check, if tuple is empty, if yes, return
             return
-        self.picture_btn["picture0"].configure(text=f'selected: {self.filename_picture.split("/")[-1]}', font=font_value)
+        self.picture_btn["picture0"].configure(text=f'selected: {self.filename_picture.split("/")[-1]}',
+                                               font=font_value)
 
     def buttons_update(self, button_name):
         selected_button = ryuConf.red_main_config("GlobalConfiguration", "hoverColor")
@@ -1341,12 +1352,13 @@ class GlobalFrameWidgets:
 
 
 class DefaultFrameWidgets:
-    def __init__(self, frame_root):
+    def __init__(self, frame_root, height):
         self.master = frame_root
+
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
-                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize") * 1.3,
+                      ryuConf.red_main_config("GlobalConfiguration", "controlFontSize"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontThickness"))
-        resize_event_instance = FrameElements(frame_root, frame_root.winfo_width(), frame_root.winfo_height(), "SwebFrameLabels")
+        resize_event_instance = FrameElements(frame_root, frame_root.winfo_width(), height, "SwebFrameLabels")
         labels = {}
 
         text = {
@@ -1391,7 +1403,7 @@ class Frames:
         self.is_frame_alive = {}
         # calls:
         self.alocate_frames()
-        DefaultFrameWidgets(self.frame_dictionary[self.number_of_buttons])
+        DefaultFrameWidgets(self.frame_dictionary[self.number_of_buttons], height)
         self.frame_dictionary[self.number_of_buttons].pack()
 
     def get_new_values_for_refresh(self, button_id):
