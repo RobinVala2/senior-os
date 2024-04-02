@@ -15,7 +15,7 @@ export PYTHONPATH="$WORKING_DIR:$PYTHONPATH" # working dir
 export PYTHONPATH="$PYTHONPATH:$BASE_DIR" # python dir
 
 # venv and requirements paths
-VENV_DIR="$BASE_DIR/senior-os/venv"
+VENV_DIR="$BASE_DIR/venv"
 REQUIREMENTS_PATH="$CURRENT_DIR/requirements.txt"
 
 # create new venv, if there is not one already
