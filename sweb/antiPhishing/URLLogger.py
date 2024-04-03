@@ -12,7 +12,7 @@ class URLLogger:
     def _init_(self):
         try:
             # Read file with file name
-            with open(self.log_file_name, 'r') as open_file:
+            with open(self.log_file_name, 'r',encoding='utf-8') as open_file:
                 open_file.readline()
         except FileNotFoundError:
             # If file does not exist, show use w to create new and write parameter
@@ -30,5 +30,5 @@ class URLLogger:
         # seq no:timestamp: %facility-severity-MNEMONIC:description
         log_entry = f"{current_time} : {facility}-{severity} -> {mnemonic} : {description}\n"
         # Write to exising file .txt
-        with open(self.log_file_name, 'a') as open_file:
+        with open(self.log_file_name, 'a', encoding='utf-8') as open_file:
             open_file.write(log_entry)
