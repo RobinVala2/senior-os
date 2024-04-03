@@ -42,7 +42,7 @@ def load_permitted_website_from_sgive(my_config_data):
     permitted_website_list = set()
     # Exit when error occurs and print notification to log
     try:
-        with open(my_config_data["advanced_against_phishing"]["path_to_allowed_url_file"], 'r') as open_file:
+        with open(my_config_data["advanced_against_phishing"]["path_to_allowed_url_file"], 'r', encoding='utf-8') as open_file:
             content  = open_file.read()
             reading_website = content.strip().split('\n')
             permitted_website_list.update(reading_website)
