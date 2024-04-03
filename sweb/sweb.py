@@ -49,7 +49,7 @@ class NotificationFillTextToPhishing(QObject):
         '''
         # Send received data to authorized people
         my_config_data = load_sweb_config_json()
-        send_phishing_option = my_config_data["advanced_against_phishing"]["enable"]
+        send_phishing_option = my_config_data["advanced_against_phishing"]["send_phishing_warning"]
         if "enable" in send_phishing_option:
             self.send_email(send_data)
         else:
