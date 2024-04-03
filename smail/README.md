@@ -68,6 +68,11 @@ To launch the application, follow these steps:
 
 5. Before executing the application, ensure that you have set up the necessary configurations and generated the required app password for connection, as outlined in the [previous section](#configuration-requirement-for-email-client).
 
-6. Once everything is set up, run the application by clicking on the "Run" or "Play" button within your IDE.
+6. Once everything is set up, run the application by clicking on the "Run" button within your IDE or execute the following commands:
+
+```bash
+cd smail
+python smail_app.py
+```
 
 It's important to note that for optimal functionality, it is recommended to run the application using an Integrated Development Environment (IDE) such as PyCharm rather than executing it directly through the command line. This ensures that all dependencies are properly managed and that the application environment is correctly configured.
