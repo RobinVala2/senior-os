@@ -129,6 +129,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-#completed_process = subprocess.run(f'echo "{input_pass}" | cryptsetup luksOpen {encrypted_device} EncHome', shell=True)
-

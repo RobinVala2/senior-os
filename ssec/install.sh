@@ -1,6 +1,7 @@
 #!/bin/bash
 
 mkdir /ssec
+mkdir /home/encrypted
 
 source_dir="./"
 destination_dir="/ssec/"
@@ -10,7 +11,6 @@ files_to_move=(
     "ssec_startup.py"
     "ssec_app.py"
 )
-
 echo "Moving files from $source_dir to $destination_dir"
 for file in "${files_to_move[@]}"; do
     mv "$source_dir/$file" "$destination_dir"
@@ -44,7 +44,8 @@ Categories=
 X-GNOME-Autostart-enabled=true
 X-GNOME-Autostart-Delay=0
 EOF
-echo "ubuntu ALL=(ALL) NOPASSWD: /usr/bin/python3 /ssec/ssec_startup.py" >> /etc/sudoers
+echo "ubuntu ALL=(ALL) ALL" | sudo EDITOR='tee -a' visudo
+echo "ubuntu ALL=(ALL) NOPASSWD: /usr/bin/python3 /ssec/ssec_startup.py" | sudo EDITOR='tee -a' visudo
 
 echo "Available flash disks:"
 lsblk -o NAME,SIZE,TYPE,VENDOR,MODEL | grep -i "disk"

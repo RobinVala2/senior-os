@@ -315,6 +315,20 @@ def main():
 
         except Exception as e:
             print(f"Error: {e}")
+        
+        restart_window(root, "Copying done, please, restrart your computer")
+        
+    def restart_window(root, text):
+        restart_window = tk.Toplevel(root)
+        restart_window.title("Success")
+            
+        restart_label = tk.Label(restart_window, height=10, width=40, text=text)
+        restart_label.pack()
+
+        restart_button = tk.Button(restart_window,
+                text="Ok",
+                command=restart_window.destroy)
+        restart_button.pack()
 
     # Main window
     root = tk.Tk()
