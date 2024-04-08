@@ -28,7 +28,7 @@ logging.basicConfig(
 logging.info("START OF APPLICATION━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 if __name__ == '__main__':
-
+    print("Starting Caregiver Application ##################################################################")
     whereTheFuckAmI = os.getcwd()
     path_split = whereTheFuckAmI.split("sgive")
     config_folder = os.path.join(path_split[0], "sconf")
