@@ -33,31 +33,31 @@ class FrameElements:
         self.master = frame_root
         self.original_width = original_width
         self.original_height = original_height
-        self.font_family = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
-        self.widget_font_size = ryuConf.red_main_config("GlobalConfiguration", "fontSize")
-        self.font_weight = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
-        self.menu_font_size = ryuConf.red_main_config("GlobalConfiguration", "controlFontSize")
-        self.current_menu_font_size = self.menu_font_size
-        self.label_font_size = self.widget_font_size * 1.65
-        self.current_label_font = self.label_font_size
-        self.current_widget_font = self.widget_font_size
-        self.label_names = ryuConf.red_main_config("careConf", frame_name)
-        self.background_label = None
-        # for true original fullscreen sizes:
         screenNum = ryuConf.red_main_config("GlobalConfiguration", "numOfScreen")
         self.screenWidth = get_monitors()[screenNum].width  # screen width_frame
         self.screenHeight = get_monitors()[screenNum].height  # screen height
         self.heightDivisor = ryuConf.red_main_config("GUI_template", "height_divisor")
         self.font_multiplier = 1
         self.decide_font_multipliers()
+        # font etc
+        self.font_family = ryuConf.red_main_config("GlobalConfiguration", "fontFamily")
+        self.widget_font_size = ryuConf.red_main_config("GlobalConfiguration", "fontSize")
+        self.font_weight = ryuConf.red_main_config("GlobalConfiguration", "fontThickness")
+        self.menu_font_size = ryuConf.red_main_config("GlobalConfiguration", "controlFontSize")
+        self.current_menu_font_size = self.menu_font_size
+        self.label_font_size = self.widget_font_size
+        self.current_label_font = self.label_font_size
+        self.current_widget_font = self.widget_font_size
+        self.label_names = ryuConf.red_main_config("careConf", frame_name)
+        self.background_label = None
 
     def decide_font_multipliers(self):
         if self.screenHeight < 1200:
             self.font_multiplier = 1.15
         elif 1200 < self.screenHeight < 1400:
-            self.font_multiplier = 1.25
-        elif self.screenHeight > 1400:
             self.font_multiplier = 1.35
+        elif self.screenHeight > 1400:
+            self.font_multiplier = 1.55
 
     def is_window_resized(self, widgets_array):
         """checking if window is in resized down or if it isn't,
@@ -120,6 +120,10 @@ class FrameElements:
         new_width = self.master.winfo_width()
 
         if new_height != self.original_height or new_width != self.original_width:
+            frame_height_fullscreen = self.screenHeight - (self.screenHeight / self.heightDivisor)
+            if self.original_height > frame_height_fullscreen:
+                self.original_height = frame_height_fullscreen
+
             percentage_change = float(new_height / self.original_height)
 
             if new_height < self.original_height and new_height != 1:
@@ -145,7 +149,7 @@ class FrameElements:
                         if name[0] == "error_label":
                             widget.configure(font=new_widget_font)
                         elif name[0] == "default":
-                            widget.configure(font=(self.font_family, self.current_menu_font_size * self.font_multiplier, self.font_weight))
+                            widget.configure(font=(self.font_family, self.current_menu_font_size, self.font_weight))
                         else:
                             widget.configure(font=new_label_font)
                     elif isinstance(widget, customtkinter.CTkButton) or isinstance(widget, customtkinter.CTkEntry):
@@ -158,7 +162,9 @@ class FrameElements:
 
     def create_labels(self, height_widget):
         labels = {}
-        font_label = (self.font_family, self.label_font_size, self.font_weight)
+        self.decide_font_multipliers()
+        font_label = (self.font_family, self.label_font_size * self.font_multiplier, self.font_weight)
+
         y_position = float(0)
         widget_height_to_scale = height_widget / self.original_height
         width_label = self.original_width * (2 / 5)
@@ -323,6 +329,8 @@ class LogsFrameWidgets:
 
 class WebFrameWidgets:
     def __init__(self, frame_root, width, height_frame, restore, refresh, state):
+        self.filedialog_counter = 1
+        self.choose_pictures = {}
         self.filename_picture = None
         logger.info("Creating and showing frame for Web configuration.")
         self.master = frame_root
@@ -466,6 +474,20 @@ class WebFrameWidgets:
         else:
             print("URL není platná")
 
+    def submit_filedialog(self):
+        # todo: path check
+        if not self.filename_picture:
+            print("filename error <placeholder>")
+            return
+        if self.filedialog_counter < 6:
+            ryuConf.edit_sweb_config("image", f"sweb_image_www{self.filedialog_counter}", self.filename_picture)
+            self.filedialog_counter += 1
+            self.picture_btn["submit"].configure(text=f"Add person{self.filedialog_counter}")
+        elif self.filedialog_counter == 6:
+            ryuConf.edit_sweb_config("images", f"sweb_image_www{self.filedialog_counter}", self.filename_picture)
+            self.filedialog_counter = 1
+            self.picture_btn["submit"].configure(text=f"Add picture {self.filedialog_counter}")
+
     def file_dialog(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
                       ryuConf.red_main_config("GlobalConfiguration", "fontSize"),
@@ -546,14 +568,15 @@ class WebFrameWidgets:
                                                                command=lambda: self.file_dialog()
                                                                )
         self.picture_btn["submit"] = customtkinter.CTkButton(self.master,
-                                                             text="First URL",
+                                                             text="Add picture 1",
                                                              font=font_entry,
                                                              width=self.width_frame * (1 / 5) - 2,
                                                              height=self.height_widget - 2,
                                                              fg_color=("#636363", "#222222"),
                                                              hover_color=("#757474", "#3b3b3b"),
                                                              border_width=0,
-                                                             corner_radius=0
+                                                             corner_radius=0,
+                                                             command=lambda: self.submit_filedialog()
                                                              )
         button_name = {
             0: ["send_phishing_warning:0", "Disable"],
@@ -1422,7 +1445,6 @@ class Frames:
             ryuConf.restore_smail_config()
         # SWEB
         elif self.alive_frame == 3:
-            ryuConf.restore_sweb_config()
             # there is need to remove exceptions from disabled adresses in sweb
             current_directory = os.getcwd().replace("sgive/src/CaregiverApp", "sconf")
             if not os.path.exists(current_directory):
@@ -1430,12 +1452,16 @@ class Frames:
                 return
             file_path = os.path.join(current_directory, "Demo_SWEB_Permitted_Websites.txt")
             if not os.path.exists(file_path):
+                ryuConf.restore_sweb_config()
+                self.get_new_values_for_refresh(button_id)
                 return
             else:
                 try:
                     os.remove(file_path)
                 except Exception as e:
                     logger.error(f"An error occurred while removing file Demo_SWEB_Permitted_Websites.txt: {e}")
+            ryuConf.restore_sweb_config()
+            # restore
         # -------------------------------------------
         # get new values, aka read json config again:
         self.get_new_values_for_refresh(button_id)

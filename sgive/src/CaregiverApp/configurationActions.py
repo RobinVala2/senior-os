@@ -1,7 +1,7 @@
+from sgive.src.CaregiverApp import threatDetect
 import json
 import os
 import logging
-from sgive.src.CaregiverApp import threatDetect
 from screeninfo import get_monitors
 
 logger = logging.getLogger(__file__)
