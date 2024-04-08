@@ -68,9 +68,9 @@ def main():
                     pop_in_config('Decrypted\n', '[Ssec decrypt]\n')
                     create_log("", index)
                     break
-                else:
-                    pop_in_config('Encrypted\n', '[Ssec decrypt]\n')
-                    create_log(f"{computer_mac}", index)
+        
+        pop_in_config('Encrypted\n', '[Ssec decrypt]\n')
+        create_log(f"{computer_mac}", index)
 
     insert_check = find_in_config('[Ssec insert]')
     if insert_check == 'Insert':
@@ -82,18 +82,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-#subprocess.run(f'echo "{password}" | cryptsetup luksOpen {encrypted_device} EncHome 2>/ssec/ssec_err.log', shell=True)
-#subprocess.run(f'mount /dev/mapper/EncHome /home/encrypted 2>/ssec/ssec_err.log', shell=True)
-'''
-    try:
-        pid = os.getpid()
-        with open('/var/run/ssec.pid', 'w') as pidfile:
-            pidfile.write(str(pid))
-    except PermissionError:
-        error_function(
-                "Error: Insufficient permission to the /var/run/ssec.pid file")
-    except Exception as e:
-        error_function(
-                f"An error occurred: {e}")
-'''

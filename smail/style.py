@@ -4,6 +4,11 @@ import os
 import pygame
 import PIL
 from PIL import Image, ImageTk
+import sys
+from pathlib import Path
+script_directory = Path(__file__).parent
+parent_directory = script_directory.parent
+sys.path.append(str(parent_directory))
 from smail.template.guiTemplate import resolutionMath
 
 logger = logging.getLogger(__file__)

@@ -24,30 +24,37 @@ def find_in_config(section):
                 return line.strip()
 
 def pop_in_config(insert_text, insert_section):
-    with open("/ssec/.ssec.config", "r") as f:
-        content = f.readlines()
-        f.close()
-
+    try:
+        with open("/ssec/.ssec.config", "r") as f:
+            content = f.readlines()
+        except IOError:
+            return
+     
     insert_index = content.index(insert_section)+1
     content.pop(insert_index)
     content.insert(insert_index, insert_text)
-
+    
+    if len(content) == 0:
+        return
+    
     with open("/ssec/.ssec.config", "w") as f:
         f.writelines(content)
-        f.close()
 
 def insert_to_config(insert_text, insert_section):
-    conf_path = '/ssec/.ssec.config'
-    with open(conf_path, "r") as f:
-        content = f.readlines()
-        f.close()
-
+    try:
+        with open("/ssec/.ssec.config", "r") as f:
+            content = f.readlines()
+        except IOError:
+            return
+            
     insert_index = content.index(insert_section)+1
     content.insert(insert_index, insert_text+'\n')
 
+    if len(content) == 0:
+        return
+
     with open(conf_path, "w") as f:
         f.writelines(content)
-        f.close()
 
 def find_encrypted_device():
     try:
@@ -58,7 +65,7 @@ def find_encrypted_device():
         for line in output:
             if "sd" in line:
                 flash_name = find_in_config("[Flash name]")
-                if flash_name.replace(" ", "") in line.replace(" ", ""):
+                if flash_name.replace(" ", "").lower() in line.replace(" ", "").lower():
                     parts = line.split()
                     encrypted_device = f"/dev/{parts[0]}2"
         return encrypted_device
