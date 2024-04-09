@@ -788,19 +788,22 @@ class MailFrameWidgets:
             return
 
         if not entry_type == 1:  # regex check for all email inputs
-            match = re.fullmatch(r'\b[\w.%+-]+(?<!\s)@[A-Za-z0-9.-]+\.[A-Za-zščřžýáíéúůďťňóŠČŘŽÝÁÍÉÚŮĎŤŇÓ]{2,7}\b',
-                                 email_val)
+            pattern_val = r'^[a-zA-Z0-9.!#$%&\'*+/=?^_`{|}~\-\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$'
+            match = re.fullmatch(pattern_val, email_val)
 
-            # email inputs for seniors email and caregiver email
+            # senior's email address
             if match and not entry_type == 3 and not entry_type == 2:
                 entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
                 self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
                 ryuConf.edit_smail_config("credentials", entry_type, email_val)
+                ryuConf.edit_sweb_config("credentials", "sender_mail", email_val)
 
+            # caregiver email address
             elif match and entry_type == 2 and not entry_type == 3:
                 entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
                 self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
                 ryuConf.edit_smail_config(None, entry_type, email_val)
+                ryuConf.edit_sweb_config("credentials", "receiver_mail", email_val)
 
             # add six emails:
             elif match and entry_type == 3 and not entry_type == 2:
@@ -822,12 +825,12 @@ class MailFrameWidgets:
             else:
                 self.submit_entry_btn[button_id].configure(fg_color=("red", "red"),
                                                            hover_color=("red", "red"), )
-        # password
+        # One time use password for senior's email
         else:
             entry_type = entry_value_mapping.get(entry_type, entry_type)  # map the id to its correct name
             ryuConf.edit_smail_config("credentials", entry_type, email_val)
+            ryuConf.edit_sweb_config("credentials", "sender_password", email_val)
             self.submit_entry_btn[button_id].configure(fg_color=hover_color, hover_color=hover_col_lighter)
-            print("placeholder")
 
     def file_dialog(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
