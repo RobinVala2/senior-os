@@ -1,6 +1,8 @@
 #!/bin/bash
 
 mkdir /ssec
+chown root:root /ssec
+chmod 700 /ssec
 mkdir /home/encrypted
 
 source_dir="./"

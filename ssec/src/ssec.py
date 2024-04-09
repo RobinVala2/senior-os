@@ -68,9 +68,11 @@ def main():
                     pop_in_config('Decrypted\n', '[Ssec decrypt]\n')
                     create_log("", index)
                     break
-        
-        pop_in_config('Encrypted\n', '[Ssec decrypt]\n')
-        create_log(f"{computer_mac}", index)
+                    
+        insert_check = find_in_config('[Ssec decrypt]')
+        if insert_check != 'Decrypted':
+            pop_in_config('Encrypted\n', '[Ssec decrypt]\n')
+            create_log(f"{computer_mac}", index)
 
     insert_check = find_in_config('[Ssec insert]')
     if insert_check == 'Insert':

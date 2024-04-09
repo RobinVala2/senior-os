@@ -275,9 +275,27 @@ def main():
         copy_partition_data(source, destination, source_pass, destination_pass)
 
     def copy_partition_data(source_partition, destination_partition, source_pass, destination_pass):
+        random_number = random.randint(100000000, 999999999)
+
+        temp_path_source = f"/mnt/partition_data_backup{random_number}"
+        temp_path_destination = f"/mnt/destination_partition_temp{random_number}"
+
+        progress_label = tk.Label(frame3, text="Copying Files:")
+        progress_label.pack(padx=10, pady=5)
+        progress_bar = ttk.Progressbar(frame3, 
+                orient=tk.HORIZONTAL, 
+                length=300, 
+                mode='determinate')
+        progress_bar.pack(padx=10, pady=5)
+
+        update_progress(1, 100, progress_bar)
+        
         try:
             subprocess.run(["umount", source_partition])
             subprocess.run(["umount", destination_partition])
+            
+            subprocess.run(["umount", "/dev/mapper/EncHome"])
+            subprocess.run(f'cryptsetup luksClose EncHome', shell=True)
             
             subprocess.run(
                     ['cryptsetup', 'luksOpen', 
@@ -289,9 +307,6 @@ def main():
                     destination_partition, 'EncDestination'],
                     input=destination_pass.encode(),
                     stderr=subprocess.PIPE)
-            
-            temp_path_source = "/mnt/source_partition_temp573820348"
-            temp_path_destination = "/mnt/destination_partition_temp573820348"
 
             os.makedirs(temp_path_source)
             os.makedirs(temp_path_destination)
@@ -302,21 +317,41 @@ def main():
             subprocess.run(["mount", 
                     "/dev/mapper/EncDestination", 
                     temp_path_destination])
+                    
+            source_files = os.listdir(temp_path_source)
+            total_files = len(source_files)
 
-            subprocess.run(["sudo", "cp", "-r",
-                    temp_path_source, 
-                    temp_path_destination])
+            for i, filename in enumerate(source_files, 1):
+                source_file_path = os.path.join(temp_path_source, filename)
+                destination_file_path = os.path.join(
+                        temp_path_destination,
+                        filename)
+                subprocess.run(["cp", "-r", 
+                        temp_path_source, 
+                        temp_path_destination])
+                update_progress(i, total_files)
 
-            subprocess.run(["umount", source_partition])
-            subprocess.run(["umount", destination_partition])
+            subprocess.run(["umount", "/dev/mapper/EncSource"])
+            subprocess.run(f'cryptsetup luksClose EncSource', shell=True)
+
+            subprocess.run(["umount", "/dev/mapper/EncDestination"])
+            subprocess.run(f'cryptsetup luksClose EncDestination', shell=True)
 
             os.rmdir(temp_path_source)
-            os.rmdir(temp_path_destination)            
+            os.rmdir(temp_path_destination)
+            
+            return
 
         except Exception as e:
             print(f"Error: {e}")
+            return
         
         restart_window(root, "Copying done, please, restrart your computer")
+        
+    def update_progress(current_value, total_files, progress_bar):
+        progress_value = int((current_value / total_files) * 100)
+        progress_bar['value'] = progress_value
+        root.update_idletasks()
         
     def restart_window(root, text):
         restart_window = tk.Toplevel(root)
@@ -341,7 +376,7 @@ def main():
     button_frame.grid(row=0, column=0, columnspan=4, sticky='ew')
 
     menu_button1 = ttk.Button(button_frame, 
-                    text="Input MAC address", 
+                    text="Add permitted computer", 
                     style="TMenuButton.TButton",
                     command=lambda: insert_block())
     menu_button2 = ttk.Button(button_frame, 
@@ -349,7 +384,7 @@ def main():
                     style="TMenuButton.TButton",
                     command=lambda: show_frame(frame2))
     menu_button3 = ttk.Button(button_frame,
-                    text="Flash disk backup", 
+                    text="User data copy", 
                     style="TMenuButton.TButton",
                     command=lambda: show_frame(frame3))
     menu_button4 = ttk.Button(button_frame,
