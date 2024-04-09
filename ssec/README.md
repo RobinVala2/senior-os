@@ -2,10 +2,11 @@
 
 ## Overview
 
-Create a system for automatic encryption of data on a selected partition of a USB disk. The system 
+This is a system for automatic encryption of data on a selected partition of a USB disk. The system 
 will provide access to the data based on the identification of the computer to which the USB disk is connected. 
-Develop an application in Python language to edit the list of allowed computers and display the history of USB disk connections to computers.
- The application will be part of the operating system for seniors. Publish the results of your work on GitHub repository under the MIT license.
+
+Application is written in Python language and allows to edit the list of allowed computers and display 
+the history of USB disk connections to computers. The application will be part of the operating system for seniors. 
 
 ## Features
 
