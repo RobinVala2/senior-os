@@ -26,62 +26,62 @@ Before installing Ssec, ensure the following environment is setup:
 2. Make sure your drive has no partitioned space. If you are unsure, use program fdisk 
 (comes with most Linux distributions) to check partitioned space or delete existing 
 partitions. Before working with fdisk, make sure that your USB drive is unmounted.
-These commands must be run with root privileges:
-```bash
-umount /dev/sdX
-```
-```bash
-fdisk /dev/sdX
-```
-OR:
-```bash
-sudo umount /dev/sdX
-```
-```bash
-sudo fdisk /dev/sdX
-```
-Replace X with the letter of your drive. You can check all disks in the system using the command:
-Usually USB drives are /dev/sdb.
-```bash
-lsblk -l
-```
-After running fdisk with the correct USB drive, delete **ALL** partitions currently on it. This will 
-**DESTROY** all data on the USB disk, make sure you backup your data.
-```bash
-fdisk /dev/sdX
-Command (m for help): d
-Partition number (1-4): 1
-```
-
-Then create new partitions. It is recommended to make the first partition 8GB and the second partition
-4GB. If you have a bigger flash disk, you can adjust the size of the second partition, it is where user data
-is stored.
-```bash
-Command (m for help): n
-Partition type
-	p	primary (0 primary, 0 extended, 4 free)
-	e	extended (container for logical partitions)
-Select (default p): p
-Partition number (1-4, default 1): 1
-First sector (2048-30310399, default 2048): [press enter for default]
-Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-30310399, default 30310399): +8G
-```
-Then create the second partition:
+	These commands must be run with root privileges:
+	```bash
+	umount /dev/sdX
+	```
+	```bash
+	fdisk /dev/sdX
+	```
+	OR:
+	```bash
+	sudo umount /dev/sdX
+	```
+	```bash
+	sudo fdisk /dev/sdX
+	```
+	Replace X with the letter of your drive. You can check all disks in the system using the command:
+	Usually USB drives are /dev/sdb.
+	```bash
+	lsblk -l
+	```
+	After running fdisk with the correct USB drive, delete **ALL** partitions currently on it. This will 
+	**DESTROY** all data on the USB disk, make sure you backup your data.
+	```bash
+	fdisk /dev/sdX
+	Command (m for help): d
+	Partition number (1-4): 1
+	```
 	
-```bash
-Command (m for help): n
-Partition type
-	p	primary (0 primary, 0 extended, 4 free)
-	e	extended (container for logical partitions)
-Select (default p): p
-Partition number (2-4, default 2): 2
-First sector (16779264-30310399, default 16779264): [press enter for default]
-Last sector, +/-sectors or +/-size{K,M,G,T,P} (16779264-30310399, default 30310399): +4G
-```
-After doing these changes, write and save.
-```bash
-Command (m for help): w
-```
+	Then create new partitions. It is recommended to make the first partition 8GB and the second partition
+	4GB. If you have a bigger flash disk, you can adjust the size of the second partition, it is where user data
+	is stored.
+	```bash
+	Command (m for help): n
+	Partition type
+		p	primary (0 primary, 0 extended, 4 free)
+		e	extended (container for logical partitions)
+	Select (default p): p
+	Partition number (1-4, default 1): 1
+	First sector (2048-30310399, default 2048): [press enter for default]
+	Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-30310399, default 30310399): +8G
+	```
+	Then create the second partition:
+		
+	```bash
+	Command (m for help): n
+	Partition type
+		p	primary (0 primary, 0 extended, 4 free)
+		e	extended (container for logical partitions)
+	Select (default p): p
+	Partition number (2-4, default 2): 2
+	First sector (16779264-30310399, default 16779264): [press enter for default]
+	Last sector, +/-sectors or +/-size{K,M,G,T,P} (16779264-30310399, default 30310399): +4G
+	```
+	After doing these changes, write and save.
+	```bash
+	Command (m for help): w
+	```
 
 3. Format your USB drive to the ext4 file system:
 ```bash
