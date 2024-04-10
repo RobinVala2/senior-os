@@ -126,7 +126,14 @@ apt install python3-tk
 pip install argon2-cffi
 ```
 
-4. Run the install.sh script and follow the instructions.
+4. Run the install.sh script and follow the instructions. Make sure the script can be executed.
+If it cannot, run the chmod command bellow.
+```bash
+./install.sh
+```
+```bash
+sudo chmod +x install.sh
+```
 
 ## Usage
 
