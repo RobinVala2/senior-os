@@ -7,6 +7,7 @@ import re
 import subprocess
 import os
 import base64
+import random
 from datetime import datetime
 
 from Cryptodome.Cipher import AES
@@ -27,8 +28,8 @@ def pop_in_config(insert_text, insert_section):
     try:
         with open("/ssec/.ssec.config", "r") as f:
             content = f.readlines()
-        except IOError:
-            return
+    except IOError:
+        return
      
     insert_index = content.index(insert_section)+1
     content.pop(insert_index)
@@ -44,8 +45,8 @@ def insert_to_config(insert_text, insert_section):
     try:
         with open("/ssec/.ssec.config", "r") as f:
             content = f.readlines()
-        except IOError:
-            return
+    except IOError:
+        return
             
     insert_index = content.index(insert_section)+1
     content.insert(insert_index, insert_text+'\n')
@@ -53,7 +54,7 @@ def insert_to_config(insert_text, insert_section):
     if len(content) == 0:
         return
 
-    with open(conf_path, "w") as f:
+    with open("/ssec/.ssec.config", "w") as f:
         f.writelines(content)
 
 def find_encrypted_device():

@@ -5,7 +5,7 @@ chown root:root /ssec
 chmod 700 /ssec
 mkdir /home/encrypted
 
-source_dir="./"
+source_dir="./src/"
 destination_dir="/ssec/"
 files_to_move=(
     "ssec.py"

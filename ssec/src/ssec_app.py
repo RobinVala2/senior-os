@@ -329,23 +329,19 @@ def main():
                 subprocess.run(["cp", "-r", 
                         temp_path_source, 
                         temp_path_destination])
-                update_progress(i, total_files)
-
-            subprocess.run(["umount", "/dev/mapper/EncSource"])
-            subprocess.run(f'cryptsetup luksClose EncSource', shell=True)
-
-            subprocess.run(["umount", "/dev/mapper/EncDestination"])
-            subprocess.run(f'cryptsetup luksClose EncDestination', shell=True)
-
-            os.rmdir(temp_path_source)
-            os.rmdir(temp_path_destination)
-            
-            return
-
+                update_progress(i, total_files, progress_bar)
         except Exception as e:
             print(f"Error: {e}")
             return
         
+        subprocess.run(["umount", "/dev/mapper/EncSource"])
+        subprocess.run(f'cryptsetup luksClose EncSource', shell=True)
+
+        subprocess.run(["umount", "/dev/mapper/EncDestination"])
+        subprocess.run(f'cryptsetup luksClose EncDestination', shell=True)
+
+        os.rmdir(temp_path_source)
+        os.rmdir(temp_path_destination)
         restart_window(root, "Copying done, please, restrart your computer")
         
     def update_progress(current_value, total_files, progress_bar):
