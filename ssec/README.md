@@ -27,39 +27,31 @@ Before installing Ssec, ensure the following environment is setup:
 (comes with most Linux distributions) to check partitioned space or delete existing 
 partitions. Before working with fdisk, make sure that your USB drive is unmounted.
 These commands must be run with root privileges:
-
-	```bash
-    umount /dev/sdX
-    ```
-
-    ```bash
-    fdisk /dev/sdX
-    ```
-
+```bash
+umount /dev/sdX
+```
+```bash
+fdisk /dev/sdX
+```
 OR:
-
-    ```bash
-    sudo umount /dev/sdX
-    ```
-
-    ```bash
-    sudo fdisk /dev/sdX
-    ```
-
+```bash
+sudo umount /dev/sdX
+```
+```bash
+sudo fdisk /dev/sdX
+```
 Replace X with the letter of your drive. You can check all disks in the system using the command:
 Usually USB drives are /dev/sdb.
-    ```bash
-    lsblk -l
-    ```
-
+```bash
+lsblk -l
+```
 After running fdisk with the correct USB drive, delete **ALL** partitions currently on it. This will 
 **DESTROY** all data on the USB disk, make sure you backup your data.
-
-    ```bash
-	fdisk /dev/sdX
-    Command (m for help): d
-	Partition number (1-4): 1
-    ```
+```bash
+fdisk /dev/sdX
+Command (m for help): d
+Partition number (1-4): 1
+```
 
 Then create new partitions. It is recommended to make the first partition 8GB and the second partition
 4GB. If you have a bigger flash disk, you can adjust the size of the second partition, it is where user data
