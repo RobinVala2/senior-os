@@ -128,13 +128,21 @@ pip install argon2-cffi
 
 4. Run the install.sh script and follow the instructions. Make sure the script can be executed.
 If it cannot, run the chmod command bellow.
-```bash
-./install.sh
-```
-```bash
-sudo chmod +x install.sh
-```
-
+	```bash
+	./install.sh
+	```
+	```bash
+	sudo chmod +x install.sh
+	```
+5. Directory /ssec can only be accessed by root user. Reset root password with the command sudo passwd
+and then login as root user with su command:
+	```bash
+	sudo passwd root
+	```
+	```bash
+	su root
+	```
+ 
 ## Usage
 
 ### Encryption
