@@ -56,54 +56,47 @@ Partition number (1-4): 1
 Then create new partitions. It is recommended to make the first partition 8GB and the second partition
 4GB. If you have a bigger flash disk, you can adjust the size of the second partition, it is where user data
 is stored.
-
-    ```bash
-	Command (m for help): n
-	Partition type
-		p	primary (0 primary, 0 extended, 4 free)
-		e	extended (container for logical partitions)
-	Select (default p): p
-	Partition number (1-4, default 1): 1
-	First sector (2048-30310399, default 2048): [press enter for default]
-	Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-30310399, default 30310399): +8G
-    ```
-	Then create the second partition:
+```bash
+Command (m for help): n
+Partition type
+	p	primary (0 primary, 0 extended, 4 free)
+	e	extended (container for logical partitions)
+Select (default p): p
+Partition number (1-4, default 1): 1
+First sector (2048-30310399, default 2048): [press enter for default]
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-30310399, default 30310399): +8G
+```
+Then create the second partition:
 	
-	```bash
-	Command (m for help): n
-	Partition type
-		p	primary (0 primary, 0 extended, 4 free)
-		e	extended (container for logical partitions)
-	Select (default p): p
-	Partition number (2-4, default 2): 2
-	First sector (16779264-30310399, default 16779264): [press enter for default]
-	Last sector, +/-sectors or +/-size{K,M,G,T,P} (16779264-30310399, default 30310399): +4G
-    ```
-
+```bash
+Command (m for help): n
+Partition type
+	p	primary (0 primary, 0 extended, 4 free)
+	e	extended (container for logical partitions)
+Select (default p): p
+Partition number (2-4, default 2): 2
+First sector (16779264-30310399, default 16779264): [press enter for default]
+Last sector, +/-sectors or +/-size{K,M,G,T,P} (16779264-30310399, default 30310399): +4G
+```
 After doing these changes, write and save.
-
-    ```bash
-    Command (m for help): w
-    ```
+```bash
+Command (m for help): w
+```
 
 3. Format your USB drive to the ext4 file system:
-
-	```bash
-    sudo mkfs -t ext4 /dev/sdb1
-    ```
+```bash
+sudo mkfs -t ext4 /dev/sdb1
+```
 
 4. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
 drive will automatically mount the drive. If you want to mount it mannually, use the mount command:
-
-	```bash
-    mount <device> <mount point>
-    ```
-
+```bash
+mount <device> <mount point>
+```
 Your command can look like this:
-
-	```bash
-    mount /dev/sdb1 /mnt
-    ```
+```bash
+mount /dev/sdb1 /mnt
+```
 
 5. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
 instructions for instalation. Select Diskimage and find Ubuntu iso file on your system. It is recommended 
@@ -123,18 +116,17 @@ Boot into the operating system on your flash drive. To install Ssec, follow thes
 3. Install the necessary dependencies:
 
 Either with pip requrements file:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
+```bash
+pip install -r requirements.txt
+```
 Or you can install these packages directly:
-    ```bash
-    apt install python3-pycryptodome
-	apt install python3-tk
-	pip install argon2-cffi
-    ```
+```bash
+apt install python3-pycryptodome
+apt install python3-tk
+pip install argon2-cffi
+```
 
-4. Run the install.sh script and input the necessary arguments.
+4. Run the install.sh script and follow the instructions.
 
 ## Usage
 
