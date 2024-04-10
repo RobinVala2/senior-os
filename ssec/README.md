@@ -38,11 +38,11 @@ These commands must be run with root privileges:
 
 OR:
 
-	```bash
+    ```bash
     sudo umount /dev/sdX
     ```
 
-	```bash
+    ```bash
     sudo fdisk /dev/sdX
     ```
 
@@ -94,8 +94,14 @@ After doing these changes, write and save.
     Command (m for help): w
     ```
 
-3. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
-drive will automatically mount it. If you want to mount it mannually, use the mount command:
+3. Format your USB drive to the ext4 file system:
+
+	```bash
+    sudo mkfs -t ext4 /dev/sdb1
+    ```
+
+4. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
+drive will automatically mount the drive. If you want to mount it mannually, use the mount command:
 
 	```bash
     mount <device> <mount point>
@@ -107,37 +113,36 @@ Your command can look like this:
     mount /dev/sdb1 /mnt
     ```
 
-3. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
-instructions for instalation.
-
-Select Diskimage and find Ubuntu iso file on your system. It is recommended to download the 
-iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin to 
-download the iso file for you.
-
-
+5. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
+instructions for instalation. Select Diskimage and find Ubuntu iso file on your system. It is recommended 
+to download the iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin
+to download the iso file for you. Choose 1.5 GB of data persistent space. Choose the first partition 
+on your disk. Confirm the instalation.
 
 
 ### Program Installation
 
+Boot into the operating system on your flash drive. To install Ssec, follow these steps:
 
-To install Ssec follow these steps:
+1. Make sure Python is installed on your system.
 
-1. **Python**: Make sure Python is installed on your system.
+2. Clone this repository to your system.
 
-2. **Dependencies**: Install the necessary dependencies:
+3. Install the necessary dependencies:
 
-Either 
+Either with pip requrements file:
+    ```bash
+    pip install -r requirements.txt
+    ```
 
+Or you can install these packages directly:
     ```bash
     apt install python3-pycryptodome
 	apt install python3-tk
 	pip install argon2-cffi
     ```
 
-
-1. Insert the USB drive into the target computer.
-2. Run the encryption program executable from the USB drive.
-3. Follow the on-screen instructions to set up and configure the system.
+4. Run the install.sh script and input the necessary arguments.
 
 ## Usage
 
