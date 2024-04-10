@@ -2,41 +2,141 @@
 
 ## Overview
 
-This is a system for automatic encryption of data on a selected partition of a USB disk. The system 
-will provide access to the data based on the identification of the computer to which the USB disk is connected. 
+This is a system for automatic encryption of data on a selected partition of a USB drive. The system 
+will provide access to the data based on the identification of the computer to which the USB drive is connected. 
 
 Application is written in Python language and allows to edit the list of allowed computers and display 
-the history of USB disk connections to computers. The application will be part of the operating system for seniors. 
+the history of USB drive connections to computers. The application will be part of the operating system for seniors. 
 
 ## Features
 
-- Automatically encrypt data on a selected USB disk partition.
-- Grant access to encrypted data based on the MAC address of the connected computer.
-- Develop a Python application for managing the list of allowed computers and displaying connection history.
-- Integrate the application into the operating system for seniors.
-- Licensed under the MIT License for open use and modification.
+- Automatically decrypts data on a USB drive partition.
+- Grants access to encrypted data based on the MAC address of the connected computer.
+- Application for managing the list of allowed computers and displaying connection history.
+- The backup and copy of user data on the encrypted partition
 
 ## Installation
 
 ### Environment Preparation
 
-Before installing the USB Disk Encryption System, ensure the following environment setup:
+Before installing Ssec, ensure the following environment is setup:
 
-1. **Python**: Make sure Python is installed on your system. You can download Python from [here](https://www.python.org/downloads/).
+1. Prepare a USB drive with at least 16GB of space.
 
-2. **Dependencies**: Install the necessary dependencies using pip:
+2. Make sure your drive has no partitioned space. If you are unsure, use program fdisk 
+(comes with most Linux distributions) to check partitioned space or delete existing 
+partitions. Before working with fdisk, make sure that your USB drive is unmounted.
+These commands must be run with root privileges:
+
+	```bash
+    umount /dev/sdX
+    ```
 
     ```bash
-    pip install pycryptodomex
-	
+    fdisk /dev/sdX
     ```
+
+OR:
+
+	```bash
+    sudo umount /dev/sdX
+    ```
+
+	```bash
+    sudo fdisk /dev/sdX
+    ```
+
+Replace X with the letter of your drive. You can check all disks in the system using the command:
+Usually USB drives are /dev/sdb.
+    ```bash
+    lsblk -l
+    ```
+
+After running fdisk with the correct USB drive, delete **ALL** partitions currently on it. This will 
+**DESTROY** all data on the USB disk, make sure you backup your data.
+
+    ```bash
+	fdisk /dev/sdX
+    Command (m for help): d
+	Partition number (1-4): 1
+    ```
+
+Then create new partitions. It is recommended to make the first partition 8GB and the second partition
+4GB. If you have a bigger flash disk, you can adjust the size of the second partition, it is where user data
+is stored.
+
+    ```bash
+	Command (m for help): n
+	Partition type
+		p	primary (0 primary, 0 extended, 4 free)
+		e	extended (container for logical partitions)
+	Select (default p): p
+	Partition number (1-4, default 1): 1
+	First sector (2048-30310399, default 2048): [press enter for default]
+	Last sector, +/-sectors or +/-size{K,M,G,T,P} (2048-30310399, default 30310399): +8G
+    ```
+	Then create the second partition:
+	
+	```bash
+	Command (m for help): n
+	Partition type
+		p	primary (0 primary, 0 extended, 4 free)
+		e	extended (container for logical partitions)
+	Select (default p): p
+	Partition number (2-4, default 2): 2
+	First sector (16779264-30310399, default 16779264): [press enter for default]
+	Last sector, +/-sectors or +/-size{K,M,G,T,P} (16779264-30310399, default 30310399): +4G
+    ```
+
+After doing these changes, write and save.
+
+    ```bash
+    Command (m for help): w
+    ```
+
+3. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
+drive will automatically mount it. If you want to mount it mannually, use the mount command:
+
+	```bash
+    mount <device> <mount point>
+    ```
+
+Your command can look like this:
+
+	```bash
+    mount /dev/sdb1 /mnt
+    ```
+
+3. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
+instructions for instalation.
+
+Select Diskimage and find Ubuntu iso file on your system. It is recommended to download the 
+iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin to 
+download the iso file for you.
+
+
+
 
 ### Program Installation
 
-To use the USB Disk Encryption System, follow these steps:
 
-1. Insert the USB disk into the target computer.
-2. Run the encryption program executable from the USB disk.
+To install Ssec follow these steps:
+
+1. **Python**: Make sure Python is installed on your system.
+
+2. **Dependencies**: Install the necessary dependencies:
+
+Either 
+
+    ```bash
+    apt install python3-pycryptodome
+	apt install python3-tk
+	pip install argon2-cffi
+    ```
+
+
+1. Insert the USB drive into the target computer.
+2. Run the encryption program executable from the USB drive.
 3. Follow the on-screen instructions to set up and configure the system.
 
 ## Usage
@@ -55,16 +155,4 @@ To manage allowed computers and view connection history:
 
 1. Run the Python application provided.
 2. Use the application to edit the list of allowed computers.
-3. View the history of USB disk connections to computers.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
-
-## Contribution
-
-Contributions are welcome! Please feel free to fork this repository and submit pull requests to contribute improvements or new features.
-
-## Contact
-
-For any questions, suggestions, or concerns, please contact [Your Name](mailto:your.email@example.com).
+3. View the history of USB drive connections to computers.
