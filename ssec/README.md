@@ -104,7 +104,7 @@ instructions for instalation. Select Diskimage and find Ubuntu iso file on your 
 to download the iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin
 to download the iso file for you.
 
-![screenshot](./screenshots/insert.png)
+![screenshot](./screenshots/unetbootin.png)
 
 Choose 1.5 GB of data persistent space. Choose the first partition 
 on your disk. Confirm the instalation.
