@@ -124,7 +124,7 @@ instructions for instalation.
 
 Boot into the operating system on your flash drive. To install Ssec, follow these steps:
 
-1. Make sure **Python** and **pip** is installed on your system.
+1. Make sure **Python**, **pip** and **git** is installed on your system.
 
 2. Clone this repository to your system.
 
