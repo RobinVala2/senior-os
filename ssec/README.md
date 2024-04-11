@@ -25,23 +25,24 @@ Before installing Ssec, ensure the following environment is setup:
 
 2. Make sure your drive has no partitioned space. If you are unsure, use program fdisk 
 (comes with most Linux distributions) to check partitioned space or delete existing 
-partitions. Before working with fdisk, make sure that your USB drive is unmounted.
+partitions. Before working with fdisk, make sure that your USB drive and/or partitions
+are unmounted.
 	These commands must be run with root privileges:
 	```bash
-	umount /dev/sdX
+	umount /dev/sdXY
 	```
 	```bash
-	fdisk /dev/sdX
+	fdisk /dev/sdXY
 	```
 	OR:
 	```bash
-	sudo umount /dev/sdX
+	sudo umount /dev/sdXY
 	```
 	```bash
-	sudo fdisk /dev/sdX
+	sudo fdisk /dev/sdXY
 	```
 	Replace X with the letter of your drive. You can check all disks in the system using the command:
-	Usually USB drives are /dev/sdb.
+	Usually USB drives are /dev/sdb. Partitions 
 	```bash
 	lsblk -l
 	```
@@ -83,22 +84,22 @@ partitions. Before working with fdisk, make sure that your USB drive is unmounte
 	Command (m for help): w
 	```
 
-3. Format your USB drive to the ext4 file system:
-```bash
-sudo mkfs -t ext4 /dev/sdb1
-```
+4. Format your USB drive to the ext4 file system:
+	```bash
+	sudo mkfs -t ext4 /dev/sdb1
+	```
 
-4. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
+5. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
 drive will automatically mount the drive. If you want to mount it mannually, use the mount command:
-```bash
-mount <device> <mount point>
-```
-Your command can look like this:
-```bash
-mount /dev/sdb1 /mnt
-```
+	```bash
+	mount <device> <mount point>
+	```
+	Your command can look like this:
+	```bash
+	mount /dev/sdb1 /mnt
+	```
 
-5. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
+6. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
 instructions for instalation. Select Diskimage and find Ubuntu iso file on your system. It is recommended 
 to download the iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin
 to download the iso file for you. Choose 1.5 GB of data persistent space. Choose the first partition 
@@ -114,17 +115,16 @@ Boot into the operating system on your flash drive. To install Ssec, follow thes
 2. Clone this repository to your system.
 
 3. Install the necessary dependencies:
-
-Either with pip requrements file:
-```bash
-pip install -r requirements.txt
-```
-Or you can install these packages directly:
-```bash
-apt install python3-pycryptodome
-apt install python3-tk
-pip install argon2-cffi
-```
+	Either with pip requrements file:
+	```bash
+	pip install -r requirements.txt
+	```
+	Or you can install these packages directly:
+	```bash
+	apt install python3-pycryptodome
+	apt install python3-tk
+	pip install argon2-cffi
+	```
 
 4. Run the install.sh script and follow the instructions. Make sure the script can be executed.
 If it cannot, run the chmod command bellow.
