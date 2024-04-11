@@ -100,14 +100,16 @@ drive will automatically mount the drive. If you want to mount it mannually, use
 	```
 
 6. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
-instructions for instalation. Select Diskimage and find Ubuntu iso file on your system. It is recommended 
-to download the iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin
-to download the iso file for you.
+instructions for instalation.
+
+	Select Diskimage and find Ubuntu iso file on your system. It is recommended 
+	to download the iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin
+	to download the iso file for you.
 
 	![screenshot](./screenshots/unetbootin.png)
 
-Choose 1.5 GB of data persistent space. Choose the first partition 
-on your disk. Confirm the instalation.
+	Choose 1.5 GB of data persistent space. Choose the first partition 
+	on your disk. Confirm the instalation.
 
 
 ### Program Installation
