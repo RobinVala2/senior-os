@@ -84,12 +84,16 @@ are unmounted.
 	Command (m for help): w
 	```
 
-4. Format your USB drive to the ext4 file system:
+4. Format first partition on your USB drive to the ext4 file system:
+	```bash
+	mkfs -t ext4 /dev/sdX1
+	```
+	Your command can look like this:
 	```bash
 	sudo mkfs -t ext4 /dev/sdb1
 	```
 
-5. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
+6. Mount your USB drive or simply remove it from your computer and insert it back in. Re-inserting the 
 drive will automatically mount the drive. If you want to mount it mannually, use the mount command:
 	```bash
 	mount <device> <mount point>
@@ -99,7 +103,7 @@ drive will automatically mount the drive. If you want to mount it mannually, use
 	mount /dev/sdb1 /mnt
 	```
 
-6. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
+7. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
 instructions for instalation.
 
 	Select Diskimage and find Ubuntu iso file on your system. It is recommended 
