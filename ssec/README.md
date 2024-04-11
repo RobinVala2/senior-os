@@ -163,6 +163,11 @@ and then login as root user with su command:
 Data are encrypted using LUKS after running the install.sh script. LUKS is used when the script 
 asks for a password. **Remember this password or you will be unable to access your data!**
 
+After booting, you will be greeted by either 
+
+![screenshot](./screenshots/decrypt_fail.png)
+![screenshot](./screenshots/decrypt_success.png)
+
 ### Access Control
 
 To manage allowed computers and view connection history run the Python application provided.
@@ -180,7 +185,7 @@ on the right.
 After inputting the adddress, further inputting will be blocked and you will be asked to restart
 the computer. 
 
-![screenshot](./screenshots/inserting_block.png)
+![screenshot](./screenshots/inserting_blocked.png)
 
 After restarting, you will be prompted for LUKS encryption password. After inputting your password,
 your operating system will automatically decrypt at the target computer.
@@ -192,4 +197,6 @@ top menu.
 
 ![screenshot](./screenshots/mac_history.png)
 
+### User data backup
 
+![screenshot](./screenshots/user_data_copy.png)
