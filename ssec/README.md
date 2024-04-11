@@ -133,7 +133,7 @@ Boot into the operating system on your flash drive. To install Ssec, follow thes
 	```bash
 	pip install -r requirements.txt
 	```
-	Or you can install these packages directly:
+	Or you can install these packages directly (recommended):
 	```bash
 	apt install python3-pycryptodome
 	apt install python3-tk
