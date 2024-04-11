@@ -96,6 +96,7 @@ def main():
             error_window(root, "MAC adress is already permited")
             return
         
+        insert_to_config(name_entry.get(), '[Computer names]\n')
         hash_mac_func(computer_mac)
 
     def insert_block():
