@@ -160,17 +160,36 @@ and then login as root user with su command:
 ## Usage
 
 ### Encryption
-
-To encrypt data:
-
-1. Run the encryption program.
-2. Select the partition and files you want to encrypt.
-3. The system will automatically encrypt the selected data.
+Data are encrypted using LUKS after running the install.sh script. LUKS is used when the script 
+asks for a password. **Remember this password or you will be unable to access your data!**
 
 ### Access Control
 
-To manage allowed computers and view connection history:
+To manage allowed computers and view connection history run the Python application provided.
+Make sure you have root priviliges. Run /ssec/ssec_app.py using this command:
+```bash
+python3 ssec_app.py
+```
 
-1. Run the Python application provided.
-2. Use the application to edit the list of allowed computers.
-3. View the history of USB drive connections to computers.
+To add an allowed computer, enter an alias for the computer and input a MAC address of a computer
+mannually or use the add this computer button. You can wiew the allowed computer in the window 
+on the right.
+
+![screenshot](./screenshots/mac_address_input.png)
+
+After inputting the adddress, further inputting will be blocked and you will be asked to restart
+the computer. 
+
+![screenshot](./screenshots/inserting_block.png)
+
+After restarting, you will be prompted for LUKS encryption password. After inputting your password,
+your operating system will automatically decrypt at the target computer.
+
+![screenshot](./screenshots/insert.png)
+
+To view history of computers, in which the USB drive was, simply click the MAC history button in the
+top menu.
+
+![screenshot](./screenshots/mac_history.png)
+
+
