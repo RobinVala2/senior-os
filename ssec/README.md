@@ -34,12 +34,12 @@ are unmounted.
 	```bash
 	fdisk /dev/sdX
 	```
-	OR:
+	Your command can look like this:
 	```bash
-	sudo umount /dev/sdXY
+	sudo umount /dev/sdb1
 	```
 	```bash
-	sudo fdisk /dev/sdX
+	sudo fdisk /dev/sdb
 	```
 	Replace X with the letter of your drive. You can check all disks in the system using the command:
 	Usually USB drives are /dev/sdb. Partitions 
