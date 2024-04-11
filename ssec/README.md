@@ -106,6 +106,10 @@ drive will automatically mount the drive. If you want to mount it mannually, use
 7. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
 instructions for instalation.
 
+	```bash
+	sudo unetbootin
+	```
+
 	Select Diskimage and find Ubuntu iso file on your system. It is recommended 
 	to download the iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin
 	to download the iso file for you.
