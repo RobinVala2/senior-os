@@ -32,14 +32,14 @@ are unmounted.
 	umount /dev/sdXY
 	```
 	```bash
-	fdisk /dev/sdXY
+	fdisk /dev/sdX
 	```
 	OR:
 	```bash
 	sudo umount /dev/sdXY
 	```
 	```bash
-	sudo fdisk /dev/sdXY
+	sudo fdisk /dev/sdX
 	```
 	Replace X with the letter of your drive. You can check all disks in the system using the command:
 	Usually USB drives are /dev/sdb. Partitions 
@@ -102,7 +102,11 @@ drive will automatically mount the drive. If you want to mount it mannually, use
 6. Run UNetbootin. If you do not have it installed, visit https://unetbootin.github.io/ and folow the 
 instructions for instalation. Select Diskimage and find Ubuntu iso file on your system. It is recommended 
 to download the iso file of Ubuntu directly from https://ubuntu.com/download rather than using UNetbootin
-to download the iso file for you. Choose 1.5 GB of data persistent space. Choose the first partition 
+to download the iso file for you.
+
+![screenshot](./screenshots/insert.png)
+
+Choose 1.5 GB of data persistent space. Choose the first partition 
 on your disk. Confirm the instalation.
 
 
@@ -110,7 +114,7 @@ on your disk. Confirm the instalation.
 
 Boot into the operating system on your flash drive. To install Ssec, follow these steps:
 
-1. Make sure Python is installed on your system.
+1. Make sure **Python** and **pip** is installed on your system.
 
 2. Clone this repository to your system.
 
