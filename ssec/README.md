@@ -163,7 +163,8 @@ and then login as root user with su command:
 Data are encrypted using LUKS after running the install.sh script. LUKS is used when the script 
 asks for a password. **Remember this password or you will be unable to access your data!**
 
-After booting, you will be greeted by either 
+After booting, you will be greeted by either a password prompt window or window telling that 
+automatic decryption was successful.
 
 ![screenshot](./screenshots/decrypt_fail.png)
 ![screenshot](./screenshots/decrypt_success.png)
@@ -199,4 +200,9 @@ top menu.
 
 ### User data backup
 
+If you have two USB drives containing the operating system for seniors, you can backup your data.
+Simply select your disks from the dropdown menu.
 ![screenshot](./screenshots/user_data_copy.png)
+
+## Author
+Developed by Petr Bráblík
