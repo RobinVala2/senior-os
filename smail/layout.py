@@ -661,12 +661,18 @@ class one_frame(tk.Frame):
         (login, password, smtp_server,
          smtp_port, imap_server, imap_port) = (
             load_credentials(get_path("sconf", "SMAIL_config.json")))
+        status = 1
 
-        # Sending email
-        status = send_email(
-            self.recipient_entry.get(), self.subject_entry.get(),
-            self.content_entry.get("1.0", tk.END), login, password, smtp_server, smtp_port
-        )
+        self.recipient_list = self.recipient_entry.get().split(",")
+
+        for recipient in self.recipient_list:
+            success = send_email(
+                recipient.strip(), self.subject_entry.get(),
+                self.content_entry.get("1.0", tk.END), login, password, smtp_server, smtp_port
+            )
+
+            if success != 1:
+                status = success
 
         # If successful, all entries are deleted
         if status == 1:
