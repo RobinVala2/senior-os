@@ -1,4 +1,6 @@
+import datetime
 import json
+import logging
 import os
 
 
@@ -119,3 +121,32 @@ def smail_config_default(path):
     json_object = json.dumps(dictionary, indent=4, ensure_ascii=False)
     with open(os.path.join(path, 'SMAIL_config.json'), "w+", encoding='utf-8') as f:
         f.write(json_object)
+
+
+def delete_logfile():
+    file_path = os.path.join(os.getcwd().split("smail")[0], "sconf/logs/SMAILlog.log")
+    if os.path.exists(file_path):
+        date = datetime.date.today()
+        creation_time = datetime.datetime.fromtimestamp(os.path.getctime(file_path)).date()
+        if creation_time < date:
+            os.remove(file_path)
+            with open(file_path, "a") as file:
+                file.write(f"Log file created at {date}\n")
+            print("Log file deleted successfully.")
+            print("New log file created.")
+            configure_logger()
+        else:
+            print("Log file is created or current day.")
+            configure_logger()
+    else:
+        print("Log file doesn't exist.")
+        configure_logger()
+
+def configure_logger():
+    logging.basicConfig(
+        level=logging.INFO,
+        filename=os.path.join(os.getcwd().split("smail")[0], "sconf/logs/SMAILlog.log"),
+        filemode="a",
+        format="%(asctime)s:SMAIL-%(levelname)s-%(funcName)s: %(message)s",
+        datefmt="%b %d %H:%M:%S",
+    )

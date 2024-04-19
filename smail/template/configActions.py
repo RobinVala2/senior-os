@@ -15,7 +15,7 @@ def configExistCheck():
     pathToJsonConf = temporaryGetPath()
     if os.path.exists(pathToJsonConf):
         if os.path.isfile(os.path.join(pathToJsonConf,'config.json')):
-            print("LOG: conf_old.json is already there, skipping")
+            print("LOG: conf.json is already there, skipping")
             return True
         else:
             _jsonWrite()
