@@ -29,6 +29,3 @@ class TestLoadJsonFile(unittest.TestCase):
         mock_logger.error.assert_called_once_with(f"An unexpected error occurred while loading data from {self.file_path}", exc_info=True)
         self.assertEqual(result, -1)
 
-
-if __name__ == '__main__':
-    unittest.main()
