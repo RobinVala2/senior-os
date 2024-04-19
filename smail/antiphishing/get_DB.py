@@ -3,22 +3,16 @@ import os
 import datetime
 import subprocess
 
-file_path = "../sconf/phish/SMAIL_PHISH_1.txt"
-command_file = "antiphishing/get_db.txt"
-
 logger = logging.getLogger(__file__)
 
 def get_DB():
-
+    file_path = os.path.join(os.getcwd().split("smail")[0], "sconf/phish/SMAIL_PHISH_1.txt")
+    command = f"wget -O ../sconf/phish/SMAIL_PHISH_1.txt https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/phishing-links-ACTIVE.txt"
     # Check if database exists
     if os.path.exists(file_path):
-        # Get the last modification date
         last_modif_date = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))
-        # Get current date
         current_date = datetime.datetime.now()
-        # Getting the age of file
         file_age = current_date - last_modif_date
-        # Update time = 14 days
         update_time = datetime.timedelta(days=14)
 
         logger.info(f"Phishing database file is {file_age.days} days, {file_age.seconds // 3600} hours, "
@@ -28,14 +22,11 @@ def get_DB():
         # new updated file will be downloaded
         if file_age >= update_time:
             try:
-                with open(command_file, "r") as f:
-                    command = f.read()
-                f.close()
                 # Execute command
                 subprocess.run(command, shell=True, check=True,
                                executable='/bin/bash', stdout=subprocess.PIPE)
             except:
-                logger.info(f"The command file {command_file} does not exist. "
+                logger.info(f"The command {command} failed. "
                             f"Cannot update phishing database.")
         else:
             logger.info(f"The file {file_path} is not older than 2 weeks. "
@@ -45,14 +36,11 @@ def get_DB():
         # If file with phishing database is missing
         # Execute command
         try:
-            with open(command_file, 'r') as f:
-                command = f.read()
-            f.close()
             subprocess.run(command, shell=True, check=True,
                            executable='/bin/bash', stdout=subprocess.PIPE)
             logger.info(f"The file {file_path} does not exist. "
                         f"Downloading current phishing database")
 
         except:
-            logger.info(f"The command file {command_file} does not exist. "
+            logger.info(f"The command {command} failed. "
                         f"Cannot update phishing database.")
