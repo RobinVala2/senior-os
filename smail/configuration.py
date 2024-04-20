@@ -125,22 +125,28 @@ def smail_config_default(path):
 
 def delete_logfile():
     file_path = os.path.join(os.getcwd().split("smail")[0], "sconf/logs/SMAILlog.log")
+    date = datetime.date.today()
+
     if os.path.exists(file_path):
-        date = datetime.date.today()
-        creation_time = datetime.datetime.fromtimestamp(os.path.getctime(file_path)).date()
-        if creation_time < date:
-            os.remove(file_path)
-            with open(file_path, "a") as file:
-                file.write(f"Log file created at {date}\n")
-            print("Log file deleted successfully.")
-            print("New log file created.")
-            configure_logger()
+        with open(file_path, "r") as f:
+            lines = f.readlines()
+        if lines:
+            record = lines[0]
+            log_date = datetime.datetime.strptime(' '.join(record.split(maxsplit=2)[:2]), "%b %d").date().replace(year=date.year)
+            if log_date < date:
+                os.remove(file_path)
+                with open(file_path, "a") as file:
+                    file.write("")
+                print("Log file deleted successfully.")
+                print("New log file created.")
+            else:
+                print("Log file is created for current day.")
         else:
-            print("Log file is created or current day.")
-            configure_logger()
+            print("No log file detected.")
     else:
         print("Log file doesn't exist.")
-        configure_logger()
+
+    configure_logger()
 
 def configure_logger():
     logging.basicConfig(
