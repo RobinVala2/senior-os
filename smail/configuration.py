@@ -123,7 +123,7 @@ def smail_config_default(path):
         f.write(json_object)
 
 
-def delete_logfile():
+def check_logfile():
     file_path = os.path.join(os.getcwd().split("smail")[0], "sconf/logs/SMAILlog.log")
     date = datetime.date.today()
 

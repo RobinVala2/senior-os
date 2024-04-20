@@ -4,12 +4,12 @@ import tkinter
 from layout import one_frame
 from antiphishing.get_DB import get_DB
 from template import configActions as act
-from configuration import smail_config_default, delete_logfile
+from configuration import smail_config_default, check_logfile
 
 
 if __name__ == '__main__':
 
-    delete_logfile()
+    check_logfile()
     config_path = os.path.join(os.getcwd().split("smail")[0], "sconf/")
 
     try:
