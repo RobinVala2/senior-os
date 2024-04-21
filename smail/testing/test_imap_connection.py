@@ -53,6 +53,3 @@ class TestImapConnection(unittest.TestCase):
         mock_logger.info.assert_not_called()
         self.assertEqual(result, -2)
 
-
-if __name__ == '__main__':
-    unittest.main()

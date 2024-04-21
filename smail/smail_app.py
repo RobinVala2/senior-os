@@ -4,20 +4,14 @@ import tkinter
 from layout import one_frame
 from antiphishing.get_DB import get_DB
 from template import configActions as act
-from configuration import smail_config_default
+from configuration import smail_config_default, check_logfile
 
-
-logging.basicConfig(
-     level=logging.INFO,
-     filename=os.path.join(os.getcwd().split("smail")[0], "sconf/logs/SMAILlog.log"),
-     filemode="w",
-     format="%(asctime)s:SMAIL-%(levelname)s-%(funcName)s: %(message)s",
-     datefmt="%b %d %H:%M:%S",
-)
 
 if __name__ == '__main__':
 
+    check_logfile()
     config_path = os.path.join(os.getcwd().split("smail")[0], "sconf/")
+
     try:
         # Generating global configuration file
         config = act.configExistCheck()
