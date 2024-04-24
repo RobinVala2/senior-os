@@ -10,10 +10,10 @@ from tkinter import scrolledtext
 import re
 
 from style import (font_config, search_mail,
-                         get_language, button_hover, button_leave,
-                         images, image_config, app_color,
-                         height_config, play_sound, get_email_sender, load_credentials,
-                         load_show_url, load_button_colors, get_path, get_alert_color)
+                   get_language, button_hover, button_leave,
+                   images, image_config, app_color,
+                   height_config, play_sound, get_email_sender, load_credentials,
+                   load_show_url, load_button_colors, get_path, get_alert_color, load_json_file)
 from connection.mail_connection import (send_email, read_mail,
                                               check_email_for_spam)
 from template import guiTemplate as temp
@@ -681,11 +681,24 @@ class one_frame(tk.Frame):
     def send_email_success(self):
         default_color, selected_color = load_button_colors()
         bg_default_color = app_color()
+        data = load_json_file(get_path("sconf", "config.json"))
 
+        # clear all entries
         self.recipient_entry.delete(0, tk.END)
         self.subject_entry.delete(0, tk.END)
         self.content_entry.delete("1.0", tk.END)
-        self.content_entry.insert("1.0", self.text[f"smail_{self.language}_email_sent"])
+
+        # calculate the middle line
+        height = self.content_entry.winfo_height()
+        line_height = data["GlobalConfiguration"]["fontSize"]
+        total_lines = max(1, height//line_height)
+        middle_line = total_lines//2
+
+        # insert padding newlines
+        padding = "\n" * (middle_line - 2)
+        self.content_entry.insert("1.0", padding)
+
+        self.content_entry.insert("end", self.text[f"smail_{self.language}_email_sent"])
         self.content_entry.tag_configure("center", justify="center")
         self.content_entry.tag_add("center", "1.0", "end")
         self.content_entry.config(bg=selected_color)
