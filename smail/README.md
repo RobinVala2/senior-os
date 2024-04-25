@@ -75,4 +75,3 @@ cd smail
 python smail_app.py
 ```
 
-It's important to note that for optimal functionality, it is recommended to run the application using an Integrated Development Environment (IDE) such as PyCharm rather than executing it directly through the command line. This ensures that all dependencies are properly managed and that the application environment is correctly configured.
