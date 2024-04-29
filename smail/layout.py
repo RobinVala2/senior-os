@@ -544,7 +544,7 @@ class one_frame(tk.Frame):
     def open_browser(self, event, url):
         # Open web browser when clicking on a URL.
         try:
-            subprocess.run(["python3", get_path("sweb", "main.py"), url])
+            subprocess.run(["python3", get_path("sweb", "sweb.py"), url])
             self.exit_app()
         except Exception as e:
             webbrowser.open_new(url)
