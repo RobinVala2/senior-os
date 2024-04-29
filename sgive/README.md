@@ -11,14 +11,11 @@
 - Lastly, there is some implementation of Machine Learning, ML has three datasets. On first start, all three models and vectorizers gets trained, but for detection is used only that model, that corespond to current language in global config.
 
 ## How to install:
-- *You need to have a linux distro, optionaly gnome or KDE plasma (it was testend on these GUI enviroments)*
-- **Now it only runs in pycharm etc, I need to sort things out with .sh launcher**
-- ``git clone git@github.com:RYUseless/senior-os.git``.
-- cd into repo (if you want newer not fully tested functions, do ``git checkout dev``).
-- In pycharm, open venv and install all needed dependencies with ``pip install -r requirements.txt``.
-- If you tried to launch it but if failed at tkinter, Its neeeded to install it to the system by itself, aka for example: ``pacman -S tk``.
-- Now it should be runnuble in pycharm.
-- optionally, if you make .sh script with python paths to correct folder ``sgive/src/CaregiverApp``, than it should be runnable from console by itself.
+- **Requirements:** Linux distro (better with Gnome or KDE plasma), Tkinter (``pacman -S tk`` for example)
+- clone the repo:``git clone git@github.com:RYUseless/senior-os.git``.
+- cd into `senior-os/sgive/`
+- run command: `sh CaregiverApplication.sh` or you can don: `sudo chmod +x CaregiverApplication.sh  && ./CaregiverApplication.sh`
+> Application should start after installing all dependecies and configuring venv (if started for the first time)
 
 
 ## Caregiver Application:

@@ -248,7 +248,8 @@ class ThreatDetection_ML:
         filtered_files = self.filtering_log_files()
         for file in filtered_files:
             file_path = os.path.join(self.get_path_to_log(), file)
-            with open(file_path, 'r') as file2:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as file2:
+                # 'errors="ignore"' tells Python to skip characters that it cannot decode
                 lines = file2.readlines()
                 for line in lines:
                     if "WARNING" in line:
