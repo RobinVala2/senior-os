@@ -6,7 +6,7 @@
     # 3. ADD EXACUTABLE RIGHTS FOR THE SCRIPT
 
 #----------------------------------------VARIABLES------------------------------------>
-output_dir="/home/student"                               # Directory where ISO image is stored
+output_dir="/home/student"                                  # Directory where ISO image is stored
 iso_name="iso-debian-from-scratch.iso"                      # ISO image name (include suffix)
                                                                 # Method From Scratch       - generates .iso
                                                                 # Method live-build Package - generates .hybrid.iso
@@ -31,7 +31,7 @@ partprobe ${disk_partition}
 
     # CREATE ENCRYPTED PARTITION
 echo -n "${disk_partition_password}" | sudo cryptsetup luksFormat ${disk_partition}3 -
-    # OPEN ENCRYPTED PARITION
+    # OPEN ENCRYPTED PARTITION
 echo -e "${disk_partition_password}" | sudo cryptsetup luksOpen ${disk_partition}3 live
     # FORMATE A CREATED PARTITION WITH FILESYSTEM TO ENABLE PERSISTENCE
 mkfs.ext4 -L persistence /dev/mapper/live

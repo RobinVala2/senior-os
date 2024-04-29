@@ -11,7 +11,7 @@
 work_folder="LSDF"											# Live system work directory
 
 file_dir="/root/Documents"									# Storage directory for palemoon.tar.xz, PDF files
-	pdf="OS_*"													# Insert apropriate splash.png and splash.svg files into file_dir
+	pdf="OS_*"												# Insert apropriate splash.png and splash.svg files into file_dir
 	palemoon="palemoon-32.4.0.linux-x86_64-gtk2.tar.xz"
 
 disk_partition="/dev/sdd"                                   # Removable storage medium name
@@ -234,7 +234,7 @@ partprobe ${disk_partition}
 
     # CREATE ENCRYPTED PARTITION
 echo -n "${disk_partition_password}" | sudo cryptsetup luksFormat ${disk_partition}3 -
-    # OPEN ENCRYPTED PARITION
+    # OPEN ENCRYPTED PARTITION
 echo -e "${disk_partition_password}" | sudo cryptsetup luksOpen ${disk_partition}3 live
     # FORMATE A CREATED PARTITION WITH FILESYSTEM TO ENABLE PERSISTENCE
 mkfs.ext4 -L persistence /dev/mapper/live

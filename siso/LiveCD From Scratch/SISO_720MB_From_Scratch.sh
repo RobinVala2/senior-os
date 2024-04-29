@@ -9,7 +9,7 @@
 
 #----------------------------------------VARIABLES------------------------------------>
 work_folder="SCRIPT"                                        # Live system work directory
-output_dir="/home/student"                               # Location of the generated .ISO image file
+output_dir="/home/student"                                  # Location of the generated .ISO image file
 iso_name="siso-debian-from-scratch-720"                     # Live system ISO name
 
 file_dir="/home/student/Documents"                          # Storage directory for palemoon.tar.xz, PDF files, splash images
@@ -117,9 +117,9 @@ LC_IDENTIFICATION="cs_CZ.UTF-8"
 EOF
 
 # AUTOLOGIN
-	#sed uses regex in search
+	# TTY NUMBER DECREASE
 chroot "${HOME}/${work_folder}/chroot" sed -i 's/^#NAutoVTs=.*/NAutoVTs=1/g' "/etc/systemd/logind.conf"
-    #
+    # CREATE NEW SERVICE
 chroot "${HOME}/${work_folder}/chroot" mkdir -p "/etc/systemd/system/getty@tty1.service.d/"
 
 tee "${HOME}/${work_folder}/chroot/etc/systemd/system/getty@tty1.service.d/autologin.conf" << EOF
@@ -128,6 +128,7 @@ ExecStart=
 ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin root %I $TERM
 EOF
 
+# PERMIT LOAD dm-crypt KERNEL MODULE
 echo "CRYPTSETUP=y" | tee -a "${HOME}/${work_folder}/chroot/etc/cryptsetup-initramfs/conf-hook"
         # UPDATE INITRAMFS
 chroot "${HOME}/${work_folder}/chroot" update-initramfs -k all -u
@@ -156,7 +157,7 @@ cp "${HOME}/${work_folder}/chroot/boot"/initrd.img-* \
     "${HOME}/${work_folder}/staging/live/initrd"
 
 #--------------------------------------BOOTLOADERS----------------------------------->
-        # ISOLINUX (SYSLINUX)
+    # ISOLINUX (SYSLINUX)
 tee "${HOME}/${work_folder}/staging/isolinux/isolinux.cfg" << EOF
 UI vesamenu.c32
 
@@ -189,11 +190,11 @@ LABEL linux
   APPEND initrd=/live/initrd boot=live persistence persistence-encryption=luks silent noeject
 EOF
 
-	### isolinux SPLASH IMG
+	### ISOLINUX SPLASH IMG
 cp ${file_dir}/${splash} ${HOME}/${work_folder}/staging/isolinux/splash.png
 
 # BOOTLOADERS
-	    # GRUB (efi/uefi mode)
+	# GRUB (EFI/UEFI MODE)
 tee "${HOME}/${work_folder}/staging/boot/grub/grub.cfg" << EOF
 insmod part_gpt
 insmod part_msdos
@@ -274,7 +275,7 @@ cp ${file_dir}/${splash} ${HOME}/${work_folder}/staging/boot/grub/${splash}
 cp "${HOME}/${work_folder}/staging/boot/grub/"{grub.cfg,theme.txt,${splash}} "${HOME}/${work_folder}/staging/EFI/BOOT/"
 
 
-	# CONFIG WHICH FINDS ROOT AND LOADS THE GRUB CONFIG
+	# CONFIG - FIND ROOT AND LOAD THE GRUB CONFIG
 tee "${HOME}/${work_folder}/tmp/grub-embed.cfg" << EOF
 if ! [ -d "\$cmdpath" ]; then
     # On some firmware, GRUB has a wrong cmdpath when booted from an optical disc.
@@ -287,16 +288,16 @@ fi
 configfile "\${cmdpath}/grub.cfg"
 EOF
 
-	# PREPARE BOOT LOADER FILES	(bios/legacy)
+	# PREPARE BOOT LOADER FILES	(BIOS/LEGACY)
 cp /usr/lib/ISOLINUX/isolinux.bin "${HOME}/${work_folder}/staging/isolinux/" && \
 cp /usr/lib/syslinux/modules/bios/* "${HOME}/${work_folder}/staging/isolinux/"
 
 
-	# (efi/modern)
+	# (EFI/MODERN)
 cp -r /usr/lib/grub/x86_64-efi/* "${HOME}/${work_folder}/staging/boot/grub/x86_64-efi/"
 
 #-------------------------------STANDALONE-GRUB-GENERATION---------------------------->
-# EFI bootable from grub x32
+# EFI bootable from GRUB x32
 grub-mkstandalone -O i386-efi \
     --modules="part_gpt part_msdos fat iso9660 ls png gfxmenu" \
     --locales="" \
@@ -307,7 +308,7 @@ grub-mkstandalone -O i386-efi \
     "/boot/grub/theme.txt=${HOME}/${work_folder}/staging/boot/grub/theme.txt" \
     "/boot/grub/${splash}=${HOME}/${work_folder}/staging/boot/grub/${splash}"
 
-	# EFI bootable from grub x64
+	# EFI bootable from GRUB x64
 grub-mkstandalone -O x86_64-efi \
     --modules="part_gpt part_msdos fat iso9660 ls png gfxmenu" \
     --locales="" \
@@ -371,7 +372,7 @@ partprobe ${disk_partition}
 
     # CREATE ENCRYPTED PARTITION
 echo -n "${disk_partition_password}" | sudo cryptsetup luksFormat ${disk_partition}3 -
-    # OPEN ENCRYPTED PARITION
+    # OPEN ENCRYPTED PARTITION
 echo -e "${disk_partition_password}" | sudo cryptsetup luksOpen ${disk_partition}3 live
     # FORMATE A CREATED PARTITION WITH FILESYSTEM TO ENABLE PERSISTENCE
 mkfs.ext4 -L persistence /dev/mapper/live
