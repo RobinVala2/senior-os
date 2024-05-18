@@ -4,14 +4,14 @@ import json
 def load_sweb_config_json():
     # Exit when error occurs and print notification to log
     try:
-        with open("../sconf/SWEB_config.json", "r",encoding='utf-8') as open_file:
+        with open("../sconf/SWEB-config-backup.json", "r",encoding='utf-8') as open_file:
             language_database = json.load(open_file)
         open_file.close()
         return language_database
     except FileNotFoundError:
-        print(f"Configuration file not found /sconf/SWEB_config.json")
+        print(f"Configuration file not found /sconf/SWEB-config-backup.json")
     except json.JSONDecodeError:
-        print(f"Error parsing JSON file: /sconf/SWEB_config.json")
+        print(f"Error parsing JSON file: /sconf/SWEB-config-backup.json")
         
 # Load Template config
 def load_template_config_json():
@@ -42,11 +42,17 @@ def load_permitted_website_from_sgive(my_config_data):
     permitted_website_list = set()
     # Exit when error occurs and print notification to log
     try:
-        with open(my_config_data["advanced_against_phishing"]["path_to_allowed_url_file"], 'r', encoding='utf-8') as open_file:
+        path = my_config_data["advanced_against_phishing"]["path_to_allowed_url_file"]
+        if not path:
+            return ["seznam.cz"]
+        
+        with open(my_config_data["advanced_against_phishing"]["path_to_allowed_url_file"], 'r') as open_file:
             content  = open_file.read()
             reading_website = content.strip().split('\n')
             permitted_website_list.update(reading_website)
         open_file.close
         return permitted_website_list
     except FileNotFoundError:
-        print(f"Configuration file not found: {open_file}")
+        return ["seznam.cz"]
+    except Exception as e:
+        return ["seznam.cz"]
