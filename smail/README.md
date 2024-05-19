@@ -30,7 +30,8 @@ cd smail
 pip install -r requirements.txt
 ```
 This program has been tested and optimized for use with Python versions 3.11 and 3.12, and is intended only for Linux distributions.
-
+It is also required to have the **wget**
+ tool installed to ensure full functionality.
 ## Configuration requirement for SMAIL
 To ensure proper functioning of the SMAIL email client, it is crucial to first generate configuration files. This can be done either by utilizing the SGIVE app or by launching the SMAIL application. While there is an option to use default settings with a preset email, it is highly recommended that you enter your own email address and password during this process. 
 ### Password generation for SMAIL

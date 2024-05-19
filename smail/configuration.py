@@ -38,7 +38,6 @@ def smail_config_default(path):
         "resend_email": 0,
         "show_url": 1,
         "guardian_email": "241124@vut.cz",
-        "lang": "cz",
         "timer": 5000,
         "text": {
             "smail_en_sendToButton": "Send To",
