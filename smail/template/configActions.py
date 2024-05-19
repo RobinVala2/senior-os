@@ -33,8 +33,8 @@ def _jsonWrite():
         },
         'GlobalConfiguration': {
             "numOfScreen": 0,
-            "language": "EN",
-            "alertSoundLanguage": "EN",
+            "language": "CZ",
+            "alertSoundLanguage": "CZ",
             "colorMode": "Light",
             "alertColor": "#8B0000",
             "hoverColor": "#4b5946",
