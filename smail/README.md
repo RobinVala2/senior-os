@@ -29,14 +29,12 @@ cd smail
 # Install requirements from the requirements.txt file
 pip install -r requirements.txt
 ```
-This program has been tested and optimized for use with Python versions 3.11 and 3.12. 
+This program has been tested and optimized for use with Python versions 3.11 and 3.12, and is intended only for Linux distributions.
 
 ## Configuration requirement for SMAIL
-Before initiating the email client, it is essential to generate configuration files utilizing the SGIVE app. 
-This process entails inserting an email address and password, ensuring seamless functionality.
-
+To ensure proper functioning of the SMAIL email client, it is crucial to first generate configuration files. This can be done either by utilizing the SGIVE app or by launching the SMAIL application. While there is an option to use default settings with a preset email, it is highly recommended that you enter your own email address and password during this process. 
 ### Password generation for SMAIL
-To connect to your Gmail account from a non-web environment, such as an SMAIL app, you'll need to generate an app password. 
+To connect to your Gmail account from a non-web environment, such as SMAIL app, you'll need to generate an app password. 
 Follow these steps to obtain the app password:
 1. Go to the Google account settings by visiting *Google Account*.
 

@@ -7,7 +7,7 @@ logger = logging.getLogger(__file__)
 
 def get_DB():
     file_path = os.path.join(os.getcwd().split("smail")[0], "sconf/phish/SMAIL_PHISH_1.txt")
-    command = f"wget -O {file_path} https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/phishing-links-ACTIVE.txt"
+    command = f"wget -O {file_path} https://raw.githubusercontent.com/mitchellkrogza/Phishing.Database/master/ALL-phishing-links.txt"
     # Check if database exists
     if os.path.exists(file_path):
         last_modif_date = datetime.datetime.fromtimestamp(os.path.getmtime(file_path))

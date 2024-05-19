@@ -423,7 +423,6 @@ class one_frame(tk.Frame):
 
             self.all_emails = self.safe_emails + self.phish_emails
             self.all_emails.sort(key=lambda x: x[1])
-            self.tagged_emails = []
 
             for email_content, index, safe in self.all_emails:
                 name = get_email_sender(email_content.split("\n")[1])
