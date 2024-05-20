@@ -99,9 +99,12 @@ def edit_main_config(key, name, value):
 
 
 def restore_main_config():
-    print("Restoring GLOBAL config")
-    path = red_main_config("pathToConfig", "path")
-    main_config_default(path)
+    path = get_path()
+    if path is not None:
+        main_config_default(path)
+    else:
+        logging.critical("system was unable to restore configs, exiting now.")
+        exit("Bad restore attempt.")
 
 
 def main_config_default(path):
