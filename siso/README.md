@@ -152,7 +152,7 @@ The corresponding cipher word has to be entered to enable the persistence of the
 #### Console Environment
 
 <p align="center">
-  <img src="https://github.com/forsenior/senior-os/blob/main/siso/VirtualBox/14_SISO_VB_Conole.png" alt="PackageConsoleEnvironment" width=60%> 
+  <img src="https://github.com/forsenior/senior-os/blob/main/siso/VirtualBox/14_SISO_VB_Console.png" alt="PackageConsoleEnvironment" width=60%> 
 </p>
 
 #### Both Browsers Start
