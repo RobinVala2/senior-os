@@ -228,6 +228,8 @@ class MyBrowser(QMainWindow):
         self.addToolBar(self.menu_1_toolbar)
         self.menu_1_toolbar.setMovable(False)
         
+        self.permitted_website_list = load_permitted_website_from_sgive(self.data_in_my_config_data)
+        
         # Create a toolbar for saving menu and buttons
         self.menu_2_toolbar = QToolBar("Menu 2")
         self.addToolBar(self.menu_2_toolbar)
@@ -565,7 +567,7 @@ class MyBrowser(QMainWindow):
         senior_website_posting_option = self.data_in_my_config_data["advanced_against_phishing"]["senior_website_posting"]
         
         # Get permitted websites list from sgive
-        permitted_website_list = load_permitted_website_from_sgive(self.data_in_my_config_data)
+        permitted_website_list = self.permitted_website_list
         # Check if it is permitted website
         check_result = any(permitted_website in url_in_browser_value for permitted_website in permitted_website_list)
         if check_result:

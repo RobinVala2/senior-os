@@ -19,9 +19,9 @@ def smail_config_default(path):
             "max": 20
         },
         "emails": {
-            "Person1": "croce.rosay@gmail.com",
-            "Person2": "robin.valu@seznam.cz",
-            "Person3": "241124@vut.cz",
+            "Person1": "email1@gmail.com",
+            "Person2": "email2@gmail.com",
+            "Person3": "email3@gmail.com",
             "Person4": "email4@gmail.com",
             "Person5": "email5@gmail.com",
             "Person6": "email6@gmail.com"
@@ -38,7 +38,6 @@ def smail_config_default(path):
         "resend_email": 0,
         "show_url": 1,
         "guardian_email": "241124@vut.cz",
-        "lang": "cz",
         "timer": 5000,
         "text": {
             "smail_en_sendToButton": "Send To",

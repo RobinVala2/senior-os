@@ -2,24 +2,30 @@
 
 Pro bližší informace napište na komosny@vut.cz 
 - Na základě domluvy si lze práci rezervovat předem 
-- Obecné požadavky jsou znalost Python a Linux
-- Texty zadání jsou orientační
+- Obecné požadavky jsou Python a Linux
 
 Zadání pro akad. rok 24/25
 
-## Binární obraz operačního systému pro seniory 
-DP nebo BP, obory BPC-TLI a MPC-TIT 
+## Bezpečný webový prohlížeč pro seniory
+Téma je přiděleno pro akad. rok 24/25.
 
-Vytvořte spustitelný binární obraz (live ISO) zvoleného operačního systému s jádrem Linux. Do operačního systému vložte tři aplikace — emailový klient, webový prohlížeč a konfigurační aplikace. Aplikace jsou výsledkem studentských prací. Vytvořte jednoduchý systém pro start těchto tří aplikací. Výsledky práce publikujte na repozitáři GitHub pod licencí MIT. 
+Vytvořte bezpečný webový prohlížeč, který bude přizpůsobený pro seniory vyššího věku a mentálně postižené. Prohlížeč bude jednoduše ovladatelný a bude implementovat ochranu proti podvodným (phishing) stránkám. Detekci podvodných stránek proveďte pomocí strojového učení. Vytvořený detekční model přizpůsobte českým webovým stránkám. V prohlížeči také implementujte ochranu pomocí možnosti zákazu vkládání textu do formulářů detekovaných webových stránek. Prohlížeč zhotovte v programovacím jazyce Python. Výsledky práce publikujte na repositáři GitHub pod licencí MIT. 
 
-## Testování a úprava aplikací operačního systému pro seniory 
-DP nebo BP, obory BPC-TLI a MPC-TIT
+## Binární obraz operačního systému Linux na zabezpečeném USB disku
+Téma je přiděleno pro akad. rok 24/25.
 
-Navrhněte a proveďte testy tří aplikací operačního systému pro seniory — emailový klient, webový prohlížeč a konfigurační aplikace. Aplikace jsou výsledkem studentských prací a jejich zdrojové kódy v jazyce Python jsou k dispozici. Aplikace upravte na základě výsledků testů. Proveďte sjednocení jejich vizuální podoby. Výsledky práce publikujte na repozitáři GitHub pod licencí MIT. 
+Vytvořte binární obraz upraveného operačního systému Linux tak, aby byl spustitelný z oddílu USB disku v režimu pouze pro čtení, tzv. Live ISO. Systém upravte tak, aby obsahoval zadané aplikace a data uživatele byla persistentně ukládána na dalším oddílu USB disku. Tento oddíl USB disku zašifrujte. Vytvořte systém pro automatické dešifrování dat na tomto oddílu USB disku na základě identifikace počítače pomocí MAC adres. Vytvořte aplikaci pro editaci seznamu povolených počítačů. Výsledky práce publikujte na repozitáři GitHub pod licencí MIT. 
 
-## Záznam událostí jemné motoriky uživatele operačního systému pro seniory 
-DP nebo BP, obory BPC-TLI a MPC-TIT
+## Aplikace pro opatrovníka seniora
+Téma je volné pro akad. rok 24/25. 
 
-Vytvořte systém pro záznam událostí jemné motoriky uživatele operačního systému pro seniory. Události budou zahrnovat pohyb myši, stisky tlačítek myši a rychlost psaní. Vytvořte vzorový seznam událostí pro několik dobrovolných anonymních uživatelů. Software vytvořte v jazyce Python. Výsledky práce publikujte na repozitáři GitHub pod licencí MIT. 
+Obory BPC-TLI a MPC-TIT, DP nebo BP 
 
-Poznámka: Data od budoucích reálných uživatelů-seniorů budou sloužit pro rozpoznání a sledování změn onemocnění, které se projevující změnami v jemné motorice (Parkinsonova nemoc). Využití dat není v práci řešeno. 
+Zhotovte aplikaci pro opatrovníka seniora nebo mentálně postižené osoby, která používá upravený operační systém Linux. Aplikace bude umožnovat konfiguraci emailového klienta a webového prohlížeče, které jsou určeny pro seniory. Konfigurace bude umožnovat tři úrovně ovládání aplikací z pohledu kybernetické bezpečnosti, od velmi omezených funkcí až po plný přístup. Volba úrovně ovládání bude volena opatrovníkem dle individuální schopnosti seniora nebo mentálně postižené osoby. Proveďte úpravu emailového klienta a webového prohlížeče v programovacím jazyce Python tak, aby poskytovaly pouze funkce dle úrovně zabezpečení. Vaši aplikaci zhotovte v programovacím jazyce Python. Výsledky práce publikujte na repozitáři GitHub pod licencí MIT.
+
+## Emailový klient pro seniory 
+Téma je volné pro akad. rok 24/25. 
+
+Obory BPC-TLI a MPC-TIT, DP nebo BP 
+
+Text zadání TODO 
