@@ -475,16 +475,15 @@ class WebFrameWidgets:
             print("URL není platná")
 
     def submit_filedialog(self):
-        # todo: path check
         if not self.filename_picture:
             print("filename error <placeholder>")
             return
-        if self.filedialog_counter < 6:
+        if self.filedialog_counter < 5:
             ryuConf.edit_sweb_config("image", f"sweb_image_www{self.filedialog_counter}", self.filename_picture)
             self.filedialog_counter += 1
             self.picture_btn["submit"].configure(text=f"Add person{self.filedialog_counter}")
-        elif self.filedialog_counter == 6:
-            ryuConf.edit_sweb_config("images", f"sweb_image_www{self.filedialog_counter}", self.filename_picture)
+        elif self.filedialog_counter == 5:
+            ryuConf.edit_sweb_config("image", f"sweb_image_www{self.filedialog_counter}", self.filename_picture)
             self.filedialog_counter = 1
             self.picture_btn["submit"].configure(text=f"Add picture {self.filedialog_counter}")
 
@@ -840,7 +839,7 @@ class MailFrameWidgets:
         self.filename_picture = filedialog.askopenfilename(initialdir=home_dir)
         if not self.filename_picture:  # check, if tuple is empty, if yes, return
             return
-        self.choose_pictures[0].configure(text=self.filename_picture, font=font_value)
+        self.choose_pictures["picture0"].configure(text=self.filename_picture, font=font_value)
 
     def submit_filedialog(self):
         # todo: path check
@@ -850,11 +849,11 @@ class MailFrameWidgets:
         if self.filedialog_counter < 6:
             ryuConf.edit_smail_config("images", f"Person{self.filedialog_counter}", self.filename_picture)
             self.filedialog_counter += 1
-            self.choose_pictures[1].configure(text=f"Add person{self.filedialog_counter}")
+            self.choose_pictures["picture1"].configure(text=f"Add person{self.filedialog_counter}")
         elif self.filedialog_counter == 6:
             ryuConf.edit_smail_config("images", f"Person{self.filedialog_counter}", self.filename_picture)
             self.filedialog_counter = 1
-            self.choose_pictures[1].configure(text=f"Add person{self.filedialog_counter}")
+            self.choose_pictures["picture1"].configure(text=f"Add person{self.filedialog_counter}")
 
     def create_widgets(self):
         font_value = (ryuConf.red_main_config("GlobalConfiguration", "fontFamily"),
